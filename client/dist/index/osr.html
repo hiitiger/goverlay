@@ -1,0 +1,30 @@
+<html>
+
+<head>
+    <style>
+        body {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            color: maroon;
+            margin-left: 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        Hello Electron!
+        <label id='label'>Label</label>
+    </div>
+    <script>
+        const label = document.getElementById('label')
+        setInterval(() => {
+            label.innerText = (new Date()).toString()
+            console.log(label.innerText)
+        }, 1000)
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,23 @@
+{
+    "name": "gelectron",
+    "version": "1.0.0",
+    "main": "./dist/main/main.js",
+    "license": "MIT",
+    "scripts": {
+        "build:renderer": "webpack --config webpack.config.renderer.js",
+        "build:main": "tsc",
+        "lint": "tslint -c tslint.json -p tsconfig.json",
+        "start": "electron . --enable-logging",
+        "compile:electron": "electron-rebuild -v 2.0.7"
+    },
+    "devDependencies": {
+        "@types/node": "^10.5.8",
+        "awesome-typescript-loader": "^5.2.0",
+        "tslint": "^5.10.0",
+        "typescript": "^3.1.0-dev.20180810",
+        "webpack": "^4.16.5"
+    },
+    "dependencies": {
+        "electron": "2.0.7"
+    }
+}
