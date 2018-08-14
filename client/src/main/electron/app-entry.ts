@@ -230,8 +230,8 @@ class Application {
           button: "left",
           x: 30,
           y: 18,
-          globalX: 30,
-          globalY: 18,
+          //   globalX: 30,
+          //   globalY: 18,
           clickCount: 1
         } as any)
 
@@ -241,8 +241,8 @@ class Application {
             button: "left",
             x: 30,
             y: 18,
-            globalX: 30,
-            globalY: 18,
+            // globalX: 30,
+            // globalY: 18,
             clickCount: 1
           } as any)
         }, 100)

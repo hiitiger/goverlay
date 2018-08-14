@@ -1,3 +1,4 @@
 node_modules
 dist/main/
 dist/renderer/
+release
