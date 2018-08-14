@@ -11,18 +11,33 @@
             margin-left: 40px;
         }
     </style>
+    <title>OsrWindow</title>
 </head>
 
 <body>
     <div>
-        Hello Electron!
+        <button id='button'>Button</button>
+        <br/> Hello Electron!
+
         <label id='label'>Label</label>
     </div>
     <script>
         const label = document.getElementById('label')
         setInterval(() => {
             label.innerText = (new Date()).toString()
-            console.log(label.innerText)
+                // console.log(label.innerText)
+        }, 1000)
+
+        setTimeout(() => {
+            const {
+                ipcRenderer
+            } = window.require('electron')
+
+            const button = document.getElementById('button')
+            button.addEventListener('click', () => {
+                console.log('button click ', (new Date()).toString())
+                ipcRenderer.send('osrClick')
+            })
         }, 1000)
     </script>
 </body>
