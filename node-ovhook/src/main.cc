@@ -7,6 +7,10 @@
 #include "utils.hpp"
 
 const WCHAR k_inject_helper[] = L"n_ovhelper.exe";
+const WCHAR k_inject_helper_x64[] = L"n_ovhelper_x64.exe";
+
+const WCHAR k_inject_dll[] = L"n_overlay.dll";
+const WCHAR k_inject_dll_x64[] = L"n_overlay_x64.dll";
 
 struct win_scope_handle
 {
@@ -160,7 +164,7 @@ static inline bool is_64bit_process(HANDLE process)
   return !x86;
 }
 
-static bool inject_process(DWORD processId)
+static bool inject_process(DWORD processId, DWORD threadId)
 {
   win_scope_handle process = OpenProcess(
       PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
@@ -170,13 +174,23 @@ static bool inject_process(DWORD processId)
     return false;
   }
 
+  std::wstring dir = win_utils::moduleDirPath();
+
   std::wstring helper;
+  std::wstring dll;
   if (is_64bit_process(process.handle))
   {
+    helper = dir + L"\\" + k_inject_helper_x64;
+    dll = dir + L"\\" + k_inject_dll_x64;
   }
   else
   {
+    helper = dir + L"\\" + k_inject_helper;
+    dll = dir + L"\\" + k_inject_dll;
   }
+
+  std::wstring args = std::to_wstring(processId) + L" " + std::to_wstring(threadId) + L" \"" + dll;
+  return win_utils::createProcess(helper, args);
 }
 
 Napi::Value getTopWindows(const Napi::CallbackInfo &info)
@@ -229,15 +243,21 @@ Napi::Value injectProcess(const Napi::CallbackInfo &info)
     return env.Null();
   }
 
-  const std::uint32_t processId = info[0].As<Napi::Number>().Uint32Value();
-  const bool r = inject_process(processId);
-  return env.Undefined();
+  Napi::Object object = info[0].ToObject();
+  const std::uint32_t processId = object.Get("processId").ToNumber().Uint32Value();
+  const std::uint32_t threadId = object.Get("threadId").ToNumber().Uint32Value();
+
+  const bool r = inject_process(processId, threadId);
+  return Napi::Value::From(env, r);
 }
 
 Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
   exports.Set(Napi::String::New(env, "getTopWindows"),
               Napi::Function::New(env, getTopWindows));
+
+  exports.Set(Napi::String::New(env, "injectProcess"),
+              Napi::Function::New(env, injectProcess));
   return exports;
 }
 
