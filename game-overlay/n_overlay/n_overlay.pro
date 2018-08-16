@@ -40,4 +40,14 @@ LIBS += corelib.lib
 }
 
 
-SOURCES += $$files(./main.cpp)
+HEADERS += dxgi1_2.h
+SOURCES += ./main.cpp
+
+HEADERS += ./hook/apihook.hpp
+
+HEADERS += ./ipc/tinyipc.h
+HEADERS += ./ipc/ipcmsg.h
+HEADERS += ./ipc/ipclink.h
+SOURCES += ./ipc/ipclink.cc
+HEADERS += ./ipc/ipccenter.h
+SOURCES += ./ipc/ipccenter.cc
