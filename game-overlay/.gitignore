@@ -1,0 +1,8 @@
+
+bin
+.vs
+.qmake.stash
+*.sln
+*.vcxproj
+*.vcxproj.*
+Objdir
