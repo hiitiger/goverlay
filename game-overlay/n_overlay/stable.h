@@ -28,3 +28,4 @@ __pragma(warning(pop))
 #include <map>
 #include <mutex>
 #include <memory>
+#include <assert.h>

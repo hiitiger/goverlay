@@ -4,6 +4,7 @@ CONFIG -= qt
 
 DEFINES += _WIN32_WINNT=0x0601
 
+INCLUDEPATH += .
 INCLUDEPATH += ../deps/include
 INCLUDEPATH += $(DXSDK_DIR)Include
 CONFIG(debug, debug|release) {
@@ -51,3 +52,14 @@ HEADERS += ./ipc/ipclink.h
 SOURCES += ./ipc/ipclink.cc
 HEADERS += ./ipc/ipccenter.h
 SOURCES += ./ipc/ipccenter.cc
+
+
+HEADERS += ./overlay/uiapp.h
+SOURCES += ./overlay/uiapp.cc
+
+HEADERS += ./overlay/hookapp.h
+SOURCES += ./overlay/hookapp.cc
+
+HEADERS += ./overlay/overlay.h
+SOURCES += ./overlay/overlay.cc
+
