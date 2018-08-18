@@ -1,6 +1,64 @@
 #pragma once
 
+#include "overlay.h"
+#include "uiapp.h"
 
-class HookApp {
+
+struct IGraphicsHook;
+class D3d9Hook;
+class DXGIHook;
+
+class HookApp
+{
+    std::wstring processPath_;
+    std::wstring processName_;
+
+    std::atomic<bool> hookFlag_ = false;
+    std::atomic<bool> quitFlag_ = false;
+
+    std::mutex runloopLock_;
+    std::unique_ptr<Storm::CoreRunloop> runloop_;
+
+    Storm::WaitableEvent wait_;
+
+    std::shared_ptr<overlay::OverlayConnector> overlay_;
+
+    HANDLE hookloopThread_ = nullptr;
+
+
+  public:
+    HookApp();
+    ~HookApp();
+
+    static HookApp *instance();
+
+    std::wstring procPath() const { return processPath_;}
+    std::wstring procName() const { return processName_;}
+
+    bool isQuitSet() const { return quitFlag_; }
+
+    std::shared_ptr<overlay::OverlayConnector> OverlayConnector() const { return overlay_; }
+
+    HANDLE start();
+
+    void quit();
+
+    void startHook();
+
+    void async(const std::function<void()>& task);
+
+    void tryHookGraphics();
+    void tryHookInput();
+
+    void hookThread();
+
+private:
+    void unhookGraphics();
+    void hookGraphics();
+
+    void hookInput();
+
+    bool hookD3d9();
+    bool hookDXGI();
 
 };

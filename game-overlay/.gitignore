@@ -1,6 +1,7 @@
 
 bin
 .vs
+.vscode
 .qmake.stash
 *.sln
 *.vcxproj

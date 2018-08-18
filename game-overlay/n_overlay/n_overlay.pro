@@ -54,6 +54,9 @@ HEADERS += ./ipc/ipccenter.h
 SOURCES += ./ipc/ipccenter.cc
 
 
+HEADERS += ./overlay/session.h
+SOURCES += ./overlay/session.cc
+
 HEADERS += ./overlay/uiapp.h
 SOURCES += ./overlay/uiapp.cc
 
@@ -62,4 +65,12 @@ SOURCES += ./overlay/hookapp.cc
 
 HEADERS += ./overlay/overlay.h
 SOURCES += ./overlay/overlay.cc
+
+
+HEADERS += ./graphics/graphics.h
+
+HEADERS += ./graphics/d3d9hook.h
+SOURCES += ./graphics/d3d9hook.cc
+HEADERS += ./graphics/dxgihook.h
+SOURCES += ./graphics/dxgihook.cc
 

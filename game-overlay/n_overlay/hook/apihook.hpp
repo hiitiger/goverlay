@@ -1,7 +1,4 @@
 #pragma once
-#include "winheader.h"
-#include "minkhook/MinHook.h"
-
 template <class I, class O>
 struct force_cast
 {
@@ -37,12 +34,12 @@ struct ApiHook
     bool actived_ = false;
 
   public:
-    Hook(const std::wstring &name, DWORD_PTR *pTarget, DWORD_PTR *pHooked)
+    ApiHook(const std::wstring &name, DWORD_PTR *pTarget, DWORD_PTR *pHooked)
         : name_(name), pTarget_(pTarget), pHooked_(pHooked), actived_(false)
     {
     }
 
-    ~Hook()
+    ~ApiHook()
     {
         removeHook();
     }

@@ -3,33 +3,47 @@
 
 namespace overlay
 {
+
+
 class OverlayConnector : public IIpcClient
 {
     int ipcClientId_ = 0;
-    IIpcLink* ipcLink_ = nullptr;
+    IIpcLink *ipcLink_ = nullptr;
 
-  public:
+public:
     OverlayConnector();
     ~OverlayConnector();
 
     void start();
-    void stop();
+    void quit();
 
-    void heartbeat();
-
-    void sendGameExit();
-
-    void sendGameProcessInfo();
-    void sendGameHookResult();
+    void sendGraphicsHookResult();
+    void sendGraphicsInitResult();
 
     void sendGameWindowInput();
     void sendGameWindowEvent();
 
+protected:
+    void _heartbeat();
+
+    void _sendOverlayExit();
+
+    void _sendGameProcessInfo();
+
+    void _sendGraphicsHookResult();
+
+    void _sendGraphicsInitResult();
+
+    void _sendGameWindowInput();
+
+    void _sendGameWindowEvent();
+
+private:
     void onIpcMessage();
     void onCommand();
     void onGraphicsCommand();
 
-  private:
+private:
     void onLinkConnect(IIpcLink *) override;
     void onLinkClose(IIpcLink *) override;
     void onMessage(IIpcLink *, int hostPort, const std::string &message) override;

@@ -20,12 +20,6 @@ __pragma(warning(pop))
 #include <Wincodec.h>
 
 #include "corelib.h"
-#include <iostream>
-#include <string>
-#include <vector>
-#include <thread>
-#include <atomic>
-#include <map>
-#include <mutex>
-#include <memory>
 #include <assert.h>
+#include "utils.hpp"
+
