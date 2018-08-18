@@ -19,6 +19,10 @@
                 "./src/utils.hpp",
                 "./src/overlay.h",
                 "./src/overlay.cc",
+                "./src/windll.hpp",
+                "./src/node_async_call.h",
+                "./src/node_async_call.cc",
+                "./src/n-utils.hpp",
                 "./src/main.cc"
             ],
         }
