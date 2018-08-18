@@ -1,8 +1,6 @@
 #pragma once
 #include "./ipc/ipclink.h"
 
-namespace overlay
-{
 
 
 class OverlayConnector : public IIpcClient
@@ -17,8 +15,12 @@ public:
     void start();
     void quit();
 
-    void sendGraphicsHookResult();
-    void sendGraphicsInitResult();
+    void sendInputHookInfo();
+    void sendGraphicsHookInfo(const std::map<std::string, std::string>& data);
+    void sendGraphicsWindowSetupInfo();
+
+    void sendInputBlocked();
+    void sendInputUnBlocked();
 
     void sendGameWindowInput();
     void sendGameWindowEvent();
@@ -30,16 +32,19 @@ protected:
 
     void _sendGameProcessInfo();
 
-    void _sendGraphicsHookResult();
+    void _sendInputHookInfo();
+    void _sendGraphicsHookInfo();
+    void _sendGraphicsWindowSetupInfo();
 
-    void _sendGraphicsInitResult();
+    void _sendInputBlocked();
+    void _sendInputUnBlocked();
 
     void _sendGameWindowInput();
-
     void _sendGameWindowEvent();
 
 private:
     void onIpcMessage();
+    void onFrameBuffer();
     void onCommand();
     void onGraphicsCommand();
 
@@ -49,4 +54,3 @@ private:
     void onMessage(IIpcLink *, int hostPort, const std::string &message) override;
     void saveClientId(IIpcLink *, int clientId) override;
 };
-} // namespace overlay

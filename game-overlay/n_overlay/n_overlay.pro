@@ -43,8 +43,11 @@ LIBS += corelib.lib
 
 HEADERS += dxgi1_2.h
 SOURCES += ./main.cpp
+HEADERS += ./common.hpp
 
 HEADERS += ./hook/apihook.hpp
+HEADERS += ./hook/inputhook.h
+SOURCES += ./hook/inputhook.cc
 
 HEADERS += ./ipc/tinyipc.h
 HEADERS += ./ipc/ipcmsg.h

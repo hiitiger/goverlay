@@ -5,9 +5,6 @@
 
 const char k_overlayIpcName[] = "n_overlay_1a1y2o8l0b";
 
-namespace overlay
-{
-
 OverlayConnector::OverlayConnector()
 {
 }
@@ -47,19 +44,42 @@ void OverlayConnector::quit()
     getIpcCenter()->uninit();
 }
 
-void OverlayConnector::sendGraphicsHookResult()
+void OverlayConnector::sendInputHookInfo()
 {
     CHECK_THREAD(Threads::HookApp);
 
-    _sendGraphicsHookResult();
+    _sendInputHookInfo();
 }
 
-void OverlayConnector::sendGraphicsInitResult()
+void OverlayConnector::sendGraphicsHookInfo(const std::map<std::string, std::string>& data)
+{
+    CHECK_THREAD(Threads::HookApp);
+
+    _sendGraphicsHookInfo();
+}
+
+void OverlayConnector::sendGraphicsWindowSetupInfo()
 {
     CHECK_THREAD(Threads::Graphics);
 
     HookApp::instance()->async([this]() {
-        _sendGraphicsInitResult();
+        _sendGraphicsWindowSetupInfo();
+    });
+}
+
+void OverlayConnector::sendInputBlocked()
+{
+    CHECK_THREAD(Threads::Window);
+    HookApp::instance()->async([this]() {
+        _sendInputBlocked();
+    });
+}
+
+void OverlayConnector::sendInputUnBlocked()
+{
+    CHECK_THREAD(Threads::Window);
+    HookApp::instance()->async([this]() {
+        _sendInputUnBlocked();
     });
 }
 
@@ -88,7 +108,6 @@ void OverlayConnector::_heartbeat()
 void OverlayConnector::_sendOverlayExit()
 {
     CHECK_THREAD(Threads::HookApp);
-
 }
 
 void OverlayConnector::_sendGameProcessInfo()
@@ -96,31 +115,47 @@ void OverlayConnector::_sendGameProcessInfo()
     CHECK_THREAD(Threads::HookApp);
 }
 
-void OverlayConnector::_sendGraphicsHookResult()
+void OverlayConnector::_sendInputHookInfo()
 {
     CHECK_THREAD(Threads::HookApp);
 
 }
 
-void OverlayConnector::_sendGraphicsInitResult()
+void OverlayConnector::_sendGraphicsHookInfo()
 {
     CHECK_THREAD(Threads::HookApp);
+}
 
+void OverlayConnector::_sendGraphicsWindowSetupInfo()
+{
+    CHECK_THREAD(Threads::HookApp);
+}
+
+void OverlayConnector::_sendInputBlocked()
+{
+    CHECK_THREAD(Threads::HookApp);
+}
+
+void OverlayConnector::_sendInputUnBlocked()
+{
+    CHECK_THREAD(Threads::HookApp);
 }
 
 void OverlayConnector::_sendGameWindowInput()
 {
     CHECK_THREAD(Threads::HookApp);
-
 }
 
 void OverlayConnector::_sendGameWindowEvent()
 {
     CHECK_THREAD(Threads::HookApp);
-
 }
 
 void OverlayConnector::onIpcMessage()
+{
+}
+
+void OverlayConnector::onFrameBuffer()
 {
 
 }
@@ -150,12 +185,9 @@ void OverlayConnector::onLinkClose(IIpcLink *link)
 
 void OverlayConnector::onMessage(IIpcLink * /*link*/, int /*hostPort*/, const std::string &message)
 {
-
 }
 
 void OverlayConnector::saveClientId(IIpcLink * /*link*/, int clientId)
 {
     ipcClientId_ = clientId;
 }
-
-} // namespace overlay

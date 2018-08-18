@@ -21,7 +21,8 @@ class HookApp
 
     Storm::WaitableEvent wait_;
 
-    std::shared_ptr<overlay::OverlayConnector> overlay_;
+    std::shared_ptr<OverlayConnector> overlay_;
+    std::shared_ptr<UiApp> uiapp_;
 
     HANDLE hookloopThread_ = nullptr;
 
@@ -37,7 +38,9 @@ class HookApp
 
     bool isQuitSet() const { return quitFlag_; }
 
-    std::shared_ptr<overlay::OverlayConnector> OverlayConnector() const { return overlay_; }
+    std::shared_ptr<OverlayConnector> overlayConnector() const { return overlay_; }
+
+    std::shared_ptr<UiApp> uiapp() const { return uiapp_;}
 
     HANDLE start();
 
@@ -47,16 +50,17 @@ class HookApp
 
     void async(const std::function<void()>& task);
 
-    void tryHookGraphics();
-    void tryHookInput();
+    void deferHook();
 
     void hookThread();
 
 private:
+    void hook();
+
     void unhookGraphics();
     void hookGraphics();
 
-    void hookInput();
+    bool hookInput();
 
     bool hookD3d9();
     bool hookDXGI();

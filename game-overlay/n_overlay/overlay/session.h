@@ -1,11 +1,32 @@
 #pragma once
 
 
+
 struct  D3d9HookInfo
 {
+    bool endSceneHooked = false;
+    bool presentHooked = false;
+    bool presentExHooked = false;
+    bool swapChainPresentHooked = false;
+    bool resetHooked = false;
+    bool resetExHooked = false;
+
     HMODULE d3d9Dll = nullptr;
 
-    Windows::ComPtr<IDirect3DDevice9> device;
+
+    std::map<std::string, std::string> toMap() const
+    {
+        return {
+        { "type", "D3d9" },
+        {"endSceneHooked", endSceneHooked ? "true" : "false"},
+        { "presentHooked", presentHooked ? "true" : "false" },
+        { "presentExHooked", presentExHooked ? "true" : "false" },
+        { "swapChainPresentHooked", swapChainPresentHooked ? "true" : "false" },
+        { "resetHooked", resetHooked ? "true" : "false" },
+        { "resetExHooked", resetExHooked ? "true" : "false" },
+        {"d3d9Dll", std::to_string((std::uint32_t)d3d9Dll)},
+        };
+    }
 };
 
 
@@ -14,10 +35,21 @@ struct  DxgiHookInfo
     HMODULE dxgiDll = nullptr;
     HMODULE d3d10Dll = nullptr;
     HMODULE d3d11Dll = nullptr;
+
+    std::map<std::string, std::string> toMap() const
+    {
+        return {
+        { "type", "DXGI"},
+        { "dxgiDll", std::to_string((std::uint32_t)dxgiDll) },
+        { "d3d10Dll", std::to_string((std::uint32_t)d3d10Dll) },
+        { "d3d11Dll", std::to_string((std::uint32_t)d3d11Dll) },
+        };
+    }
 };
 
 class D3d9Hook;
 class DXGIHook;
+class InputHook;
 
 namespace session
 {
@@ -38,7 +70,7 @@ namespace session
     void clearDxgiHook();
 
     bool inputHooked();
-    void saveInputHook();
+    void saveInputHook(std::unique_ptr<InputHook>&& h);
 
     void setInjectWindow(HWND window);
     HWND injectWindow();
@@ -57,37 +89,3 @@ namespace session
 }
 
 
-enum class Threads {
-    HookApp = 1,
-    Graphics = 2,
-    Window = 3,
-};
-
-
-inline bool checkThread(Threads type)
-{
-    std::uint32_t required = 0;
-    switch (type)
-    {
-    case Threads::HookApp:
-        required = session::hookAppThreadId();
-        break;
-    case Threads::Graphics:
-        required = session::graphicsThreadId();
-        break;
-    case Threads::Window:
-        required = session::windowThreadId();
-        break;
-    default:
-        break;
-    }
-
-    return ::GetCurrentProcessId() == required;
-
-}
-
-#define CHECK_THREAD(type) \
-do \
-{\
-    assert(checkThread(type));\
-} while (0);

@@ -11,14 +11,14 @@ struct  D3d9HookData
     std::unique_ptr<ApiHook<PresentType> > presentHook;
     std::unique_ptr<ApiHook<PresentExType> > presentExHook;
 
-    std::unique_ptr<ApiHook<SwapChainPresentType> > swapChainPresenthook;
+    std::unique_ptr<ApiHook<SwapChainPresentType> > swapChainPresentHook;
 
     std::unique_ptr<ApiHook<ResetType> > resetHook;
     std::unique_ptr<ApiHook<ResetExType> > resetExHook;
 };
 
 
-class D3d9Hook : public IGraphicsHook, public D3d9HookData
+class D3d9Hook : public IHookModule, public D3d9HookData
 {
     bool hookSetup_ = false;
     int presentRecurse_ = 0;
@@ -27,8 +27,8 @@ class D3d9Hook : public IGraphicsHook, public D3d9HookData
     D3d9Hook();
     ~D3d9Hook();
 
-    bool hook();
-    void unhook();
+    bool hook() override;
+    void unhook() override;
 
     STDMETHOD(D3D9EndScene_hook)(IDirect3DDevice9 *d);
 

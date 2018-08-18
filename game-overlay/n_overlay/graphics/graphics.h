@@ -6,15 +6,6 @@ namespace
     static const char k_overlayIWindow[] = "n_overlay_win_x0y1x2";
 }
 
-struct IGraphicsHook
-{
-    virtual ~IGraphicsHook() { }
-
-    virtual bool hook() = 0;
-    virtual void unhook() = 0;
-};
-
-
 typedef IDirect3D9* (WINAPI* pFnDirect3DCreate9)(UINT SDKVersion);
 typedef HRESULT(WINAPI *pFnDirect3DCreate9Ex)(UINT, void **);
 

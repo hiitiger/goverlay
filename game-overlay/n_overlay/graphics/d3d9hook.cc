@@ -156,6 +156,12 @@ END:
     {
         DestroyWindow(window);
     }
+
+    session::d3d9HookInfo().d3d9Dll = d3d9Dll;
+    session::d3d9HookInfo().endSceneHooked = result;
+
+    HookApp::instance()->overlayConnector()->sendGraphicsHookInfo(session::d3d9HookInfo().toMap());
+
     return result;
 }
 
@@ -166,10 +172,10 @@ void D3d9Hook::unhook()
         presentHook->removeHook();
         presentHook.reset(nullptr);
     }
-    if (swapChainPresenthook)
+    if (swapChainPresentHook)
     {
-        swapChainPresenthook->removeHook();
-        swapChainPresenthook.reset(nullptr);
+        swapChainPresentHook->removeHook();
+        swapChainPresentHook.reset(nullptr);
     }
     if (resetHook)
     {
@@ -186,6 +192,13 @@ void D3d9Hook::unhook()
         resetExHook->removeHook();
         resetExHook.reset(nullptr);
     }
+
+    session::d3d9HookInfo().endSceneHooked = false;
+    session::d3d9HookInfo().presentHooked = false;
+    session::d3d9HookInfo().presentExHooked = false;
+    session::d3d9HookInfo().swapChainPresentHooked = false;
+    session::d3d9HookInfo().resetHooked = false;
+    session::d3d9HookInfo().resetExHooked = false;
 
     hookSetup_ = false;
 }
@@ -242,7 +255,7 @@ STDMETHODIMP D3d9Hook::SwapChainPresent_hook(IDirect3DSwapChain9* pD3DSwapChain9
 
     pThis->onBeforePresent(spD3DDevice9, hDestWindowOverride, !!pD3DDevice9Ex);
 
-    HRESULT hr = pThis->swapChainPresenthook->callOrginal<HRESULT>(pD3DSwapChain9, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion, dwFlags);
+    HRESULT hr = pThis->swapChainPresentHook->callOrginal<HRESULT>(pD3DSwapChain9, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion, dwFlags);
 
     pThis->onAfterPresent(spD3DDevice9, hDestWindowOverride, !!pD3DDevice9Ex);
 
@@ -306,15 +319,15 @@ bool D3d9Hook::setupHooks(IDirect3DDevice9 *device)
     presentHook.reset(new ApiHook<PresentType>(L"PresentType", presentAddr, hookPresentAddr));
     presentHook->activeHook();
 
-    swapChainPresenthook.reset(new ApiHook<SwapChainPresentType>(L"SwapChainPresentType", swapChainPresentAddr, hookSwapChainPresentAddr));
-    swapChainPresenthook->activeHook();
+    swapChainPresentHook.reset(new ApiHook<SwapChainPresentType>(L"SwapChainPresentType", swapChainPresentAddr, hookSwapChainPresentAddr));
+    swapChainPresentHook->activeHook();
 
     resetHook.reset(new ApiHook<ResetType>(L"ResetType", resetAddr, hookResetAddr));
     resetHook->activeHook();
 
     LOGGER("n_overlay") << "Hook D9Present:" << presentHook->succeed();
     LOGGER("n_overlay") << "Hook Reset:" << resetHook->succeed();
-    LOGGER("n_overlay") << "Hook D9SwapChainPresent:" << swapChainPresenthook->succeed();
+    LOGGER("n_overlay") << "Hook D9SwapChainPresent:" << swapChainPresentHook->succeed();
 
     if (spD3DDevice9Ex)
     {
@@ -331,7 +344,7 @@ bool D3d9Hook::setupHooks(IDirect3DDevice9 *device)
         LOGGER("n_overlay") << "Hook D9ResetEx:" << resetExHook->succeed();
     }
 
-    result = (presentHook->succeed() || swapChainPresenthook->succeed()) && resetHook->succeed();
+    result = (presentHook->succeed() || swapChainPresentHook->succeed()) && resetHook->succeed();
     if (spD3DDevice9Ex)
     {
         result &= presentExHook->succeed();
@@ -340,6 +353,15 @@ bool D3d9Hook::setupHooks(IDirect3DDevice9 *device)
 END:
     LOGGER("n_overlay") << "D9 setupHooks result: " << result;
 
+
+    session::d3d9HookInfo().endSceneHooked = result;
+    session::d3d9HookInfo().presentHooked = presentHook->succeed();
+    session::d3d9HookInfo().presentExHooked = presentExHook->succeed();
+    session::d3d9HookInfo().swapChainPresentHooked = swapChainPresentHook->succeed();
+    session::d3d9HookInfo().resetHooked = resetHook->succeed();
+    session::d3d9HookInfo().resetExHooked = resetExHook->succeed();
+
+    HookApp::instance()->overlayConnector()->sendGraphicsHookInfo(session::d3d9HookInfo().toMap());
     return result;
 }
 

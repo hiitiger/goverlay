@@ -3,6 +3,9 @@
 #include "hookapp.h"
 #include "graphics/d3d9hook.h"
 #include "graphics/dxgihook.h"
+#include "hook/inputhook.h"
+
+auto g_graphicsOnly = false;
 
 
 DWORD WINAPI HookAppThread(
@@ -38,8 +41,7 @@ DWORD WINAPI hookLoopThread(_In_ LPVOID)
             continue;
         }
 
-        HookApp::instance()->tryHookInput();
-        HookApp::instance()->tryHookGraphics();
+        HookApp::instance()->deferHook();
 
         Sleep(1000);
     }
@@ -102,6 +104,14 @@ void HookApp::async(const std::function<void()>& task)
     }
 }
 
+void HookApp::deferHook()
+{
+    if (!session::graphicsWindow())
+    {
+        async([this]() { hook(); });
+    }
+}
+
 void HookApp::hookThread()
 {
     LOGGER("n_overlay") << "@trace hook thread start ... ";
@@ -113,8 +123,10 @@ void HookApp::hookThread()
         runloop_.reset(new Storm::CoreRunloop());
     }
 
-    overlay_.reset(new overlay::OverlayConnector());
+    overlay_.reset(new OverlayConnector());
     overlay_->start();
+
+    uiapp_.reset(new UiApp());
 
     runloop_->run();
 
@@ -133,28 +145,17 @@ void HookApp::hookThread()
     LOGGER("n_overlay") << "@trace hook thread exit... ";
 }
 
-void HookApp::tryHookGraphics()
+void HookApp::hook()
 {
-    if (session::graphicsWindow())
+    if (!g_graphicsOnly)
     {
-        return;
+        if (!hookInput())
+        {
+            return;
+        }
     }
 
-    async([this]() {
-        hookGraphics();
-    });
-}
-
-void HookApp::tryHookInput()
-{
-    if (session::inputHooked())
-    {
-        return;
-    }
-
-    async([this]() {
-        hookInput();
-    });
+    hookGraphics();
 }
 
 void HookApp::unhookGraphics()
@@ -184,10 +185,18 @@ void HookApp::hookGraphics()
     }
 }
 
-void HookApp::hookInput()
+bool HookApp::hookInput()
 {
-    if (session::inputHooked())
-        return;
+    if (!session::inputHooked())
+    {
+        std::unique_ptr<InputHook> inputHook(new InputHook());
+        if (inputHook->hook())
+        {
+            session::saveInputHook(std::move(inputHook));
+        }
+    }
+
+    return session::inputHooked();
 }
 
 bool HookApp::hookD3d9()

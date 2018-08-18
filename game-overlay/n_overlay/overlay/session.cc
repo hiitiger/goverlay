@@ -1,6 +1,7 @@
 #include "stable.h"
 #include "graphics/d3d9hook.h"
 #include "graphics/dxgihook.h"
+#include "hook/inputhook.h"
 #include "session.h"
 
 namespace session 
@@ -17,13 +18,14 @@ namespace session
     DxgiHookInfo g_dxgiHookInfo;
 
 
-    std::atomic<bool> inputHooked_ = false;
-
     std::atomic<bool> d3d9Hooked_ = false;
     std::atomic<bool> dxgiHooked_ = false;
 
     std::unique_ptr<D3d9Hook> d3d9Hook_;
     std::unique_ptr<DXGIHook> dxgiHook_;
+
+    std::atomic<bool> inputHooked_ = false;
+    std::unique_ptr<InputHook> inputHook_;
 
 
     D3d9Hook* d3d9Hook()
@@ -87,9 +89,12 @@ namespace session
         return inputHooked_;
     }
 
-    void saveInputHook()
+    void saveInputHook(std::unique_ptr<InputHook>&& h)
     {
+        CHECK_THREAD(Threads::HookApp);
+
         inputHooked_ = true;
+        inputHook_ = std::move(h);
     }
 
     D3d9HookInfo& d3d9HookInfo()

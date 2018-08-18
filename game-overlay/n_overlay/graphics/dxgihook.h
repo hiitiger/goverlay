@@ -9,15 +9,15 @@ struct DXGIHookData
     HANDLE d3d11Module_ = nullptr;
 };
 
-class DXGIHook : public IGraphicsHook, public DXGIHookData
+class DXGIHook : public IHookModule, public DXGIHookData
 {
     
 public:
     DXGIHook();
     ~DXGIHook();
 
-    bool hook();
-    void unhook();
+    bool hook() override;
+    void unhook() override;
 
 
 };
