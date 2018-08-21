@@ -28,6 +28,11 @@ Napi::Value setEventCallback(const Napi::CallbackInfo &info)
   return gOverlayMain->setEventCallback(info);
 }
 
+Napi::Value setHotkeys(const Napi::CallbackInfo &info)
+{
+  return gOverlayMain->setHotkeys(info);
+}
+
 Napi::Value log(const Napi::CallbackInfo &info)
 {
   return gOverlayMain->log(info);
@@ -58,6 +63,7 @@ Napi::Object Init(Napi::Env env, Napi::Object exports)
   exports.Set(Napi::String::New(env, "start"), Napi::Function::New(env, overlay::start));
   exports.Set(Napi::String::New(env, "stop"), Napi::Function::New(env, overlay::stop));
   exports.Set(Napi::String::New(env, "setEventCallback"), Napi::Function::New(env, overlay::setEventCallback));
+  exports.Set(Napi::String::New(env, "setHotkeys"), Napi::Function::New(env, overlay::setHotkeys));
   exports.Set(Napi::String::New(env, "log"), Napi::Function::New(env, overlay::log));
   exports.Set(Napi::String::New(env, "sendCommand"), Napi::Function::New(env, overlay::sendCommand));
   exports.Set(Napi::String::New(env, "sendFrameBuffer"), Napi::Function::New(env, overlay::sendFrameBuffer));

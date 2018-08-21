@@ -41,8 +41,11 @@ class OverlayMain : public IIpcHost
     {
     }
 
-    Napi::Value setHotkeys()
+    Napi::Value setHotkeys(const Napi::CallbackInfo &info)
     {
+        Napi::Env env = info.Env();
+
+        return env.Undefined();
     }
 
     Napi::Value log(const Napi::CallbackInfo &info)
@@ -97,7 +100,7 @@ class OverlayMain : public IIpcHost
         }
     }
 
-    void _sendMessage(overlay::GMessage* message)
+    void _sendMessage(overlay::GMessage *message)
     {
         overlay::OverlayIpc ipcMsg;
         ipcMsg.type = message->type;
