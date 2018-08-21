@@ -73,6 +73,15 @@
         "xthread": "cpp",
         "thread": "cpp",
         "xlocbuf": "cpp",
-        "xlocmes": "cpp"
+        "xlocmes": "cpp",
+        "clocale": "cpp",
+        "forward_list": "cpp",
+        "valarray": "cpp",
+        "optional": "cpp",
+        "typeindex": "cpp",
+        "bitset": "cpp",
+        "complex": "cpp",
+        "xxatomic": "cpp",
+        "cwctype": "cpp"
     }
 }

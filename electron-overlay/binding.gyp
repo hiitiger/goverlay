@@ -6,6 +6,7 @@
             "cflags_cc!": ["-fno-exceptions"],
             "include_dirs": [
                 "./src",
+                "./src/3rd",
                 "<!@(node -p \"require('node-addon-api').include\")"
             ],
             'defines': ['NAPI_DISABLE_CPP_EXCEPTIONS', 'UNICODE'],
@@ -22,6 +23,8 @@
                 "./src/windll.hpp",
                 "./src/node_async_call.h",
                 "./src/node_async_call.cc",
+                "./src/message/nlohmann/json.hpp"
+                "./src/message/gmessage.hpp"
                 "./src/n-utils.hpp",
                 "./src/main.cc"
             ],

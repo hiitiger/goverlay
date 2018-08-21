@@ -11,3 +11,5 @@ Overlay.setEventCallback((data) => {
 })
 
 Overlay.sendCommand()
+
+Overlay.sendFrameBuffer(10, "haha")
