@@ -1,3 +1,13 @@
-var addon = require('./build/Release/electron_overlay');
+const Overlay = require('./build/Release/electron_overlay');
 
-console.log(addon.hello()); // 'world'
+console.log(Overlay.hello()); // 'world'
+console.log(Overlay);
+
+Overlay.start()
+
+
+Overlay.setEventCallback((data) => {
+    console.log(data)
+})
+
+Overlay.sendCommand()

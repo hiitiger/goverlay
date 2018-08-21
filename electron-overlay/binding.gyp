@@ -17,7 +17,7 @@
                 "./src/ipc/ipccenter.h",
                 "./src/ipc/ipccenter.cc",
                 "./src/utils.hpp",
-                "./src/overlay.h",
+                "./src/overlay.hpp",
                 "./src/overlay.cc",
                 "./src/windll.hpp",
                 "./src/node_async_call.h",
