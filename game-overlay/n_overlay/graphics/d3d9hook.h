@@ -17,11 +17,16 @@ struct  D3d9HookData
     std::unique_ptr<ApiHook<ResetExType> > resetExHook;
 };
 
+class D3d9Graphics;
 
 class D3d9Hook : public IHookModule, public D3d9HookData
 {
     bool hookSetup_ = false;
     int presentRecurse_ = 0;
+
+    bool graphicsInit_ = false;
+
+    std::unique_ptr<D3d9Graphics> graphics_;
 
   public:
     D3d9Hook();

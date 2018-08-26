@@ -3,7 +3,7 @@
 #include "overlay/hookapp.h"
 #include "hook/apihook.hpp"
 #include "d3d9hook.h"
-
+#include "d3d9graphics.h"
 
 
 HRESULT STDMETHODCALLTYPE H_Present_hook(IDirect3DDevice9* d, THIS_ CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion)
@@ -365,11 +365,42 @@ END:
     return result;
 }
 
-void D3d9Hook::onBeforePresent(IDirect3DDevice9* device, HWND /*hDestWindowOverride*/, bool /*isD9Ex*/)
+void D3d9Hook::onBeforePresent(IDirect3DDevice9* device, HWND hDestWindowOverride, bool isD9Ex)
 {
     if (!presentRecurse_)
     {
-        //onPresent
+        if (!graphicsInit_)
+        {
+            Windows::ComPtr<IDirect3DSwapChain9> spSwapChain = 0;
+            HRESULT hr = device->GetSwapChain(0, spSwapChain.resetAndGetPointerAddress());
+            if (FAILED(hr))
+            {
+                return;
+            }
+
+            D3DPRESENT_PARAMETERS desc = {0};
+            hr = spSwapChain->GetPresentParameters(&desc);
+            if (FAILED(hr))
+            {
+                return;
+            }
+
+            HWND graphicsWindow = desc.hDeviceWindow;
+            if (graphicsWindow != session::graphicsWindow())
+            {
+                return;
+            }
+
+            graphics_.reset(new D3d9Graphics());
+            graphicsInit_ = graphics_->initGraphics(device, hDestWindowOverride, isD9Ex);
+            if (!graphicsInit_)
+            {
+                graphics_.reset(nullptr);
+                return;
+            }
+        }
+
+        graphics_->beforePresent(device);
     }
 
     presentRecurse_ += 1;
@@ -381,11 +412,18 @@ void D3d9Hook::onAfterPresent(IDirect3DDevice9* device, HWND /*hDestWindowOverri
 
     if (!presentRecurse_)
     {
-        //do capture stuff
+        if (graphics_)
+        {
+            graphics_->afterPresent(device);
+        }
     }
 }
 
 void D3d9Hook::onReset(IDirect3DDevice9* device)
 {
-    
+    if (graphics_)
+    {
+        graphics_->uninitGraphics(device);
+        graphicsInit_ = false;
+    }
 }

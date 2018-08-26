@@ -78,3 +78,6 @@ SOURCES += ./graphics/d3d9hook.cc
 HEADERS += ./graphics/dxgihook.h
 SOURCES += ./graphics/dxgihook.cc
 
+HEADERS += ./graphics/d3d9graphics.h
+SOURCES += ./graphics/d3d9graphics.cc
+
