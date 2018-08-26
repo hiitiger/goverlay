@@ -212,6 +212,18 @@ class Application {
       e.preventDefault()
       shell.openExternal(url)
     })
+
+    if (global.DEBUG) {
+      window.webContents.on(
+        "before-input-event",
+        (event: Electron.Event, input: Electron.Input) => {
+          if (input.key === "F12" && input.type === "keyDown") {
+            window.webContents.openDevTools()
+          }
+        }
+      )
+    }
+
     return window
   }
 
