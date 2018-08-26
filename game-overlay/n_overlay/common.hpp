@@ -13,7 +13,7 @@ enum class Graphics
 {
     D3d9 = 1,
     DXGI = 2,
-    OpenGL = 8,
+    OpenGL = 16,
 };
 
 

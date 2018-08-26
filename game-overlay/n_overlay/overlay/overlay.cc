@@ -67,19 +67,19 @@ void OverlayConnector::sendGraphicsWindowSetupInfo()
     });
 }
 
-void OverlayConnector::sendInputBlocked()
+void OverlayConnector::sendInputIntercept()
 {
     CHECK_THREAD(Threads::Window);
     HookApp::instance()->async([this]() {
-        _sendInputBlocked();
+        _sendInputIntercept(true);
     });
 }
 
-void OverlayConnector::sendInputUnBlocked()
+void OverlayConnector::sendInputStopIntercept()
 {
     CHECK_THREAD(Threads::Window);
     HookApp::instance()->async([this]() {
-        _sendInputUnBlocked();
+        _sendInputIntercept(false);
     });
 }
 
@@ -131,12 +131,7 @@ void OverlayConnector::_sendGraphicsWindowSetupInfo()
     CHECK_THREAD(Threads::HookApp);
 }
 
-void OverlayConnector::_sendInputBlocked()
-{
-    CHECK_THREAD(Threads::HookApp);
-}
-
-void OverlayConnector::_sendInputUnBlocked()
+void OverlayConnector::_sendInputIntercept(bool v)
 {
     CHECK_THREAD(Threads::HookApp);
 }

@@ -1,6 +1,13 @@
 #pragma once
 
-
+struct Hotkey
+{
+    std::string name;
+    int vkey;
+    bool ctrl;
+    bool shift;
+    bool alt;
+};
 
 struct  D3d9HookInfo
 {
@@ -24,7 +31,7 @@ struct  D3d9HookInfo
         { "swapChainPresentHooked", swapChainPresentHooked ? "true" : "false" },
         { "resetHooked", resetHooked ? "true" : "false" },
         { "resetExHooked", resetExHooked ? "true" : "false" },
-        {"d3d9Dll", std::to_string((std::uint32_t)d3d9Dll)},
+        { "d3d9Dll", std::to_string((std::uint32_t)d3d9Dll) },
         };
     }
 };
@@ -69,6 +76,8 @@ namespace session
     void clearD3d9Hook();
     void clearDxgiHook();
 
+    InputHook* inputHook();
+
     bool inputHooked();
     void saveInputHook(std::unique_ptr<InputHook>&& h);
 
@@ -86,6 +95,7 @@ namespace session
 
     std::uint32_t graphicsThreadId();
     void setGraphicsThreadId(DWORD id);
+
 }
 
 

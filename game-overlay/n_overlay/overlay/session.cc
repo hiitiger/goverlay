@@ -6,17 +6,15 @@
 
 namespace session 
 {
-
-    HWND g_injectWindow = nullptr;
+    std::atomic<HWND> g_injectWindow = nullptr;
     std::atomic<HWND> g_graphicsWindow = nullptr;
 
     std::uint32_t hookAppThreadId_ = 0;
     std::uint32_t windowThreadId_ = 0;
     std::uint32_t graphicsThreadId_ = 0;
 
-    D3d9HookInfo g_d3d9HookInfo;
-    DxgiHookInfo g_dxgiHookInfo;
-
+    D3d9HookInfo d3d9HookInfo_;
+    DxgiHookInfo dxgiHookInfo_;
 
     std::atomic<bool> d3d9Hooked_ = false;
     std::atomic<bool> dxgiHooked_ = false;
@@ -84,6 +82,11 @@ namespace session
         dxgiHooked_ = false;
     }
 
+    InputHook* inputHook()
+    {
+        return inputHook_.get();
+    }
+
     bool inputHooked()
     {
         return inputHooked_;
@@ -99,12 +102,12 @@ namespace session
 
     D3d9HookInfo& d3d9HookInfo()
     {
-        return g_d3d9HookInfo;
+        return d3d9HookInfo_;
     }
 
     DxgiHookInfo& dxgiHookInfo()
     {
-        return g_dxgiHookInfo;
+        return dxgiHookInfo_;
     }
 
     std::uint32_t hookAppThreadId()

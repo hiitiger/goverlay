@@ -17,10 +17,11 @@ public:
 
     void sendInputHookInfo();
     void sendGraphicsHookInfo(const std::map<std::string, std::string>& data);
+
     void sendGraphicsWindowSetupInfo();
 
-    void sendInputBlocked();
-    void sendInputUnBlocked();
+    void sendInputIntercept();
+    void sendInputStopIntercept();
 
     void sendGameWindowInput();
     void sendGameWindowEvent();
@@ -36,8 +37,7 @@ protected:
     void _sendGraphicsHookInfo();
     void _sendGraphicsWindowSetupInfo();
 
-    void _sendInputBlocked();
-    void _sendInputUnBlocked();
+    void _sendInputIntercept(bool v);
 
     void _sendGameWindowInput();
     void _sendGameWindowEvent();

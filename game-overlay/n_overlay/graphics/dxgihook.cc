@@ -8,7 +8,7 @@ DXGIHook::DXGIHook()
 
 DXGIHook::~DXGIHook()
 {
-
+    unhook();
 }
 
 bool DXGIHook::hook()

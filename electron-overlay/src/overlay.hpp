@@ -35,16 +35,37 @@ class OverlayMain : public IIpcHost
 
     void start()
     {
+        this->ipcHostCenter_ = createIpcHostCenter();
     }
 
     void stop()
     {
+        if (this->ipcHostCenter_)
+        {
+            destroyIpcHostCenter(this->ipcHostCenter_);
+            this->ipcHostCenter_ = nullptr;
+        }
     }
 
     Napi::Value setHotkeys(const Napi::CallbackInfo &info)
     {
         Napi::Env env = info.Env();
 
+        std::vector<overlay::Hotkey> hotkeys;
+        Napi::Array arr = info[0].As<Napi::Array>();
+        for (auto i = 0; i != arr.Length(); ++i)
+        {
+            Napi::Object object = arr.Get(i).ToObject();
+            overlay::Hotkey hotkey;
+            hotkey.name = object.Get("name").ToString();
+            hotkey.vKey = object.Get("vKey").ToNumber();
+            hotkey.modifiers = object.Get("modifiers").ToNumber();
+            hotkey.passthrough = object.Get("passthrough").ToBoolean();
+            hotkeys.push_back(hotkey);
+        }
+        this->hotkeys_ = hotkeys;
+
+        this->_sendHotkeys();
         return env.Undefined();
     }
 
@@ -98,6 +119,14 @@ class OverlayMain : public IIpcHost
             object.Set("test", Napi::Value::From(eventCallback_->env, 123789));
             eventCallback_->callback.Call(eventCallback_->receiver.Value(), {object});
         }
+    }
+
+    void _sendHotkeys()
+    {
+        overlay::HotkeyInfo hotkeyInfoMessage;
+        hotkeyInfoMessage.hotkeys = this->hotkeys_;
+
+        this->_sendMessage(&hotkeyInfoMessage);
     }
 
     void _sendMessage(overlay::GMessage *message)
