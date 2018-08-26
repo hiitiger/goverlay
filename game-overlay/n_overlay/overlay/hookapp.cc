@@ -5,7 +5,8 @@
 #include "graphics/dxgihook.h"
 #include "hook/inputhook.h"
 
-auto g_graphicsOnly = false;
+bool g_graphicsOnly = false;
+HANDLE g_hookAppThread = nullptr;
 
 
 DWORD WINAPI HookAppThread(
@@ -60,6 +61,28 @@ HookApp::~HookApp()
     
 }
 
+void HookApp::initialize()
+{
+    MH_Initialize();
+
+    g_hookAppThread = HookApp::instance()->start();
+}
+
+void HookApp::uninitialize()
+{
+    MH_Uninitialize();
+
+    if (g_hookAppThread)
+    {
+        HookApp::instance()->quit();
+
+        if (WaitForSingleObject(g_hookAppThread, 1000) != WAIT_OBJECT_0)
+        {
+            TerminateThread(g_hookAppThread, 0);
+        }
+    }
+}
+
 HookApp * HookApp::instance()
 {
     static HookApp hookApp;
@@ -81,7 +104,7 @@ void HookApp::quit()
         runloop_->quit();
     });
 
-    wait_.wait();
+    hookQuitedEvent_.wait();
 }
 
 void HookApp::startHook()
@@ -128,6 +151,10 @@ void HookApp::hookThread()
 
     uiapp_.reset(new UiApp());
 
+    runloop_->post([this]() {
+        this->findGameWindow();
+    });
+
     runloop_->run();
 
     {
@@ -140,22 +167,102 @@ void HookApp::hookThread()
     overlay_->quit();
     overlay_.reset();
 
-    wait_.set();
+    hookQuitedEvent_.set();
 
     LOGGER("n_overlay") << "@trace hook thread exit... ";
 }
 
+struct FindWindowParam {
+    DWORD processId;
+    HWND window;
+};
+
+BOOL CALLBACK findGraphicsWindow(HWND hwnd, LPARAM lParam)
+{
+    FindWindowParam* param = (FindWindowParam*)lParam;
+
+    DWORD processId = NULL;
+
+    GetWindowThreadProcessId(hwnd, &processId);
+
+    if (processId != param->processId)
+    {
+        return TRUE;
+    }
+
+    if (!IsWindowVisible(hwnd))
+    {
+        return TRUE;
+    }
+
+    DWORD styles = (DWORD)GetWindowLongPtr(hwnd, GWL_STYLE);
+    if (styles & WS_CHILD)
+    {
+        return TRUE;
+    }
+
+    param->window = hwnd;
+    return FALSE;
+}
+
+bool HookApp::findGameWindow()
+{
+    if (session::graphicsWindow())
+    {
+        return true;
+    }
+
+    HWND injectWindow = session::injectWindow();
+    if (injectWindow)
+    {
+        LOGGER("n_overlay") << "setGraphicsWindow by injectWindow: " << injectWindow;
+        session::setGraphicsWindow(injectWindow);
+    }
+    else
+    {
+        FindWindowParam param = {0};
+        param.processId = GetCurrentProcessId();
+
+        EnumWindows(findGraphicsWindow, (LPARAM)&param);
+
+        if (param.window)
+        {
+            LOGGER("n_overlay") << "setGraphicsWindow by enum: " << param.window;
+            session::setGraphicsWindow(param.window);
+        }
+    }
+
+    return !!session::graphicsWindow();
+}
+
 void HookApp::hook()
 {
+    if (!findGameWindow())
+    {
+        return;
+    }
+
     if (!g_graphicsOnly)
     {
         if (!hookInput())
         {
             return;
         }
+
+        if (!hookWindow())
+        {
+            return;
+        }
     }
 
     hookGraphics();
+}
+
+bool HookApp::hookWindow()
+{
+    DAssert(session::graphicsWindow());
+
+    return uiapp_->trySetupGraphicsWindow(session::graphicsWindow());
 }
 
 void HookApp::unhookGraphics()

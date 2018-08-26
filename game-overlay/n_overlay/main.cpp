@@ -25,7 +25,6 @@ extern "C" __declspec(dllexport) LRESULT CALLBACK msg_hook_proc_ov(int code,
 
 HINSTANCE g_moduleHandle = nullptr;
 
-HANDLE g_hookAppThread = nullptr;
 
 
 INT WINAPI DllMain(HINSTANCE hModule, DWORD dwReason, LPVOID)
@@ -36,26 +35,14 @@ INT WINAPI DllMain(HINSTANCE hModule, DWORD dwReason, LPVOID)
         GetModuleFileNameW(hModule, name, MAX_PATH);
         ::LoadLibraryW(name);
 
-        MH_Initialize();
-
         g_moduleHandle = hModule;
         DisableThreadLibraryCalls((HMODULE)hModule);
 
-        g_hookAppThread = HookApp::instance()->start();
+        HookApp::initialize();
     }
     if (dwReason == DLL_PROCESS_DETACH)
     {
-        MH_Uninitialize();
-
-        if (g_hookAppThread)
-        {
-            HookApp::instance()->quit();
-
-            if (WaitForSingleObject(g_hookAppThread, 1000) != WAIT_OBJECT_0)
-            {
-                TerminateThread(g_hookAppThread, 0);
-            }
-        }
+        HookApp::uninitialize();
     }
 
     return TRUE;

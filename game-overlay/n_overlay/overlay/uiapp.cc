@@ -3,6 +3,8 @@
 #include "overlay.h"
 #include "uiapp.h"
 #include "hookapp.h"
+#include "hook/inputhook.h"
+
 
 UiApp::UiApp()
 {
@@ -12,47 +14,51 @@ UiApp::~UiApp()
 {
 }
 
-void UiApp::trySetupGraphicsWindow(HWND window)
+bool UiApp::trySetupGraphicsWindow(HWND window)
 {
     WCHAR title[256] = {};
     GetWindowTextW(window, title, 256);
     LOGGER("n_overlay") << "window: " << window << ", title:" << title;
 
-    if (session::injectWindow() && window != session::injectWindow())
+    if (session::graphicsWindow() && window != session::graphicsWindow())
     {
-        return;
+        return false;
     }
 
-    if (session::graphicsWindow())
+    if (graphicsWindow_ == window)
     {
-        if (window != session::graphicsWindow())
-        {
-            unhookWindow();
-            clearWindowState();
-            session::setGraphicsWindow(nullptr);
-            session::setWindowThreadId(0);
+        return true;
+    }
 
-            setup(window);
-            HookApp::instance()->overlayConnector()->sendGraphicsWindowSetupInfo();
-        }
+    bool result = false;
+    std::lock_guard<std::mutex> lock(uilock_);
+    result = setup(window);
+    if (result)
+    {
+        HookApp::instance()->overlayConnector()->sendGraphicsWindowSetupInfo();
+    }
+
+    return result;
+}
+
+bool UiApp::setup(HWND window)
+{
+    if (hookWindow(window))
+    {
+        graphicsWindow_ = window;
+        updateWindowState(window);
+        return true;
     }
     else
     {
-        setup(window);
-        HookApp::instance()->overlayConnector()->sendGraphicsWindowSetupInfo();
+        unhookWindow();
+        return false;
     }
 }
 
-void UiApp::setup(HWND window)
+bool UiApp::windowSetted() const
 {
-    DWORD threadId = ::GetWindowThreadProcessId(window, nullptr);
-
-    session::setGraphicsWindow(window);
-    session::setWindowThreadId(threadId);
-
-    getWindowState(window);
-
-    hookWindow(window);
+    return !!graphicsWindow_.load();
 }
 
 void UiApp::async(const std::function<void()>& task)
@@ -63,31 +69,66 @@ void UiApp::async(const std::function<void()>& task)
     tasks_.push_back(task);
 }
 
-void UiApp::startInputBlock()
+void UiApp::startInputIntercept()
 {
     CHECK_THREAD(Threads::Window);
 
-    HookApp::instance()->overlayConnector()->sendInputBlocked();
+    if (!isIntercepting_)
+    {
+        isIntercepting_ = true;
+        session::inputHook()->saveInputState();
+        HookApp::instance()->overlayConnector()->sendInputIntercept();
+    }
 }
 
-void UiApp::stopInputBlock()
+void UiApp::stopInputIntercept()
 {
     CHECK_THREAD(Threads::Window);
 
-    HookApp::instance()->overlayConnector()->sendInputUnBlocked();
+    if (isIntercepting_)
+    {
+        isIntercepting_ = false;
+        session::inputHook()->restoreInputState();
+        HookApp::instance()->overlayConnector()->sendInputStopIntercept();
+    }
 }
 
-void UiApp::hookWindow(HWND window)
+bool UiApp::isInterceptingInput()
 {
+    return isIntercepting_;
+}
 
+bool UiApp::hookWindow(HWND window)
+{
+    DWORD threadId = ::GetWindowThreadProcessId(window, nullptr);
+
+    msgHook_ = SetWindowsHookExW(WH_GETMESSAGE, GetMsgProc, NULL, threadId);
+    wndProcHook_ = SetWindowsHookExW(WH_CALLWNDPROC, CallWndProc, NULL, threadId);
+    wndRetProcHook_ = SetWindowsHookExW(WH_CALLWNDPROCRET, CallWndRetProc, NULL, threadId);
+
+    return msgHook_ != nullptr && wndProcHook_ != nullptr && wndRetProcHook_ != nullptr;
 }
 
 void UiApp::unhookWindow()
 {
-
+    if (msgHook_)
+    {
+        UnhookWindowsHookEx(msgHook_);
+        msgHook_ = nullptr;
+    }
+    if (wndProcHook_)
+    {
+        UnhookWindowsHookEx(wndProcHook_);
+        wndProcHook_ = nullptr;
+    }
+    if (wndRetProcHook_)
+    {
+        UnhookWindowsHookEx(wndRetProcHook_);
+        wndRetProcHook_ = nullptr;
+    }
 }
 
-void UiApp::getWindowState(HWND window)
+void UiApp::updateWindowState(HWND window)
 {
     windowFocus_ = GetForegroundWindow() == window;
 
@@ -99,3 +140,40 @@ void UiApp::clearWindowState()
     windowClientRect_ = {0};
     windowFocus_ = 0;
 }
+
+
+LRESULT CALLBACK UiApp::GetMsgProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam)
+{
+    return HookApp::instance()->uiapp()->hookGetMsgProc(nCode, wParam, lParam);
+}
+
+LRESULT CALLBACK UiApp::CallWndProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam)
+{
+    return HookApp::instance()->uiapp()->hookCallWndProc(nCode, wParam, lParam);
+}
+
+LRESULT CALLBACK UiApp::CallWndRetProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam)
+{
+    return HookApp::instance()->uiapp()->hookCallWndRetProc(nCode, wParam, lParam);
+}
+
+LRESULT UiApp::hookGetMsgProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam)
+{
+    return CallNextHookEx(msgHook_, nCode, wParam, lParam);
+}
+
+LRESULT UiApp::hookCallWndProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam)
+{
+    return CallNextHookEx(wndProcHook_, nCode, wParam, lParam);
+}
+
+LRESULT UiApp::hookCallWndRetProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam)
+{
+    return CallNextHookEx(wndRetProcHook_, nCode, wParam, lParam);
+}
+
+void UiApp::checkHotkey()
+{
+    //
+}
+

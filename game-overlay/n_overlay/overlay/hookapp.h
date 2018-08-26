@@ -19,7 +19,7 @@ class HookApp
     std::mutex runloopLock_;
     std::unique_ptr<Storm::CoreRunloop> runloop_;
 
-    Storm::WaitableEvent wait_;
+    Storm::WaitableEvent hookQuitedEvent_;
 
     std::shared_ptr<OverlayConnector> overlay_;
     std::shared_ptr<UiApp> uiapp_;
@@ -30,6 +30,9 @@ class HookApp
   public:
     HookApp();
     ~HookApp();
+
+    static void initialize();
+    static void uninitialize();
 
     static HookApp *instance();
 
@@ -55,7 +58,12 @@ class HookApp
     void hookThread();
 
 private:
+
+    bool findGameWindow();
+
     void hook();
+
+    bool hookWindow();
 
     void unhookGraphics();
     void hookGraphics();
