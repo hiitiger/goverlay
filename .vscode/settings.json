@@ -82,6 +82,16 @@
         "bitset": "cpp",
         "complex": "cpp",
         "xxatomic": "cpp",
-        "cwctype": "cpp"
+        "cwctype": "cpp",
+        "*.ipp": "cpp",
+        "cinttypes": "cpp",
+        "csignal": "cpp",
+        "random": "cpp",
+        "regex": "cpp",
+        "shared_mutex": "cpp",
+        "string_view": "cpp",
+        "strstream": "cpp",
+        "unordered_set": "cpp",
+        "variant": "cpp"
     }
 }

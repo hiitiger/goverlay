@@ -6,6 +6,8 @@ DEFINES += _WIN32_WINNT=0x0601
 DEFINES += _ENABLE_ATOMIC_ALIGNMENT_FIX
 
 INCLUDEPATH += .
+INCLUDEPATH += ../deps/3rd
+INCLUDEPATH += ../deps/3rd/boost
 INCLUDEPATH += ../deps/include
 INCLUDEPATH += $(DXSDK_DIR)Include
 CONFIG(debug, debug|release) {
@@ -45,6 +47,8 @@ LIBS += corelib.lib
 HEADERS += dxgi1_2.h
 SOURCES += ./main.cpp
 HEADERS += ./common.hpp
+
+HEADERS += ./message/gmessage.hpp
 
 HEADERS += ./hook/apihook.hpp
 HEADERS += ./hook/inputhook.h

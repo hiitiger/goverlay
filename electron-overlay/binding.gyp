@@ -7,6 +7,7 @@
             "include_dirs": [
                 "./src",
                 "./src/3rd",
+                "./src/3rd/boost",
                 "<!@(node -p \"require('node-addon-api').include\")"
             ],
             'defines': ['NAPI_DISABLE_CPP_EXCEPTIONS', 'UNICODE'],
