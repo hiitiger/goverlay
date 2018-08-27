@@ -2,7 +2,6 @@
 #include "./ipc/ipclink.h"
 
 
-
 class OverlayConnector : public IIpcClient
 {
     int ipcClientId_ = 0;
@@ -16,7 +15,9 @@ public:
     void quit();
 
     void sendInputHookInfo();
-    void sendGraphicsHookInfo(const std::map<std::string, std::string>& data);
+
+    void sendGraphicsHookInfo(const D3d9HookInfo& info);
+    void sendGraphicsHookInfo(const DxgiHookInfo& info);
 
     void sendGraphicsWindowSetupInfo();
 
@@ -24,7 +25,7 @@ public:
     void sendInputStopIntercept();
 
     void sendGameWindowInput();
-    void sendGameWindowEvent();
+    void sendGameWindowResizeEvent();
 
 protected:
     void _heartbeat();
@@ -34,13 +35,18 @@ protected:
     void _sendGameProcessInfo();
 
     void _sendInputHookInfo();
-    void _sendGraphicsHookInfo();
+
+    void _sendGraphicsHookInfo(const D3d9HookInfo&);
+    void _sendGraphicsHookInfo(const DxgiHookInfo&);
+
     void _sendGraphicsWindowSetupInfo();
 
     void _sendInputIntercept(bool v);
 
     void _sendGameWindowInput();
-    void _sendGameWindowEvent();
+    void _sendGameWindowResizeEvent();
+
+    void _sendMessage(overlay::GMessage* message);
 
 private:
     void onIpcMessage();

@@ -160,7 +160,7 @@ END:
     session::d3d9HookInfo().d3d9Dll = d3d9Dll;
     session::d3d9HookInfo().endSceneHooked = result;
 
-    HookApp::instance()->overlayConnector()->sendGraphicsHookInfo(session::d3d9HookInfo().toMap());
+    HookApp::instance()->overlayConnector()->sendGraphicsHookInfo(session::d3d9HookInfo());
 
     return result;
 }
@@ -361,7 +361,7 @@ END:
     session::d3d9HookInfo().resetHooked = resetHook->succeed();
     session::d3d9HookInfo().resetExHooked = resetExHook->succeed();
 
-    HookApp::instance()->overlayConnector()->sendGraphicsHookInfo(session::d3d9HookInfo().toMap());
+    HookApp::instance()->overlayConnector()->sendGraphicsHookInfo(session::d3d9HookInfo());
     return result;
 }
 

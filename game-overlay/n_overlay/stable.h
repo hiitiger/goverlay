@@ -24,3 +24,4 @@ __pragma(warning(pop))
 #include "utils.hpp"
 
 #include "common.hpp"
+#include "message/gmessage.hpp"

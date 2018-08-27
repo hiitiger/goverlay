@@ -194,7 +194,7 @@ struct Window : public GMessage
         {
             obj["rect"] = this->rect->toJson();
         }
-        if (this->caption) 
+        if (this->caption)
         {
             obj["caption"] = this->caption->toJson();
         }
@@ -429,13 +429,13 @@ struct GraphicsHookInfo : public GMessage
         obj = {
             {"type", type},
             {"graphics", graphics},
-            };
+        };
 
-        if (this->graphics == "d3d9") 
+        if (this->graphics == "d3d9")
         {
             obj["hookInfo"] = this->d3d9hookInfo->toJson();
         }
-        else if (this->graphics == "dxgi") 
+        else if (this->graphics == "dxgi")
         {
             obj["hookInfo"] = this->dxgihookInfo->toJson();
         }
@@ -446,6 +446,33 @@ struct GraphicsHookInfo : public GMessage
 struct GraphicsWindowSetup : public GMessage
 {
     std::string type = "graphics.window";
+
+    std::uint32_t window;
+    WindowRect rect;
+    bool focus;
+
+    virtual bool fromJson(const json &obj)
+    {
+        assert(obj["type"].get<std::string>() == this->type);
+        assert(obj["window"].is_number());
+        assert(obj["rect"].is_object());
+        assert(obj["focus"].is_boolean());
+
+        this->window = obj["window"].get<std::uint32_t>();
+        this->rect = WindowRect(obj["rect"]);
+        this->focus = obj["focus"].get<bool>();
+        return true;
+    }
+
+    virtual bool toJson(json &obj)
+    {
+        obj = {
+            {"type", type},
+            {"rect", rect.toJson()},
+            {"focus", focus},
+        };
+        return true;
+    }
 };
 
 struct GraphcisWindowFocusEvent : public GMessage
@@ -456,11 +483,52 @@ struct GraphcisWindowFocusEvent : public GMessage
 struct GraphcisWindowRezizeEvent : public GMessage
 {
     std::string type = "graphics.window.event.resize";
+    std::uint32_t window;
+    WindowRect rect;
+
+    virtual bool fromJson(const json &obj)
+    {
+        assert(obj["type"].get<std::string>() == this->type);
+        assert(obj["window"].is_number());
+        assert(obj["rect"].is_object());
+
+        this->window = obj["window"].get<std::uint32_t>();
+        this->rect = WindowRect(obj["rect"]);
+        return true;
+    }
+
+    virtual bool toJson(json &obj)
+    {
+        obj = {
+            { "type", type },
+            { "window", window },
+            { "rect", rect.toJson() },
+        };
+        return true;
+    }
 };
 
 struct GameInputIntercept : public GMessage
 {
     std::string type = "game.input.intercept";
+
+    bool intercepting;
+
+    virtual bool fromJson(const json &obj)
+    {
+        assert(obj["type"].get<std::string>() == this->type);
+        this->intercepting = obj["intercepting"].get<bool>();
+        return true;
+    }
+
+    virtual bool toJson(json &obj)
+    {
+        obj = {
+            {"type", type},
+            {"intercepting", intercepting},
+        };
+        return true;
+    }
 };
 
 struct GameInput : public GMessage
