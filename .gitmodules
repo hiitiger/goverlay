@@ -1,0 +1,6 @@
+[submodule "game-overlay/deps/3rd/boost"]
+	path = game-overlay/deps/3rd/boost
+	url = https://github.com/boostorg/boost.git
+[submodule "electron-overlay/src/3rd/boost"]
+	path = electron-overlay/src/3rd/boost
+	url = https://github.com/boostorg/boost.git
