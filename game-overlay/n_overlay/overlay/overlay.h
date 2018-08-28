@@ -19,13 +19,14 @@ public:
     void sendGraphicsHookInfo(const D3d9HookInfo& info);
     void sendGraphicsHookInfo(const DxgiHookInfo& info);
 
-    void sendGraphicsWindowSetupInfo();
+    void sendGraphicsWindowSetupInfo(HWND window, int width, int height, bool focus, bool hooked);
+    void sendGraphicsWindowResizeEvent(HWND window, int width, int height);
+    void sendGraphicsWindowFocusEvent(HWND window, bool focus);
 
     void sendInputIntercept();
     void sendInputStopIntercept();
 
     void sendGameWindowInput();
-    void sendGameWindowResizeEvent();
 
 protected:
     void _heartbeat();
@@ -39,12 +40,14 @@ protected:
     void _sendGraphicsHookInfo(const D3d9HookInfo&);
     void _sendGraphicsHookInfo(const DxgiHookInfo&);
 
-    void _sendGraphicsWindowSetupInfo();
+    void _sendGraphicsWindowSetupInfo(HWND window, int width, int height, bool focus, bool hooked);
 
     void _sendInputIntercept(bool v);
 
     void _sendGameWindowInput();
-    void _sendGameWindowResizeEvent();
+
+    void _sendGraphicsWindowResizeEvent(HWND window, int width, int height);
+    void _sendGraphicsWindowFocusEvent(HWND window, bool focus);
 
     void _sendMessage(overlay::GMessage* message);
 

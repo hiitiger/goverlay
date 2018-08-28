@@ -134,8 +134,7 @@ class OverlayMain : public IIpcHost
         overlay::OverlayIpc ipcMsg;
         ipcMsg.type = message->type;
 
-        overlay::json obj;
-        message->toJson(obj);
+        overlay::json obj = message->toJson();
 
         ipcMsg.message = obj.dump();
 

@@ -69,12 +69,28 @@ void OverlayConnector::sendGraphicsHookInfo(const DxgiHookInfo &info)
     });
 }
 
-void OverlayConnector::sendGraphicsWindowSetupInfo()
+void OverlayConnector::sendGraphicsWindowSetupInfo(HWND window, int width, int height, bool focus, bool hooked)
 {
-    CHECK_THREAD(Threads::Graphics);
+    CHECK_THREAD(Threads::HookApp);
 
-    HookApp::instance()->async([this]() {
-        _sendGraphicsWindowSetupInfo();
+    HookApp::instance()->async([this, window, width, height, focus, hooked]() {
+        _sendGraphicsWindowSetupInfo(window, width, height, focus, hooked);
+    });
+}
+
+void OverlayConnector::sendGraphicsWindowResizeEvent(HWND window, int width, int height)
+{
+    CHECK_THREAD(Threads::Window);
+    HookApp::instance()->async([this, window, width, height]() {
+        _sendGraphicsWindowResizeEvent(window, width, height);
+    });
+}
+
+void OverlayConnector::sendGraphicsWindowFocusEvent(HWND window, bool focus)
+{
+    CHECK_THREAD(Threads::Window);
+    HookApp::instance()->async([this, window, focus]() {
+        _sendGraphicsWindowFocusEvent(window, focus);
     });
 }
 
@@ -103,13 +119,6 @@ void OverlayConnector::sendGameWindowInput()
     });
 }
 
-void OverlayConnector::sendGameWindowResizeEvent()
-{
-    CHECK_THREAD(Threads::Window);
-    HookApp::instance()->async([this]() {
-        _sendGameWindowResizeEvent();
-    });
-}
 
 void OverlayConnector::_heartbeat()
 {
@@ -162,11 +171,16 @@ void OverlayConnector::_sendGraphicsHookInfo(const DxgiHookInfo &info)
     _sendMessage(&message);
 }
 
-void OverlayConnector::_sendGraphicsWindowSetupInfo()
+void OverlayConnector::_sendGraphicsWindowSetupInfo(HWND window, int width, int height, bool focus, bool hooked)
 {
     CHECK_THREAD(Threads::HookApp);
 
     overlay::GraphicsWindowSetup message;
+    message.window = (std::uint32_t)window;
+    message.width = width;
+    message.height = height;
+    message.focus = focus;
+    message.hooked = hooked;
     _sendMessage(&message);
 }
 
@@ -185,21 +199,32 @@ void OverlayConnector::_sendGameWindowInput()
     CHECK_THREAD(Threads::HookApp);
 }
 
-void OverlayConnector::_sendGameWindowResizeEvent()
+void OverlayConnector::_sendGraphicsWindowResizeEvent(HWND window, int width, int height)
 {
     CHECK_THREAD(Threads::HookApp);
     overlay::GraphcisWindowRezizeEvent message;
+    message.window = (std::uint32_t)window;
+    message.width = width;
+    message.height = height;
 
     _sendMessage(&message);
+}
 
+void OverlayConnector::_sendGraphicsWindowFocusEvent(HWND window, bool focus)
+{
+    CHECK_THREAD(Threads::HookApp);
+    overlay::GraphcisWindowFocusEvent message;
+    message.window = (std::uint32_t)window;
+    message.focus = focus;
+
+    _sendMessage(&message);
 }
 
 void OverlayConnector::_sendMessage(overlay::GMessage *message)
 {
     overlay::OverlayIpc ipcMsg;
 
-    overlay::json obj;
-    message->toJson(obj);
+    overlay::json obj = message->toJson();
 
     ipcMsg.type = message->type;
     ipcMsg.message = obj.dump();

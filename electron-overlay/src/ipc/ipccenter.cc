@@ -99,7 +99,7 @@ IIpcLink* IpcCenter::getLink(const std::string& hostName)
 
 bool IpcCenter::connectToHost(IIpcLink* l, const std::string& hostPath, const std::string& cmdline, bool createProcess /*= false*/)
 {
-    IpcLink* link = dynamic_cast<IpcLink*>(l);
+    IpcLink* link = static_cast<IpcLink*>(l);
     if (link->status() != IpcLink::Closed)
     {
         return true;
@@ -141,7 +141,7 @@ bool IpcCenter::connectToHost(IIpcLink* l, const std::string& hostPath, const st
 
 bool IpcCenter::closeLink(IIpcLink* l)
 {
-    IpcLink* link = dynamic_cast<IpcLink*>(l);
+    IpcLink* link = static_cast<IpcLink*>(l);
 
     ::PostMessage(link->remoteWindow(), WM_IPC_CLOSELINK, (WPARAM)GetCurrentProcessId(), 0);
 
@@ -174,7 +174,7 @@ bool IpcCenter::closeLink(IIpcLink* l)
 
 bool IpcCenter::sendMessage(IIpcLink* l, int clientId, int hostPort, const IpcMsg* message)
 {
-    IpcLink* link = dynamic_cast<IpcLink*>(l);
+    IpcLink* link = static_cast<IpcLink*>(l);
 
     std::string data;
     MsgPacker packer( data);
@@ -533,7 +533,7 @@ void IpcHostCenter::uninit()
 
 bool IpcHostCenter::sendMessage(IIpcLink* l, int clientId, int hostPort, const IpcMsg* message)
 {
-    IpcLink* link = dynamic_cast<IpcLink*>(l);
+    IpcLink* link = static_cast<IpcLink*>(l);
 
     std::string data;
     MsgPacker packer( data);

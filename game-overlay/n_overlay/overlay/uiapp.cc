@@ -31,26 +31,33 @@ bool UiApp::trySetupGraphicsWindow(HWND window)
     }
 
     bool result = false;
-    std::lock_guard<std::mutex> lock(uilock_);
-    result = setup(window);
-    if (result)
-    {
-        HookApp::instance()->overlayConnector()->sendGraphicsWindowSetupInfo();
-    }
 
-    return result;
+    return setup(window);
 }
 
 bool UiApp::setup(HWND window)
 {
+    std::lock_guard<std::mutex> lock(uilock_);
+
+    bool focused = GetForegroundWindow() == window;
+    RECT rect = { 0 };
+    GetClientRect(window, &rect);
+
     if (hookWindow(window))
     {
         graphicsWindow_ = window;
-        updateWindowState(window);
+
+        windowFocus_ = focused;
+        windowClientRect_ = rect;
+
+        HookApp::instance()->overlayConnector()->sendGraphicsWindowSetupInfo(window, rect.right - rect.left, rect.bottom - rect.top, focused, true);
+
         return true;
     }
     else
     {
+        HookApp::instance()->overlayConnector()->sendGraphicsWindowSetupInfo(window, rect.right - rect.left, rect.bottom - rect.top, focused, false);
+
         unhookWindow();
         return false;
     }

@@ -92,6 +92,10 @@
         "string_view": "cpp",
         "strstream": "cpp",
         "unordered_set": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "csetjmp": "cpp",
+        "hash_map": "cpp",
+        "hash_set": "cpp",
+        "scoped_allocator": "cpp"
     }
 }
