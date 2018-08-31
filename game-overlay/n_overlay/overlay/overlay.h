@@ -7,12 +7,17 @@ class OverlayConnector : public IIpcClient
     int ipcClientId_ = 0;
     IIpcLink *ipcLink_ = nullptr;
 
+    Storm::Mutex shareMemoryLock_;
 
     std::mutex windowsLock_;
     std::vector<std::shared_ptr<overlay::Window>> windows_;
 
     std::mutex framesLock_;
     std::map<std::uint32_t, std::shared_ptr<overlay_game::FrameBuffer>> frameBuffers_;
+
+
+    Storm::Event<void(std::uint32_t)> windowEvent_;
+    Storm::Event<void(std::uint32_t)> frameBufferEvent_;
 
 public:
     OverlayConnector();
@@ -34,6 +39,11 @@ public:
     void sendInputStopIntercept();
 
     void sendGameWindowInput();
+
+
+    Storm::Event<void(std::uint32_t)>& windowEvent() { return windowEvent_; }
+    Storm::Event<void(std::uint32_t)>& frameBufferEvent() { return frameBufferEvent_; }
+
 
 protected:
     void _heartbeat();
@@ -69,4 +79,7 @@ private:
     void onLinkClose(IIpcLink *) override;
     void onMessage(IIpcLink *, int hostPort, const std::string &message) override;
     void saveClientId(IIpcLink *, int clientId) override;
+
+private:
+    void _updateFrameBuffer(std::uint32_t windowId, const std::string& bufferName);
 };

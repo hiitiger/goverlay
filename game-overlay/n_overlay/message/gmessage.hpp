@@ -10,6 +10,12 @@
 namespace overlay
 {
 
+struct ShareMemFrameBuffer
+{
+    int width;
+    int height;
+};
+
 struct OverlayIpc : public IpcMsg
 {
     std::string type;
@@ -131,7 +137,7 @@ struct GMessage
 {
     std::string type = "abstract";
     virtual bool fromJson(const json &obj) = 0;
-    virtual json toJson(bool* ok =false) = 0;
+    virtual json toJson(bool *ok = false) = 0;
 };
 
 struct HeartBeat : public GMessage
@@ -144,10 +150,11 @@ struct HeartBeat : public GMessage
         return true;
     }
 
-    virtual json toJson(bool* ok =false)
+    virtual json toJson(bool *ok = false)
     {
         json result = {{"type", type}};
-        if (ok) *ok = true;
+        if (ok)
+            *ok = true;
         return result;
     }
 };
@@ -167,7 +174,6 @@ struct Window : public GMessage
     WindowRect rect;
     boost::optional<WindowCaptionMargin> caption;
 
-
     virtual bool fromJson(const json &obj)
     {
         assert(obj["type"].get<std::string>() == this->type);
@@ -186,15 +192,15 @@ struct Window : public GMessage
         }
         return true;
     }
-    virtual json toJson(bool* ok =false)
+    virtual json toJson(bool *ok = false)
     {
         json result = {
             {"type", this->type},
             {"windowId", this->windowId},
-            {"resizable", this->resizable },
-            {"transparent", this->transparent },
+            {"resizable", this->resizable},
+            {"transparent", this->transparent},
             {"bufferName", this->bufferName},
-            { "rect", this->rect.toJson() },
+            {"rect", this->rect.toJson()},
         };
 
         if (this->caption)
@@ -202,7 +208,8 @@ struct Window : public GMessage
             result["caption"] = this->caption->toJson();
         }
 
-        if (ok) *ok = true;
+        if (ok)
+            *ok = true;
         return result;
     }
 };
@@ -212,25 +219,22 @@ struct FrameBuffer : public GMessage
     std::string type = "window.framebuffer";
 
     std::uint32_t windowId;
-    std::string bufferName;
 
     virtual bool fromJson(const json &obj)
     {
         assert(obj["type"].get<std::string>() == this->type);
         this->windowId = obj["windowId"].get<std::uint32_t>();
-        this->bufferName = obj["bufferName"].get<std::string>();
-        this->windowId = obj["windowId"].get<std::uint32_t>();
         return true;
     }
-    virtual json toJson(bool* ok =false)
+    virtual json toJson(bool *ok = false)
     {
         json result = {
             {"type", type},
             {"windowId", windowId},
-            {"bufferName", bufferName},
         };
 
-        if (ok) *ok = true;
+        if (ok)
+            *ok = true;
         return result;
     }
 };
@@ -268,7 +272,7 @@ struct OverlayInit : public GMessage
         return true;
     }
 
-    virtual json toJson(bool* ok =false)
+    virtual json toJson(bool *ok = false)
     {
         json hotkeyArr;
         std::transform(std::begin(this->hotkeys), std::end(this->hotkeys), std::back_inserter(hotkeyArr), [](auto v) { return v.toJson(); });
@@ -276,13 +280,14 @@ struct OverlayInit : public GMessage
         json windowsArr;
         std::transform(std::begin(this->windows), std::end(this->windows), std::back_inserter(windowsArr), [](auto v) { return v.toJson(); });
 
-        json result = { 
-                { "type", type },
-                { "hotkeys", hotkeyArr },
-                { "windows", windowsArr },
-            };
+        json result = {
+            {"type", type},
+            {"hotkeys", hotkeyArr},
+            {"windows", windowsArr},
+        };
 
-        if (ok) *ok = true;
+        if (ok)
+            *ok = true;
         return result;
     }
 };
@@ -305,17 +310,18 @@ struct HotkeyInfo : public GMessage
         return true;
     }
 
-    virtual json toJson(bool* ok =false)
+    virtual json toJson(bool *ok = false)
     {
         json hotkeyArr;
         std::transform(std::begin(this->hotkeys), std::end(this->hotkeys), std::back_inserter(hotkeyArr), [](auto v) { return v.toJson(); });
 
         json result = {
-            { "type", type },
-            { "hotkeys", hotkeyArr },
+            {"type", type},
+            {"hotkeys", hotkeyArr},
         };
 
-        if (ok) *ok = true;
+        if (ok)
+            *ok = true;
         return result;
     }
 };
@@ -390,13 +396,14 @@ struct GameProcessInfo : public GMessage
         return true;
     }
 
-    virtual json toJson(bool* ok =false)
+    virtual json toJson(bool *ok = false)
     {
         json result = {
             {"type", type},
             {"path", path}};
 
-        if (ok) *ok = true;
+        if (ok)
+            *ok = true;
         return result;
     }
 };
@@ -410,12 +417,13 @@ struct OverlayExit : public GMessage
         return true;
     }
 
-    virtual json toJson(bool* ok =false)
+    virtual json toJson(bool *ok = false)
     {
         json result = {
-                {"type", type}};
+            {"type", type}};
 
-        if (ok) *ok = true;
+        if (ok)
+            *ok = true;
         return result;
     }
 };
@@ -443,7 +451,7 @@ struct GraphicsHookInfo : public GMessage
         return true;
     }
 
-    virtual json toJson(bool* ok =false)
+    virtual json toJson(bool *ok = false)
     {
         json result = {
             {"type", type},
@@ -458,7 +466,8 @@ struct GraphicsHookInfo : public GMessage
         {
             result["hookInfo"] = this->dxgihookInfo->toJson();
         }
-        if (ok) *ok = true;
+        if (ok)
+            *ok = true;
         return result;
     }
 };
@@ -489,17 +498,18 @@ struct GraphicsWindowSetup : public GMessage
         return true;
     }
 
-    virtual json toJson(bool* ok =false)
+    virtual json toJson(bool *ok = false)
     {
         json result = {
             {"type", type},
-            { "window", window },
-            { "width", width },
-            { "height", height },
-            { "focus", focus },
-            { "hooked", hooked },
+            {"window", window},
+            {"width", width},
+            {"height", height},
+            {"focus", focus},
+            {"hooked", hooked},
         };
-        if (ok) *ok = true;
+        if (ok)
+            *ok = true;
         return result;
     }
 };
@@ -521,14 +531,15 @@ struct GraphcisWindowFocusEvent : public GMessage
         return true;
     }
 
-    virtual json toJson(bool* ok =false)
+    virtual json toJson(bool *ok = false)
     {
         json result = {
-            { "type", type },
-            { "window", window },
-            { "focus", focus },
+            {"type", type},
+            {"window", window},
+            {"focus", focus},
         };
-        if (ok) *ok = true;
+        if (ok)
+            *ok = true;
         return result;
     }
 };
@@ -539,7 +550,6 @@ struct GraphcisWindowRezizeEvent : public GMessage
     std::uint32_t window;
     int width;
     int height;
-
 
     virtual bool fromJson(const json &obj)
     {
@@ -554,15 +564,16 @@ struct GraphcisWindowRezizeEvent : public GMessage
         return true;
     }
 
-    virtual json toJson(bool* ok =false)
+    virtual json toJson(bool *ok = false)
     {
         json result = {
-            { "type", type },
-            { "window", window },
-            { "width", width },
-            { "height", height },
+            {"type", type},
+            {"window", window},
+            {"width", width},
+            {"height", height},
         };
-        if (ok) *ok = true;
+        if (ok)
+            *ok = true;
         return result;
     }
 };
@@ -580,13 +591,14 @@ struct GameInputIntercept : public GMessage
         return true;
     }
 
-    virtual json toJson(bool* ok =false)
+    virtual json toJson(bool *ok = false)
     {
         json result = {
             {"type", type},
             {"intercepting", intercepting},
         };
-        if (ok) *ok = true;
+        if (ok)
+            *ok = true;
         return result;
     }
 };

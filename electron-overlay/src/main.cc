@@ -38,6 +38,11 @@ Napi::Value log(const Napi::CallbackInfo &info)
   return gOverlayMain->log(info);
 }
 
+Napi::Value addWindow(const Napi::CallbackInfo &info)
+{
+  return gOverlayMain->addWindow(info);
+}
+
 Napi::Value sendCommand(const Napi::CallbackInfo &info)
 {
   return gOverlayMain->sendCommand(info);
@@ -66,6 +71,7 @@ Napi::Object Init(Napi::Env env, Napi::Object exports)
   exports.Set(Napi::String::New(env, "setHotkeys"), Napi::Function::New(env, overlay::setHotkeys));
   exports.Set(Napi::String::New(env, "log"), Napi::Function::New(env, overlay::log));
   exports.Set(Napi::String::New(env, "sendCommand"), Napi::Function::New(env, overlay::sendCommand));
+  exports.Set(Napi::String::New(env, "addWindow"), Napi::Function::New(env, overlay::addWindow));
   exports.Set(Napi::String::New(env, "sendFrameBuffer"), Napi::Function::New(env, overlay::sendFrameBuffer));
 
   return exports;

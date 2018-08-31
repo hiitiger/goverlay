@@ -22,6 +22,8 @@ class OverlayMain : public IIpcHost
 
     std::vector<overlay::Hotkey> hotkeys_;
 
+    std::vector<overlay::Window> windows_;
+
   public:
     OverlayMain()
     {
@@ -96,15 +98,51 @@ class OverlayMain : public IIpcHost
         return env.Undefined();
     }
 
+    Napi::Value addWindow(const Napi::CallbackInfo &info)
+    {
+        Napi::Env env = info.Env();
+
+        overlay::Window message;
+
+        message.windowId = info[0].ToNumber();
+
+        Napi::Object windowDetails = info[1].ToObject();
+        message.name = windowDetails.Get("name").ToString();
+        message.transparent = windowDetails.Get("transparent").ToBoolean();
+        message.resizable = windowDetails.Get("resizable").ToBoolean();
+        message.bufferName = windowDetails.Get("bufferName").ToString();
+
+        Napi::Object rect = windowDetails.Get("rect").ToObject();
+        message.rect.x = rect.Get("x").ToNumber();
+        message.rect.y = rect.Get("y").ToNumber();
+        message.rect.width = rect.Get("width").ToNumber();
+        message.rect.height = rect.Get("height").ToNumber();
+
+        if (windowDetails.Has("caption"))
+        {
+            Napi::Object caption = windowDetails.Get("caption").ToObject();
+            overlay::WindowCaptionMargin captionMargin;
+            captionMargin.left = caption.Get("left").ToNumber();
+            captionMargin.right = caption.Get("right").ToNumber();
+            captionMargin.top = caption.Get("top").ToNumber();
+            captionMargin.height = caption.Get("height").ToNumber();
+            message.caption = captionMargin;
+        }
+
+        windows_.push_back(message);
+        this->_sendMessage(&message);
+
+        return env.Undefined();
+    }
+
     Napi::Value sendFrameBuffer(const Napi::CallbackInfo &info)
     {
         Napi::Env env = info.Env();
 
-        overlay::FrameBuffer frameBufferMessage;
-        frameBufferMessage.windowId = info[0].ToNumber();
-        frameBufferMessage.bufferName = info[1].ToString();
+        overlay::FrameBuffer message;
+        message.windowId = info[0].ToNumber();
 
-        this->_sendMessage(&frameBufferMessage);
+        this->_sendMessage(&message);
         return env.Undefined();
     }
 

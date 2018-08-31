@@ -30,8 +30,6 @@ bool UiApp::trySetupGraphicsWindow(HWND window)
         return true;
     }
 
-    bool result = false;
-
     return setup(window);
 }
 

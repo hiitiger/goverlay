@@ -273,14 +273,44 @@ void OverlayConnector::onMessage(IIpcLink * /*link*/, int /*hostPort*/, const st
 
         if (ipcMsg.type == "window")
         {
-            std::shared_ptr<overlay::Window> w = std::make_shared<overlay::Window>() ;
+            std::shared_ptr<overlay::Window> overlayMsg = std::make_shared<overlay::Window>() ;
             overlay::json json = overlay::json::parse(ipcMsg.message);
-            w->fromJson(json);
-            windows_.push_back(w);
+            overlayMsg->fromJson(json);
+
+            {
+                std::lock_guard<std::mutex> lock(windowsLock_);
+                windows_.push_back(overlayMsg);
+            }
+            if (overlayMsg->transparent)
+            {
+                _updateFrameBuffer(overlayMsg->windowId, overlayMsg->bufferName);
+            }
+
+            this->windowEvent()(overlayMsg->windowId);
+
         }
         else if (ipcMsg.type == "window.framebuffer")
         {
+            std::shared_ptr<overlay::FrameBuffer> overlayMsg = std::make_shared<overlay::FrameBuffer>();
+            overlay::json json = overlay::json::parse(ipcMsg.message);
+            overlayMsg->fromJson(json);
 
+            std::lock_guard<std::mutex> lock(windowsLock_);
+
+            auto it = std::find_if(windows_.begin(), windows_.end(), [&](const auto& window) {
+                return overlayMsg->windowId == window->windowId;
+            });
+
+            if (it != windows_.end())
+            {
+                auto window = *it;
+                if (window->transparent)
+                {
+                    _updateFrameBuffer(window->windowId, window->bufferName);
+                }
+
+                this->frameBufferEvent()(window->windowId);
+            }
         }
     }
 }
@@ -288,4 +318,36 @@ void OverlayConnector::onMessage(IIpcLink * /*link*/, int /*hostPort*/, const st
 void OverlayConnector::saveClientId(IIpcLink * /*link*/, int clientId)
 {
     ipcClientId_ = clientId;
+}
+
+void OverlayConnector::_updateFrameBuffer(std::uint32_t windowId, const std::string& bufferName)
+{
+    namespace share_mem = boost::interprocess;
+
+    std::shared_ptr<share_mem::windows_shared_memory> windowBitmapMem;
+    std::shared_ptr<share_mem::mapped_region> fullRegion;
+
+    try
+    {
+        windowBitmapMem.reset(new boost::interprocess::windows_shared_memory(share_mem::open_only, bufferName.c_str(), share_mem::read_only));
+        fullRegion.reset(new share_mem::mapped_region(*windowBitmapMem, share_mem::read_only));
+    }
+    catch (...)
+    {
+    }
+
+    if (fullRegion)
+    {
+        Storm::ScopeLovkV1 lockShareMem(shareMemoryLock_);
+
+        char *orgin = static_cast<char*>(fullRegion->get_address());
+        overlay::ShareMemFrameBuffer* head = (overlay::ShareMemFrameBuffer*)orgin;
+        int* mem = (int*)(orgin + sizeof(overlay::ShareMemFrameBuffer));
+
+        std::shared_ptr<overlay_game::FrameBuffer> frameBuffer(new overlay_game::FrameBuffer(head->width, head->height, mem));
+
+        std::lock_guard<std::mutex> lock(framesLock_);
+        frameBuffers_[windowId] = frameBuffer;
+
+    }
 }
