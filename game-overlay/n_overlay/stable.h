@@ -23,5 +23,6 @@ __pragma(warning(pop))
 #include <assert.h>
 #include "utils.hpp"
 
+#include "geometry.h"
 #include "common.hpp"
 #include "message/gmessage.hpp"

@@ -265,6 +265,24 @@ void OverlayConnector::onLinkClose(IIpcLink *link)
 
 void OverlayConnector::onMessage(IIpcLink * /*link*/, int /*hostPort*/, const std::string &message)
 {
+    int ipcMsgId = *(int*)message.c_str();
+    if (ipcMsgId == overlay::OverlayIpc::MsgId)
+    {
+        overlay::OverlayIpc ipcMsg;
+        ipcMsg.upack(message);
+
+        if (ipcMsg.type == "window")
+        {
+            std::shared_ptr<overlay::Window> w = std::make_shared<overlay::Window>() ;
+            overlay::json json = overlay::json::parse(ipcMsg.message);
+            w->fromJson(json);
+            windows_.push_back(w);
+        }
+        else if (ipcMsg.type == "window.framebuffer")
+        {
+
+        }
+    }
 }
 
 void OverlayConnector::saveClientId(IIpcLink * /*link*/, int clientId)

@@ -184,6 +184,7 @@ struct Window : public GMessage
         {
             this->caption = WindowCaptionMargin(obj["caption"]);
         }
+        return true;
     }
     virtual json toJson(bool* ok =false)
     {

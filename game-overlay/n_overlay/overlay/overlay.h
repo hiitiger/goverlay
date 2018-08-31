@@ -7,6 +7,13 @@ class OverlayConnector : public IIpcClient
     int ipcClientId_ = 0;
     IIpcLink *ipcLink_ = nullptr;
 
+
+    std::mutex windowsLock_;
+    std::vector<std::shared_ptr<overlay::Window>> windows_;
+
+    std::mutex framesLock_;
+    std::map<std::uint32_t, std::shared_ptr<overlay_game::FrameBuffer>> frameBuffers_;
+
 public:
     OverlayConnector();
     ~OverlayConnector();
