@@ -15,7 +15,6 @@ class OverlayConnector : public IIpcClient
     std::mutex framesLock_;
     std::map<std::uint32_t, std::shared_ptr<overlay_game::FrameBuffer>> frameBuffers_;
 
-
     Storm::Event<void(std::uint32_t)> windowEvent_;
     Storm::Event<void(std::uint32_t)> frameBufferEvent_;
 
@@ -40,15 +39,15 @@ public:
 
     void sendGameWindowInput();
 
+    std::vector<std::shared_ptr<overlay::Window>> windows();
 
     Storm::Event<void(std::uint32_t)>& windowEvent() { return windowEvent_; }
     Storm::Event<void(std::uint32_t)>& frameBufferEvent() { return frameBufferEvent_; }
 
-
 protected:
     void _heartbeat();
 
-    void _sendOverlayExit();
+    void _sendGameExit();
 
     void _sendGameProcessInfo();
 
@@ -69,10 +68,8 @@ protected:
     void _sendMessage(overlay::GMessage* message);
 
 private:
-    void onIpcMessage();
-    void onFrameBuffer();
-    void onCommand();
-    void onGraphicsCommand();
+    void _onRemoteConnect();
+    void _onRemoteClose();
 
 private:
     void onLinkConnect(IIpcLink *) override;
@@ -81,5 +78,10 @@ private:
     void saveClientId(IIpcLink *, int clientId) override;
 
 private:
+    void _onOverlayInit(std::shared_ptr<overlay::OverlayInit>& overlayMsg);
+    void _onOverlayEnable(std::shared_ptr<overlay::OverlayEnable>& overlayMsg);
+    void _onWindow(std::shared_ptr<overlay::Window>& overlayMsg);
+    void _onWindowFrameBuffer(std::shared_ptr<overlay::FrameBuffer>& overlayMsg);
+
     void _updateFrameBuffer(std::uint32_t windowId, const std::string& bufferName);
 };

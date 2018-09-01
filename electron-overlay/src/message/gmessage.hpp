@@ -257,18 +257,38 @@ struct OverlayInit : public GMessage
 {
     std::string type = "overlay.init";
 
+    bool processEnabled;
+    std::string shareMemMutex;
+
     std::vector<Hotkey> hotkeys;
     std::vector<Window> windows;
 
     virtual bool fromJson(const json &obj)
     {
         assert(obj["type"].get<std::string>() == this->type);
-        assert(obj["hotkeys"].is_array());
-        json hotkeyArr = obj["hotkeys"];
-        for (auto i = 0; i != hotkeyArr.size(); i++)
+
+        processEnabled = obj["processEnabled"].get<bool>();
+        shareMemMutex = obj["shareMemMutex"].get<std::string>();
+
+        if (obj["hotkeys"].is_array())
         {
-            this->hotkeys.emplace_back(hotkeyArr[i]);
+            json hotkeyArr = obj["hotkeys"];
+            for (auto i = 0; i != hotkeyArr.size(); i++)
+            {
+                this->hotkeys.emplace_back(hotkeyArr[i]);
+            }
         }
+        if (obj["windows"].is_array())
+        {
+            json windowArr = obj["windows"];
+            for (auto i = 0; i != windowArr.size(); i++)
+            {
+                Window w;
+                w.fromJson(windowArr[i]);
+                this->windows.emplace_back(w);
+            }
+        }
+
         return true;
     }
 
@@ -282,8 +302,36 @@ struct OverlayInit : public GMessage
 
         json result = {
             {"type", type},
+            {"processEnabled", processEnabled},
+            {"shareMemMutex", shareMemMutex},
             {"hotkeys", hotkeyArr},
             {"windows", windowsArr},
+        };
+
+        if (ok)
+            *ok = true;
+        return result;
+    }
+};
+
+struct OverlayEnable : public GMessage
+{
+    std::string type = "overlay.enable";
+
+    bool processEnabled;
+
+    virtual bool fromJson(const json &obj)
+    {
+        assert(obj["type"].get<std::string>() == this->type);
+        processEnabled = obj["processEnabled"].get<bool>();
+        return true;
+    }
+
+    virtual json toJson(bool *ok = false)
+    {
+        json result = {
+            {"type", type},
+            {"processEnabled", processEnabled},
         };
 
         if (ok)
@@ -301,11 +349,14 @@ struct HotkeyInfo : public GMessage
     virtual bool fromJson(const json &obj)
     {
         assert(obj["type"].get<std::string>() == this->type);
-        assert(obj["hotkeys"].is_array());
-        json hotkeyArr = obj["hotkeys"];
-        for (auto i = 0; i != hotkeyArr.size(); i++)
+
+        if (obj["hotkeys"].is_array())
         {
-            this->hotkeys.emplace_back(hotkeyArr[i]);
+            json hotkeyArr = obj["hotkeys"];
+            for (auto i = 0; i != hotkeyArr.size(); i++)
+            {
+                this->hotkeys.emplace_back(hotkeyArr[i]);
+            }
         }
         return true;
     }
@@ -408,7 +459,7 @@ struct GameProcessInfo : public GMessage
     }
 };
 
-struct OverlayExit : public GMessage
+struct GameExit : public GMessage
 {
     std::string type = "game.exit";
     virtual bool fromJson(const json &obj)

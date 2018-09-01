@@ -369,38 +369,23 @@ void D3d9Hook::onBeforePresent(IDirect3DDevice9* device, HWND hDestWindowOverrid
 {
     if (!presentRecurse_)
     {
-        if (!graphicsInit_)
+        if (graphicsInit_)
         {
-            Windows::ComPtr<IDirect3DSwapChain9> spSwapChain = 0;
-            HRESULT hr = device->GetSwapChain(0, spSwapChain.resetAndGetPointerAddress());
-            if (FAILED(hr))
+            if (!session::overlayConnected() || !session::overlayEnabled())
             {
-                return;
-            }
-
-            D3DPRESENT_PARAMETERS desc = {0};
-            hr = spSwapChain->GetPresentParameters(&desc);
-            if (FAILED(hr))
-            {
-                return;
-            }
-
-            HWND graphicsWindow = desc.hDeviceWindow;
-            if (graphicsWindow != session::graphicsWindow())
-            {
-                return;
-            }
-
-            graphics_.reset(new D3d9Graphics());
-            graphicsInit_ = graphics_->initGraphics(device, hDestWindowOverride, isD9Ex);
-            if (!graphicsInit_)
-            {
-                graphics_.reset(nullptr);
-                return;
+                uninitGraphics();
             }
         }
 
-        graphics_->beforePresent(device);
+        if (!graphicsInit_ && session::overlayEnabled())
+        {
+            initGraphics(device, hDestWindowOverride, isD9Ex);
+        }
+
+        if(graphicsInit_)
+        {
+            graphics_->beforePresent(device);
+        }
     }
 
     presentRecurse_ += 1;
@@ -421,9 +406,50 @@ void D3d9Hook::onAfterPresent(IDirect3DDevice9* device, HWND /*hDestWindowOverri
 
 void D3d9Hook::onReset(IDirect3DDevice9* device)
 {
-    if (graphics_)
+    uninitGraphics();
+}
+
+bool D3d9Hook::initGraphics(IDirect3DDevice9* device, HWND hDestWindowOverride, bool isD9Ex)
+{
+    Windows::ComPtr<IDirect3DSwapChain9> spSwapChain = 0;
+    HRESULT hr = device->GetSwapChain(0, spSwapChain.resetAndGetPointerAddress());
+    if (FAILED(hr))
     {
-        graphics_->uninitGraphics(device);
+        return false;
+    }
+
+    D3DPRESENT_PARAMETERS desc = {0};
+    hr = spSwapChain->GetPresentParameters(&desc);
+    if (FAILED(hr))
+    {
+        return false;
+    }
+
+    HWND graphicsWindow = desc.hDeviceWindow;
+    if (graphicsWindow != session::graphicsWindow())
+    {
+        return false;
+    }
+
+    graphics_.reset(new D3d9Graphics());
+    graphicsInit_ = graphics_->initGraphics(device, hDestWindowOverride, isD9Ex);
+    if (!graphicsInit_)
+    {
+        graphics_.reset(nullptr);
+        return false;
+    }
+
+    session::setGraphicsActive(true);
+    return true;
+}
+
+void D3d9Hook::uninitGraphics()
+{
+    if (graphicsInit_)
+    {
+        graphics_->freeGraphics();
         graphicsInit_ = false;
+
+        session::setGraphicsActive(false);
     }
 }

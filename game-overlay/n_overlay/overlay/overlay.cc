@@ -37,7 +37,7 @@ void OverlayConnector::quit()
 
     if (ipcLink_)
     {
-        _sendOverlayExit();
+        _sendGameExit();
         getIpcCenter()->closeLink(ipcLink_);
         ipcLink_ = nullptr;
     }
@@ -119,13 +119,18 @@ void OverlayConnector::sendGameWindowInput()
     });
 }
 
+std::vector<std::shared_ptr<overlay::Window>> OverlayConnector::windows()
+{
+    std::lock_guard<std::mutex> lock(windowsLock_);
+    return windows_;
+}
 
 void OverlayConnector::_heartbeat()
 {
     CHECK_THREAD(Threads::HookApp);
 }
 
-void OverlayConnector::_sendOverlayExit()
+void OverlayConnector::_sendGameExit()
 {
     CHECK_THREAD(Threads::HookApp);
 }
@@ -232,20 +237,28 @@ void OverlayConnector::_sendMessage(overlay::GMessage *message)
     getIpcCenter()->sendMessage(ipcLink_, ipcClientId_, 0, &ipcMsg);
 }
 
-void OverlayConnector::onIpcMessage()
+void OverlayConnector::_onRemoteConnect()
 {
+    session::setOverlayConnected(true);
+
+    this->_sendGameProcessInfo();
 }
 
-void OverlayConnector::onFrameBuffer()
+void OverlayConnector::_onRemoteClose()
 {
-}
+    {
+        std::lock_guard<std::mutex> lock(windowsLock_);
+        windows_.clear();
+    }
+    {
+        std::lock_guard<std::mutex> lock(framesLock_);
+        frameBuffers_.clear();
+    }
 
-void OverlayConnector::onCommand()
-{
-}
+    shareMemoryLock_.close();
 
-void OverlayConnector::onGraphicsCommand()
-{
+    session::setOverlayEnabled(false);
+    session::setOverlayConnected(false);
 }
 
 void OverlayConnector::onLinkConnect(IIpcLink *link)
@@ -254,40 +267,49 @@ void OverlayConnector::onLinkConnect(IIpcLink *link)
 
     LOGGER("n_overlay") << "@trace";
 
-    this->_sendGameProcessInfo();
+    _onRemoteConnect();
 }
 
 void OverlayConnector::onLinkClose(IIpcLink *link)
 {
     DAssert(link == ipcLink_);
     ipcLink_ = nullptr;
+
+    _onRemoteClose();
 }
 
 void OverlayConnector::onMessage(IIpcLink * /*link*/, int /*hostPort*/, const std::string &message)
 {
-    int ipcMsgId = *(int*)message.c_str();
+    int ipcMsgId = *(int *)message.c_str();
     if (ipcMsgId == overlay::OverlayIpc::MsgId)
     {
         overlay::OverlayIpc ipcMsg;
         ipcMsg.upack(message);
 
-        if (ipcMsg.type == "window")
+        if (ipcMsg.type == "overlay.init")
         {
-            std::shared_ptr<overlay::Window> overlayMsg = std::make_shared<overlay::Window>() ;
+            std::shared_ptr<overlay::OverlayInit> overlayMsg = std::make_shared<overlay::OverlayInit>();
             overlay::json json = overlay::json::parse(ipcMsg.message);
             overlayMsg->fromJson(json);
 
-            {
-                std::lock_guard<std::mutex> lock(windowsLock_);
-                windows_.push_back(overlayMsg);
-            }
-            if (overlayMsg->transparent)
-            {
-                _updateFrameBuffer(overlayMsg->windowId, overlayMsg->bufferName);
-            }
+            _onOverlayInit(overlayMsg);
+        }
+        else if(ipcMsg.type == "overlay.enable")
+        {
+            std::shared_ptr<overlay::OverlayEnable> overlayMsg = std::make_shared<overlay::OverlayEnable>();
+            overlay::json json = overlay::json::parse(ipcMsg.message);
+            overlayMsg->fromJson(json);
 
-            this->windowEvent()(overlayMsg->windowId);
+            _onOverlayEnable(overlayMsg);
+        }
+        
+        else if (ipcMsg.type == "window")
+        {
+            std::shared_ptr<overlay::Window> overlayMsg = std::make_shared<overlay::Window>();
+            overlay::json json = overlay::json::parse(ipcMsg.message);
+            overlayMsg->fromJson(json);
 
+            _onWindow(overlayMsg);
         }
         else if (ipcMsg.type == "window.framebuffer")
         {
@@ -295,22 +317,7 @@ void OverlayConnector::onMessage(IIpcLink * /*link*/, int /*hostPort*/, const st
             overlay::json json = overlay::json::parse(ipcMsg.message);
             overlayMsg->fromJson(json);
 
-            std::lock_guard<std::mutex> lock(windowsLock_);
-
-            auto it = std::find_if(windows_.begin(), windows_.end(), [&](const auto& window) {
-                return overlayMsg->windowId == window->windowId;
-            });
-
-            if (it != windows_.end())
-            {
-                auto window = *it;
-                if (window->transparent)
-                {
-                    _updateFrameBuffer(window->windowId, window->bufferName);
-                }
-
-                this->frameBufferEvent()(window->windowId);
-            }
+            _onWindowFrameBuffer(overlayMsg);
         }
     }
 }
@@ -320,7 +327,70 @@ void OverlayConnector::saveClientId(IIpcLink * /*link*/, int clientId)
     ipcClientId_ = clientId;
 }
 
-void OverlayConnector::_updateFrameBuffer(std::uint32_t windowId, const std::string& bufferName)
+void OverlayConnector::_onOverlayInit(std::shared_ptr<overlay::OverlayInit>& overlayMsg)
+{
+    session::setOverlayEnabled(overlayMsg->processEnabled);
+    if (overlayMsg->processEnabled)
+    {
+        HookApp::instance()->startHook();
+    }
+
+    shareMemoryLock_.open(Storm::Utils::fromUtf8(overlayMsg->shareMemMutex));
+
+    std::vector<std::shared_ptr<overlay::Window>> windows;
+    for (const auto& window : overlayMsg->windows)
+    {
+        windows.emplace_back(std::make_shared<overlay::Window>(window));
+        if (window.transparent)
+        {
+            _updateFrameBuffer(window.windowId, window.bufferName);
+        }
+    }
+
+    std::lock_guard<std::mutex> lock(windowsLock_);
+    windows_.swap(windows);
+}
+
+void OverlayConnector::_onOverlayEnable(std::shared_ptr<overlay::OverlayEnable>& overlayMsg)
+{
+    session::setOverlayEnabled(overlayMsg->processEnabled);
+}
+
+void OverlayConnector::_onWindow(std::shared_ptr<overlay::Window>& overlayMsg)
+{
+    {
+        std::lock_guard<std::mutex> lock(windowsLock_);
+        windows_.push_back(overlayMsg);
+    }
+    if (overlayMsg->transparent)
+    {
+        _updateFrameBuffer(overlayMsg->windowId, overlayMsg->bufferName);
+    }
+
+    this->windowEvent()(overlayMsg->windowId);
+}
+
+void OverlayConnector::_onWindowFrameBuffer(std::shared_ptr<overlay::FrameBuffer>& overlayMsg)
+{
+    std::lock_guard<std::mutex> lock(windowsLock_);
+
+    auto it = std::find_if(windows_.begin(), windows_.end(), [&](const auto &window) {
+        return overlayMsg->windowId == window->windowId;
+    });
+
+    if (it != windows_.end())
+    {
+        auto window = *it;
+        if (window->transparent)
+        {
+            _updateFrameBuffer(window->windowId, window->bufferName);
+        }
+
+        this->frameBufferEvent()(window->windowId);
+    }
+}
+
+void OverlayConnector::_updateFrameBuffer(std::uint32_t windowId, const std::string &bufferName)
 {
     namespace share_mem = boost::interprocess;
 
@@ -340,14 +410,13 @@ void OverlayConnector::_updateFrameBuffer(std::uint32_t windowId, const std::str
     {
         Storm::ScopeLovkV1 lockShareMem(shareMemoryLock_);
 
-        char *orgin = static_cast<char*>(fullRegion->get_address());
-        overlay::ShareMemFrameBuffer* head = (overlay::ShareMemFrameBuffer*)orgin;
-        int* mem = (int*)(orgin + sizeof(overlay::ShareMemFrameBuffer));
+        char *orgin = static_cast<char *>(fullRegion->get_address());
+        overlay::ShareMemFrameBuffer *head = (overlay::ShareMemFrameBuffer *)orgin;
+        int *mem = (int *)(orgin + sizeof(overlay::ShareMemFrameBuffer));
 
         std::shared_ptr<overlay_game::FrameBuffer> frameBuffer(new overlay_game::FrameBuffer(head->width, head->height, mem));
 
         std::lock_guard<std::mutex> lock(framesLock_);
         frameBuffers_[windowId] = frameBuffer;
-
     }
 }

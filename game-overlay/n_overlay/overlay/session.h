@@ -94,4 +94,13 @@ void setWindowThreadId(DWORD id);
 std::uint32_t graphicsThreadId();
 void setGraphicsThreadId(DWORD id);
 
+void setGraphicsActive(bool active);
+bool graphicsActive();
+
+void setOverlayConnected(bool restarted);
+bool overlayConnected();
+
+void setOverlayEnabled(bool v);
+bool overlayEnabled();
+
 } // namespace session

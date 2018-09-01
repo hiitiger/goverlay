@@ -111,9 +111,11 @@ void HookApp::startHook()
 {
     CHECK_THREAD(Threads::HookApp);
 
-    hookFlag_ = true;
-
-    hookloopThread_ = CreateThread(nullptr, 0, hookLoopThread, nullptr, 0, nullptr);
+    if (!hookFlag_)
+    {
+        hookFlag_ = true;
+        hookloopThread_ = CreateThread(nullptr, 0, hookLoopThread, nullptr, 0, nullptr);
+    }
 }
 
 void HookApp::async(const std::function<void()>& task)

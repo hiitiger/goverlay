@@ -52,4 +52,7 @@ private:
     void onAfterPresent(IDirect3DDevice9* device, HWND hDestWindowOverride, bool isD9Ex);
     void onReset(IDirect3DDevice9* device);
 
+private:
+    bool initGraphics(IDirect3DDevice9* device, HWND hDestWindowOverride, bool isD9Ex);
+    void uninitGraphics();
 };

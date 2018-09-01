@@ -37,6 +37,8 @@ void D3d9Graphics::uninitGraphics(IDirect3DDevice9* device)
     {
         return;
     }
+
+    freeGraphics();
 }
 
 void D3d9Graphics::freeGraphics()

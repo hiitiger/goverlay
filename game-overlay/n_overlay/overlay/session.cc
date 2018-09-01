@@ -4,160 +4,192 @@
 #include "hook/inputhook.h"
 #include "session.h"
 
-namespace session 
+namespace session
 {
-    std::atomic<HWND> g_injectWindow = nullptr;
-    std::atomic<HWND> g_graphicsWindow = nullptr;
+std::atomic<HWND> g_injectWindow = nullptr;
+std::atomic<HWND> g_graphicsWindow = nullptr;
 
-    std::uint32_t hookAppThreadId_ = 0;
-    std::uint32_t windowThreadId_ = 0;
-    std::uint32_t graphicsThreadId_ = 0;
+std::uint32_t hookAppThreadId_ = 0;
+std::uint32_t windowThreadId_ = 0;
+std::uint32_t graphicsThreadId_ = 0;
 
-    D3d9HookInfo d3d9HookInfo_;
-    DxgiHookInfo dxgiHookInfo_;
+D3d9HookInfo d3d9HookInfo_;
+DxgiHookInfo dxgiHookInfo_;
 
-    std::atomic<bool> d3d9Hooked_ = false;
-    std::atomic<bool> dxgiHooked_ = false;
+std::atomic<bool> d3d9Hooked_ = false;
+std::atomic<bool> dxgiHooked_ = false;
 
-    std::unique_ptr<D3d9Hook> d3d9Hook_;
-    std::unique_ptr<DXGIHook> dxgiHook_;
+std::unique_ptr<D3d9Hook> d3d9Hook_;
+std::unique_ptr<DXGIHook> dxgiHook_;
 
-    std::atomic<bool> inputHooked_ = false;
-    std::unique_ptr<InputHook> inputHook_;
+std::atomic<bool> inputHooked_ = false;
+std::unique_ptr<InputHook> inputHook_;
 
+std::atomic<bool> graphicsActive_ = false;
+std::atomic<bool> overlayConnected_ = false;
+std::atomic<bool> overlayEnabled_ = true;
 
-    D3d9Hook* d3d9Hook()
-    {
-        DAssert(d3d9Hook_);
+D3d9Hook *d3d9Hook()
+{
+    DAssert(d3d9Hook_);
 
-        return d3d9Hook_.get();
-    }
-
-    DXGIHook* dxgiHook()
-    {
-        DAssert(dxgiHook_);
-
-        return dxgiHook_.get();
-    }
-
-    bool d3d9Hooked()
-    {
-        return d3d9Hooked_;
-    }
-
-    bool dxgiHooked()
-    {
-        return dxgiHooked_;
-    }
-
-    void saveD3d9Hook(std::unique_ptr<D3d9Hook>&& h)
-    {
-        CHECK_THREAD(Threads::HookApp);
-
-        d3d9Hook_ = std::move(h);
-        d3d9Hooked_ = true;
-    }
-
-    void saveDxgiHook(std::unique_ptr<DXGIHook>&& h)
-    {
-        CHECK_THREAD(Threads::HookApp);
-
-        dxgiHook_ = std::move(h);
-        dxgiHooked_ = true;
-    }
-
-    void clearD3d9Hook()
-    {
-        CHECK_THREAD(Threads::HookApp);
-
-        d3d9Hook_ = nullptr;
-        d3d9Hooked_ = false;
-    }
-
-    void clearDxgiHook()
-    {
-        CHECK_THREAD(Threads::HookApp);
-
-        dxgiHook_ = nullptr;
-        dxgiHooked_ = false;
-    }
-
-    InputHook* inputHook()
-    {
-        return inputHook_.get();
-    }
-
-    bool inputHooked()
-    {
-        return inputHooked_;
-    }
-
-    void saveInputHook(std::unique_ptr<InputHook>&& h)
-    {
-        CHECK_THREAD(Threads::HookApp);
-
-        inputHooked_ = true;
-        inputHook_ = std::move(h);
-    }
-
-    D3d9HookInfo& d3d9HookInfo()
-    {
-        return d3d9HookInfo_;
-    }
-
-    DxgiHookInfo& dxgiHookInfo()
-    {
-        return dxgiHookInfo_;
-    }
-
-    std::uint32_t hookAppThreadId()
-    {
-        return hookAppThreadId_;
-    }
-
-    void setHookAppThreadId(DWORD id)
-    {
-        hookAppThreadId_ = id;
-    }
-
-    std::uint32_t windowThreadId()
-    {
-        return windowThreadId_;
-    }
-
-    void setWindowThreadId(DWORD id)
-    {
-        windowThreadId_ = id;
-    }
-
-    std::uint32_t graphicsThreadId()
-    {
-        return graphicsThreadId_;
-    }
-
-    void setGraphicsThreadId(DWORD id)
-    {
-        graphicsThreadId_ = id;
-    }
-
-    void setInjectWindow(HWND window)
-    {
-        g_injectWindow = window;
-    }
-
-    HWND injectWindow()
-    {
-        return g_injectWindow;
-    }
-
-    void setGraphicsWindow(HWND window)
-    {
-        g_graphicsWindow = window;
-    }
-
-    HWND graphicsWindow()
-    {
-        return g_graphicsWindow;
-    }
-
+    return d3d9Hook_.get();
 }
+
+DXGIHook *dxgiHook()
+{
+    DAssert(dxgiHook_);
+
+    return dxgiHook_.get();
+}
+
+bool d3d9Hooked()
+{
+    return d3d9Hooked_;
+}
+
+bool dxgiHooked()
+{
+    return dxgiHooked_;
+}
+
+void saveD3d9Hook(std::unique_ptr<D3d9Hook> &&h)
+{
+    CHECK_THREAD(Threads::HookApp);
+
+    d3d9Hook_ = std::move(h);
+    d3d9Hooked_ = true;
+}
+
+void saveDxgiHook(std::unique_ptr<DXGIHook> &&h)
+{
+    CHECK_THREAD(Threads::HookApp);
+
+    dxgiHook_ = std::move(h);
+    dxgiHooked_ = true;
+}
+
+void clearD3d9Hook()
+{
+    CHECK_THREAD(Threads::HookApp);
+
+    d3d9Hook_ = nullptr;
+    d3d9Hooked_ = false;
+}
+
+void clearDxgiHook()
+{
+    CHECK_THREAD(Threads::HookApp);
+
+    dxgiHook_ = nullptr;
+    dxgiHooked_ = false;
+}
+
+InputHook *inputHook()
+{
+    return inputHook_.get();
+}
+
+bool inputHooked()
+{
+    return inputHooked_;
+}
+
+void saveInputHook(std::unique_ptr<InputHook> &&h)
+{
+    CHECK_THREAD(Threads::HookApp);
+
+    inputHooked_ = true;
+    inputHook_ = std::move(h);
+}
+
+D3d9HookInfo &d3d9HookInfo()
+{
+    return d3d9HookInfo_;
+}
+
+DxgiHookInfo &dxgiHookInfo()
+{
+    return dxgiHookInfo_;
+}
+
+std::uint32_t hookAppThreadId()
+{
+    return hookAppThreadId_;
+}
+
+void setHookAppThreadId(DWORD id)
+{
+    hookAppThreadId_ = id;
+}
+
+std::uint32_t windowThreadId()
+{
+    return windowThreadId_;
+}
+
+void setWindowThreadId(DWORD id)
+{
+    windowThreadId_ = id;
+}
+
+std::uint32_t graphicsThreadId()
+{
+    return graphicsThreadId_;
+}
+
+void setGraphicsThreadId(DWORD id)
+{
+    graphicsThreadId_ = id;
+}
+
+void setInjectWindow(HWND window)
+{
+    g_injectWindow = window;
+}
+
+HWND injectWindow()
+{
+    return g_injectWindow;
+}
+
+void setGraphicsWindow(HWND window)
+{
+    g_graphicsWindow = window;
+}
+
+HWND graphicsWindow()
+{
+    return g_graphicsWindow;
+}
+
+void setGraphicsActive(bool active)
+{
+    graphicsActive_ = active;
+}
+
+bool graphicsActive()
+{
+    return graphicsActive_;
+}
+
+void setOverlayConnected(bool value)
+{
+    overlayConnected_ = value;
+}
+
+bool overlayConnected()
+{
+    return overlayConnected_;
+}
+
+void setOverlayEnabled(bool value)
+{
+    overlayEnabled_ = value;
+}
+
+bool overlayEnabled()
+{
+    return overlayEnabled_;
+}
+} // namespace session
