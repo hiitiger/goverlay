@@ -141,6 +141,16 @@ class OverlayMain : public IIpcHost
 
         overlay::FrameBuffer message;
         message.windowId = info[0].ToNumber();
+        Napi::Buffer<std::uint32_t> buffer = info[1].As<Napi::Buffer<std::uint32_t>>();
+        std::int32_t width = info[2].ToNumber();
+        std::int32_t height = info[3].ToNumber();
+        std::uint32_t* data = buffer.Data();
+        std::size_t length = buffer.Length();
+
+        std::cout << "length :" << length << std::endl;
+        std::cout << "width :" << width << std::endl;
+        std::cout << "height :" << height << std::endl;
+
 
         this->_sendMessage(&message);
         return env.Undefined();

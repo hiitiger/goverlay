@@ -1,7 +1,6 @@
 #include "stable.h"
 #include "overlay.h"
 #include "hookapp.h"
-#include "session.h"
 
 const char k_overlayIpcName[] = "n_overlay_1a1y2o8l0b";
 
@@ -51,7 +50,7 @@ void OverlayConnector::sendInputHookInfo()
     _sendInputHookInfo();
 }
 
-void OverlayConnector::sendGraphicsHookInfo(const D3d9HookInfo &info)
+void OverlayConnector::sendGraphicsHookInfo(const overlay_game::D3d9HookInfo &info)
 {
     CHECK_THREAD(Threads::HookApp);
 
@@ -60,7 +59,7 @@ void OverlayConnector::sendGraphicsHookInfo(const D3d9HookInfo &info)
     });
 }
 
-void OverlayConnector::sendGraphicsHookInfo(const DxgiHookInfo &info)
+void OverlayConnector::sendGraphicsHookInfo(const overlay_game::DxgiHookInfo &info)
 {
     CHECK_THREAD(Threads::HookApp);
 
@@ -145,7 +144,7 @@ void OverlayConnector::_sendInputHookInfo()
     CHECK_THREAD(Threads::HookApp);
 }
 
-void OverlayConnector::_sendGraphicsHookInfo(const D3d9HookInfo &info)
+void OverlayConnector::_sendGraphicsHookInfo(const overlay_game::D3d9HookInfo &info)
 {
     CHECK_THREAD(Threads::HookApp);
 
@@ -164,7 +163,7 @@ void OverlayConnector::_sendGraphicsHookInfo(const D3d9HookInfo &info)
     _sendMessage(&message);
 }
 
-void OverlayConnector::_sendGraphicsHookInfo(const DxgiHookInfo &info)
+void OverlayConnector::_sendGraphicsHookInfo(const overlay_game::DxgiHookInfo &info)
 {
     CHECK_THREAD(Threads::HookApp);
     overlay::DxgiHookInfo hookInfo;

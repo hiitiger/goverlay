@@ -1,6 +1,6 @@
 #pragma once
 #include "./ipc/ipclink.h"
-
+#include "session.h"
 
 class OverlayConnector : public IIpcClient
 {
@@ -27,8 +27,8 @@ public:
 
     void sendInputHookInfo();
 
-    void sendGraphicsHookInfo(const D3d9HookInfo& info);
-    void sendGraphicsHookInfo(const DxgiHookInfo& info);
+    void sendGraphicsHookInfo(const overlay_game::D3d9HookInfo& info);
+    void sendGraphicsHookInfo(const overlay_game::DxgiHookInfo& info);
 
     void sendGraphicsWindowSetupInfo(HWND window, int width, int height, bool focus, bool hooked);
     void sendGraphicsWindowResizeEvent(HWND window, int width, int height);
@@ -53,8 +53,8 @@ protected:
 
     void _sendInputHookInfo();
 
-    void _sendGraphicsHookInfo(const D3d9HookInfo&);
-    void _sendGraphicsHookInfo(const DxgiHookInfo&);
+    void _sendGraphicsHookInfo(const overlay_game::D3d9HookInfo&);
+    void _sendGraphicsHookInfo(const overlay_game::DxgiHookInfo&);
 
     void _sendGraphicsWindowSetupInfo(HWND window, int width, int height, bool focus, bool hooked);
 

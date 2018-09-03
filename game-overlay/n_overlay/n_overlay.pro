@@ -9,7 +9,7 @@ INCLUDEPATH += .
 INCLUDEPATH += ../deps/3rd
 INCLUDEPATH += ../deps/3rd/boost
 INCLUDEPATH += ../deps/include
-INCLUDEPATH += $(DXSDK_DIR)Include
+# INCLUDEPATH += $(DXSDK_DIR)Include
 CONFIG(debug, debug|release) {
     QMAKE_LIBDIR += ../deps/lib/debug
 }

@@ -13,8 +13,8 @@ std::uint32_t hookAppThreadId_ = 0;
 std::uint32_t windowThreadId_ = 0;
 std::uint32_t graphicsThreadId_ = 0;
 
-D3d9HookInfo d3d9HookInfo_;
-DxgiHookInfo dxgiHookInfo_;
+overlay_game::D3d9HookInfo d3d9HookInfo_;
+overlay_game::DxgiHookInfo dxgiHookInfo_;
 
 std::atomic<bool> d3d9Hooked_ = false;
 std::atomic<bool> dxgiHooked_ = false;
@@ -103,12 +103,12 @@ void saveInputHook(std::unique_ptr<InputHook> &&h)
     inputHook_ = std::move(h);
 }
 
-D3d9HookInfo &d3d9HookInfo()
+overlay_game::D3d9HookInfo &d3d9HookInfo()
 {
     return d3d9HookInfo_;
 }
 
-DxgiHookInfo &dxgiHookInfo()
+overlay_game::DxgiHookInfo &dxgiHookInfo()
 {
     return dxgiHookInfo_;
 }

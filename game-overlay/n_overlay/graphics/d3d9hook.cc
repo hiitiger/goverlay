@@ -1,7 +1,6 @@
 #include "stable.h"
 #include "overlay/session.h"
 #include "overlay/hookapp.h"
-#include "hook/apihook.hpp"
 #include "d3d9hook.h"
 #include "d3d9graphics.h"
 
@@ -99,9 +98,13 @@ bool D3d9Hook::hook()
     ZeroMemory(&d3dpp, sizeof(d3dpp));
     d3dpp.Windowed = TRUE;
     d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-    d3dpp.MultiSampleType = D3DMULTISAMPLE_NONE;
     d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
+    d3dpp.MultiSampleType = D3DMULTISAMPLE_NONE;
+    d3dpp.BackBufferWidth = 2;
+    d3dpp.BackBufferHeight = 2;
+    d3dpp.BackBufferCount = 1;
     d3dpp.hDeviceWindow = window;
+    d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 
     HRESULT hr;
 
@@ -205,79 +208,65 @@ void D3d9Hook::unhook()
 
 STDMETHODIMP D3d9Hook::D3D9EndScene_hook(IDirect3DDevice9 * pD3DDevice9)
 {
-    D3d9Hook* pThis = static_cast<D3d9Hook*>(session::d3d9Hook());
+    this->onEndScene(pD3DDevice9);
 
-    pThis->onEndScene(pD3DDevice9);
-
-    return pThis->endSceneHook->callOrginal<HRESULT>(pD3DDevice9);
+    return this->endSceneHook->callOrginal<HRESULT>(pD3DDevice9);
 
 }
 
 STDMETHODIMP D3d9Hook::Present_hook(IDirect3DDevice9* pD3DDevice9, THIS_ CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion)
 {
-
-    D3d9Hook* pThis = static_cast<D3d9Hook*>(session::d3d9Hook());
-
     Windows::ComPtr<IDirect3DDevice9Ex> pD3DDevice9Ex;
     pD3DDevice9->QueryInterface(IID_PPV_ARGS(pD3DDevice9Ex.resetAndGetPointerAddress()));
-    pThis->onBeforePresent(pD3DDevice9, hDestWindowOverride, !!pD3DDevice9Ex);
+    this->onBeforePresent(pD3DDevice9, hDestWindowOverride, !!pD3DDevice9Ex);
 
-    HRESULT hr = pThis->presentHook->callOrginal<HRESULT>(pD3DDevice9, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
+    HRESULT hr = this->presentHook->callOrginal<HRESULT>(pD3DDevice9, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
 
-    pThis->onAfterPresent(pD3DDevice9, hDestWindowOverride, !!pD3DDevice9Ex);
+    this->onAfterPresent(pD3DDevice9, hDestWindowOverride, !!pD3DDevice9Ex);
 
     return hr;
 }
 
 STDMETHODIMP D3d9Hook::PresentEx_hook(IDirect3DDevice9Ex* pD3DDevice9Ex, THIS_ CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion, DWORD dwFlags)
 {
+    this->onBeforePresent(pD3DDevice9Ex, hDestWindowOverride, true);
 
-    D3d9Hook* pThis = static_cast<D3d9Hook*>(session::d3d9Hook());
+    HRESULT hr = this->presentExHook->callOrginal<HRESULT>(pD3DDevice9Ex, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion, dwFlags);
 
-    pThis->onBeforePresent(pD3DDevice9Ex, hDestWindowOverride, true);
-
-    HRESULT hr = pThis->presentExHook->callOrginal<HRESULT>(pD3DDevice9Ex, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion, dwFlags);
-
-    pThis->onAfterPresent(pD3DDevice9Ex, hDestWindowOverride, true);
+    this->onAfterPresent(pD3DDevice9Ex, hDestWindowOverride, true);
 
     return hr;
 }
 
 STDMETHODIMP D3d9Hook::SwapChainPresent_hook(IDirect3DSwapChain9* pD3DSwapChain9, THIS_ CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion, DWORD dwFlags)
 {
-    D3d9Hook* pThis = static_cast<D3d9Hook*>(session::d3d9Hook());
-
     Windows::ComPtr<IDirect3DDevice9> spD3DDevice9;
     pD3DSwapChain9->GetDevice(spD3DDevice9.resetAndGetPointerAddress());
 
     Windows::ComPtr<IDirect3DDevice9Ex> pD3DDevice9Ex;
     spD3DDevice9->QueryInterface(IID_PPV_ARGS(pD3DDevice9Ex.resetAndGetPointerAddress()));
 
-    pThis->onBeforePresent(spD3DDevice9, hDestWindowOverride, !!pD3DDevice9Ex);
+    this->onBeforePresent(spD3DDevice9, hDestWindowOverride, !!pD3DDevice9Ex);
 
-    HRESULT hr = pThis->swapChainPresentHook->callOrginal<HRESULT>(pD3DSwapChain9, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion, dwFlags);
+    HRESULT hr = this->swapChainPresentHook->callOrginal<HRESULT>(pD3DSwapChain9, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion, dwFlags);
 
-    pThis->onAfterPresent(spD3DDevice9, hDestWindowOverride, !!pD3DDevice9Ex);
+    this->onAfterPresent(spD3DDevice9, hDestWindowOverride, !!pD3DDevice9Ex);
 
     return hr;
 }
 
 STDMETHODIMP D3d9Hook::Reset_hook(IDirect3DDevice9* pD3DDevice9, THIS_ D3DPRESENT_PARAMETERS* pPresentationParameters)
 {
-    D3d9Hook* pThis = static_cast<D3d9Hook*>(session::d3d9Hook());
+    this->onReset(pD3DDevice9);
 
-    pThis->onReset(pD3DDevice9);
-
-    return pThis->resetHook->callOrginal<HRESULT>(pD3DDevice9, pPresentationParameters);
+    return this->resetHook->callOrginal<HRESULT>(pD3DDevice9, pPresentationParameters);
 }
 
 STDMETHODIMP D3d9Hook::ResetEx_hook(IDirect3DDevice9Ex* pD3DDevice9Ex, THIS_ D3DPRESENT_PARAMETERS* pPresentationParameters, D3DDISPLAYMODEEX *pFullscreenDisplayMode)
 {
-    D3d9Hook* pThis = static_cast<D3d9Hook*>(session::d3d9Hook());
+    this->onReset(pD3DDevice9Ex);
 
-    pThis->onReset(pD3DDevice9Ex);
-
-    return pThis->resetExHook->callOrginal<HRESULT>(pD3DDevice9Ex, pPresentationParameters, pFullscreenDisplayMode);
+    return this->resetExHook->callOrginal<HRESULT>(pD3DDevice9Ex, pPresentationParameters, pFullscreenDisplayMode);
 }
 
 void D3d9Hook::onEndScene(IDirect3DDevice9 * device)

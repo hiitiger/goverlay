@@ -1,5 +1,7 @@
 #pragma once
 
+namespace overlay_game
+{
 struct Hotkey
 {
     std::string name;
@@ -52,6 +54,8 @@ struct DxgiHookInfo
     }
 };
 
+} // namespace overlay_game
+
 class D3d9Hook;
 class DXGIHook;
 class InputHook;
@@ -59,8 +63,8 @@ class InputHook;
 namespace session
 {
 
-D3d9HookInfo &d3d9HookInfo();
-DxgiHookInfo &dxgiHookInfo();
+overlay_game::D3d9HookInfo &d3d9HookInfo();
+overlay_game::DxgiHookInfo &dxgiHookInfo();
 
 D3d9Hook *d3d9Hook();
 DXGIHook *dxgiHook();
