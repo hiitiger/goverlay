@@ -54,5 +54,6 @@ private:
 
 private:
     bool initGraphics(IDirect3DDevice9* device, HWND hDestWindowOverride, bool isD9Ex);
-    void uninitGraphics();
+    void uninitGraphics(IDirect3DDevice9* device);
+    void freeGraphics();
 };

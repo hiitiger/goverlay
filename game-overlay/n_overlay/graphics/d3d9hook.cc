@@ -373,7 +373,7 @@ void D3d9Hook::onBeforePresent(IDirect3DDevice9* device, HWND hDestWindowOverrid
         {
             if (!session::overlayConnected() || !session::overlayEnabled())
             {
-                uninitGraphics();
+                freeGraphics();
             }
         }
 
@@ -406,7 +406,7 @@ void D3d9Hook::onAfterPresent(IDirect3DDevice9* device, HWND /*hDestWindowOverri
 
 void D3d9Hook::onReset(IDirect3DDevice9* device)
 {
-    uninitGraphics();
+    uninitGraphics(device);
 }
 
 bool D3d9Hook::initGraphics(IDirect3DDevice9* device, HWND hDestWindowOverride, bool isD9Ex)
@@ -443,7 +443,18 @@ bool D3d9Hook::initGraphics(IDirect3DDevice9* device, HWND hDestWindowOverride, 
     return true;
 }
 
-void D3d9Hook::uninitGraphics()
+void D3d9Hook::uninitGraphics(IDirect3DDevice9* device)
+{
+    if (graphicsInit_)
+    {
+        graphics_->uninitGraphics(device);
+        graphicsInit_ = false;
+
+        session::setGraphicsActive(false);
+    }
+}
+
+void D3d9Hook::freeGraphics()
 {
     if (graphicsInit_)
     {
