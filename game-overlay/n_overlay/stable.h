@@ -34,4 +34,4 @@ __pragma(warning(pop))
 #include "message/gmessage.hpp"
 
 #include "hook/apihook.hpp"
-
+#include "graphics/graphics.h"

@@ -33,7 +33,7 @@ bool D3d9Graphics::initGraphics(IDirect3DDevice9* device, HWND hDestWindowOverri
 
 void D3d9Graphics::uninitGraphics(IDirect3DDevice9* device)
 {
-    if (device != device)
+    if (device_.get() != device)
     {
         return;
     }

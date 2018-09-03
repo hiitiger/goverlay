@@ -1,6 +1,9 @@
 #include "stable.h"
 #include "dxgihook.h"
+#include "overlay/hookapp.h"
 #include "overlay/session.h"
+#include "d3d11graphics.h"
+#include "d3d10graphics.h"
 
 HRESULT STDMETHODCALLTYPE H_DXGISwapChainPresent(IDXGISwapChain *swapChain, UINT a, UINT b)
 {
@@ -89,6 +92,7 @@ bool DXGIHook::loadLibInProc()
     }
 
     dxgiModule_ = GetModuleHandleW(L"dxgi.dll");
+    session::dxgiHookInfo().dxgiDll = dxgiModule_;
 
     dxgiLibraryLinked_ = linkDX11Library() || linkDX10Library();
 
@@ -105,6 +109,7 @@ bool DXGIHook::linkDX10Library()
     d3d10Module_ = GetModuleHandleW(L"d3d10.dll");
     if (d3d10Module_)
     {
+        session::dxgiHookInfo().d3d10Dll = d3d10Module_;
         d3d10Create_ = (pFnD3D10CreateDeviceAndSwapChain)GetProcAddress(d3d10Module_, "D3D10CreateDeviceAndSwapChain");
     }
 
@@ -121,6 +126,7 @@ bool DXGIHook::linkDX11Library()
     d3d11Module_ = GetModuleHandleW(L"d3d11.dll");
     if (d3d11Module_)
     {
+        session::dxgiHookInfo().d3d11Dll = d3d11Module_;
         d3d11Create_ = (pFnD3D11CreateDeviceAndSwapChain)GetProcAddress(d3d11Module_, "D3D11CreateDeviceAndSwapChain");
     }
 
@@ -226,5 +232,117 @@ bool DXGIHook::hookSwapChain(Windows::ComPtr<IDXGISwapChain> pSwapChain)
         hooked = dxgiSwapChainPresent1Hook_->succeed();
     }
 
+    session::dxgiHookInfo().presentHooked = dxgiSwapChainPresentHook_->succeed();
+    session::dxgiHookInfo().present1Hooked = dxgiSwapChainPresent1Hook_->succeed();
+    session::dxgiHookInfo().resizeBufferHooked = dxgiSwapChainResizeBuffersHook_->succeed();
+    session::dxgiHookInfo().resizeTargetHooked = dxgiSwapChainResizeTargetHook_->succeed();
+
+    HookApp::instance()->overlayConnector()->sendGraphicsHookInfo(session::dxgiHookInfo());
+
     return hooked;
+}
+
+void DXGIHook::onBeforePresent(IDXGISwapChain *swap)
+{
+    if (graphicsInit_)
+    {
+        if (!session::overlayConnected() || !session::overlayEnabled())
+        {
+            freeGraphics();
+        }
+    }
+
+    if (!graphicsInit_ && session::overlayEnabled())
+    {
+        initGraphics(swap);
+    }
+
+    if (graphicsInit_)
+    {
+        dxgiGraphics_->beforePresent(swap);
+    }
+}
+
+void DXGIHook::onAfterPresent(IDXGISwapChain *swap)
+{
+    if (graphicsInit_)
+    {
+        dxgiGraphics_->afterPresent(swap);
+    }
+}
+
+void DXGIHook::onResize(IDXGISwapChain *swapChain)
+{
+    uninitGraphics(swapChain);
+}
+
+bool DXGIHook::initGraphics(IDXGISwapChain *swap)
+{
+    DXGI_SWAP_CHAIN_DESC swapChainDesc;
+    HRESULT hr = swap->GetDesc(&swapChainDesc);
+    if (FAILED(hr))
+    {
+        return false;
+    }
+
+    HWND graphicsWindow = swapChainDesc.OutputWindow;
+
+    if (graphicsWindow != session::graphicsWindow())
+    {
+        return false;
+    }
+
+    Windows::ComPtr<ID3D10Device> device10 = NULL;
+    Windows::ComPtr<ID3D11Device> device11 = NULL;
+    hr = swap->GetDevice(
+        __uuidof(ID3D10Device), (void **)device10.resetAndGetPointerAddress());
+    hr = swap->GetDevice(
+        __uuidof(ID3D11Device), (void **)device11.resetAndGetPointerAddress());
+
+    if (!device10 && !device11)
+    {
+        return false;
+    }
+
+    bool isDX11 = (device11 && !device10);
+
+    if (isDX11)
+    {
+        std::unique_ptr<D3d11Graphics> graphics = std::make_unique<D3d11Graphics>();
+        if (graphics->initGraphics(swap))
+        {
+            this->dxgiGraphics_ = std::move(graphics);
+            graphicsInit_ = true;
+        }
+    }
+    else
+    {
+        std::unique_ptr<D3d10Graphics> graphics = std::make_unique<D3d10Graphics>();
+        if (graphics->initGraphics(swap))
+        {
+            this->dxgiGraphics_ = std::move(graphics);
+            graphicsInit_ = true;
+        }
+    }
+
+    session::setGraphicsActive(graphicsInit_);
+    return graphicsInit_;
+}
+
+void DXGIHook::uninitGraphics(IDXGISwapChain *swap)
+{
+    if (graphicsInit_)
+    {
+        dxgiGraphics_->uninitGraphics(swap);
+        session::setGraphicsActive(false);
+    }
+}
+
+void DXGIHook::freeGraphics()
+{
+    if (graphicsInit_)
+    {
+        dxgiGraphics_->freeGraphics();
+        session::setGraphicsActive(false);
+    }
 }

@@ -13,12 +13,18 @@ struct DXGIHookData
     std::unique_ptr<ApiHook<DXGISwapChainPresent1Type>> dxgiSwapChainPresent1Hook_;
 };
 
+struct DxgiGraphics;
+
 class DXGIHook : public IHookModule, public DXGIHookData
 {
+    bool graphicsInit_ = false;
+
     bool dxgiLibraryLinked_ = false;
 
     pFnD3D11CreateDeviceAndSwapChain d3d11Create_ = nullptr;
     pFnD3D10CreateDeviceAndSwapChain d3d10Create_ = nullptr;
+
+    std::unique_ptr<DxgiGraphics> dxgiGraphics_;
 
   public:
     DXGIHook();
@@ -49,4 +55,14 @@ class DXGIHook : public IHookModule, public DXGIHookData
     bool tryHookDXGI();
 
     bool hookSwapChain(Windows::ComPtr<IDXGISwapChain>);
+
+  private:
+    void onBeforePresent(IDXGISwapChain *);
+    void onAfterPresent(IDXGISwapChain *);
+    void onResize(IDXGISwapChain *);
+
+  private:
+    bool initGraphics(IDXGISwapChain *swap);
+    void uninitGraphics(IDXGISwapChain *swap);
+    void freeGraphics();
 };

@@ -43,6 +43,11 @@ struct DxgiHookInfo
     HMODULE d3d10Dll = nullptr;
     HMODULE d3d11Dll = nullptr;
 
+    bool presentHooked = false;
+    bool present1Hooked = false;
+    bool resizeBufferHooked = false;
+    bool resizeTargetHooked = false;
+
     std::map<std::string, std::string> toMap() const
     {
         return {
