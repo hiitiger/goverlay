@@ -13,7 +13,7 @@ struct DXGIHookData
     std::unique_ptr<ApiHook<DXGISwapChainPresent1Type>> dxgiSwapChainPresent1Hook_;
 };
 
-struct DxgiGraphics;
+class DxgiGraphics;
 
 class DXGIHook : public IHookModule, public DXGIHookData
 {

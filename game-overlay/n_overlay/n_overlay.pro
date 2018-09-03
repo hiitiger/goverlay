@@ -85,3 +85,10 @@ SOURCES += ./graphics/dxgihook.cc
 HEADERS += ./graphics/d3d9graphics.h
 SOURCES += ./graphics/d3d9graphics.cc
 
+HEADERS += ./graphics/dxgigraphics.h
+
+HEADERS += ./graphics/d3d10graphics.h
+SOURCES += ./graphics/d3d10graphics.cc
+
+HEADERS += ./graphics/d3d11graphics.h
+SOURCES += ./graphics/d3d11graphics.cc

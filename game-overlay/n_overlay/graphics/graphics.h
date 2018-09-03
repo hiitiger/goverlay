@@ -46,15 +46,3 @@ typedef HRESULT(STDMETHODCALLTYPE *DXGISwapChainResizeBuffersType)(IDXGISwapChai
 typedef HRESULT(STDMETHODCALLTYPE *DXGISwapChainResizeTargetType)(IDXGISwapChain *, const DXGI_MODE_DESC *);
 typedef HRESULT(STDMETHODCALLTYPE *DXGISwapChainPresent1Type)(IDXGISwapChain1 *swapChain, UINT SyncInterval, UINT PresentFlags, _In_ const DXGI_PRESENT_PARAMETERS *pPresentParameters);
 
-
-
-struct DxgiGraphics
-{
-    virtual ~DxgiGraphics() {}
-    virtual bool initGraphics(IDXGISwapChain* swap) = 0;
-    virtual     void uninitGraphics(IDXGISwapChain* swap) = 0;
-    virtual void freeGraphics() = 0;
-
-    virtual     void beforePresent(IDXGISwapChain* swap) = 0;
-    virtual void afterPresent(IDXGISwapChain* swap) = 0;
-};

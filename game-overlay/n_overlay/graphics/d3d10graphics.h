@@ -1,5 +1,6 @@
 #pragma once
 
+#include "dxgigraphics.h"
 
 
 class D3d10Graphics : public DxgiGraphics
@@ -10,12 +11,13 @@ public:
     D3d10Graphics();
     ~D3d10Graphics();
 
-    bool initGraphics(IDXGISwapChain* swap);
-    void uninitGraphics(IDXGISwapChain* swap);
-    void freeGraphics();
+    bool initGraphics(IDXGISwapChain* swap) override;
+    void uninitGraphics(IDXGISwapChain* swap) override;
+    void freeGraphics() override;
 
-    void beforePresent(IDXGISwapChain* swap);
-    void afterPresent(IDXGISwapChain* swap);
+    void beforePresent(IDXGISwapChain* swap) override;
+    void afterPresent(IDXGISwapChain* swap) override;
 
-private:
+
+    bool initGraphicsContext(IDXGISwapChain *swap) override;
 };

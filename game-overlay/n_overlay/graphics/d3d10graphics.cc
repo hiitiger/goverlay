@@ -54,3 +54,8 @@ void D3d10Graphics::afterPresent(IDXGISwapChain* swap)
         return;
     }
 }
+
+bool D3d10Graphics::initGraphicsContext(IDXGISwapChain *swap)
+{
+    return true;
+}
