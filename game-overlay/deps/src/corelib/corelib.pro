@@ -12,6 +12,7 @@ HEADERS += class.h
 HEADERS += macro.h
 HEADERS += winheader.h
 
+HEADERS += $$files(third/nlohmann/json.hpp)
 HEADERS += $$files(third/*.h)
 HEADERS += $$files(third/*.hpp)
 SOURCES += $$files(third/*.cpp)

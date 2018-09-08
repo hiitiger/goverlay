@@ -3,7 +3,7 @@
 #include <assert.h>
 #include "IpcCenter.h"
 #include "IpcLink.h"
-#include "utils.hpp"
+#include "utils/win-utils.h"
 
 IIpcCenter* getIpcCenter()
 {

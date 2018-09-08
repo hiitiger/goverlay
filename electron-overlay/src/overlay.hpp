@@ -1,6 +1,6 @@
 #pragma once
 #include <napi.h>
-#include "n-utils.hpp"
+#include "utils/n-utils.h"
 #include <assert.h>
 #include <set>
 #include <memory>

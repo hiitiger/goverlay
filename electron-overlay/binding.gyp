@@ -8,6 +8,7 @@
                 "./src",
                 "./src/3rd",
                 "./src/3rd/boost",
+                "./src/json",
                 "<!@(node -p \"require('node-addon-api').include\")"
             ],
             "sources": [
@@ -17,15 +18,15 @@
                 "./src/ipc/ipclink.cc",
                 "./src/ipc/ipccenter.h",
                 "./src/ipc/ipccenter.cc",
-                "./src/utils.hpp",
                 "./src/overlay.hpp",
                 "./src/overlay.cc",
-                "./src/windll.hpp",
-                "./src/node_async_call.h",
-                "./src/node_async_call.cc",
+                "./src/utils/windll.h",
+                "./src/utils/n-utils.h",
+                "./src/utils/win-utils.h",
+                "./src/utils/node_async_call.h",
+                "./src/utils/node_async_call.cc",
                 "./src/3rd/nlohmann/json.hpp",
                 "./src/message/gmessage.hpp",
-                "./src/n-utils.hpp",
                 "./src/main.cc"
             ],
             "defines": ["NAPI_DISABLE_CPP_EXCEPTIONS", "UNICODE"],
@@ -47,6 +48,7 @@
                                 "msvs_settings": {
                                     "VCCLCompilerTool": {
                                         "ExceptionHandling": 1,
+                                        "AdditionalOptions": ["/std:c++latest"]
                                     }
                                 }
                             },
@@ -54,6 +56,7 @@
                                 "msvs_settings": {
                                     "VCCLCompilerTool": {
                                         "ExceptionHandling": 1,
+                                        "AdditionalOptions": ["/std:c++latest"]
                                     }
                                 }
                             }

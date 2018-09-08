@@ -10,7 +10,7 @@ struct Point
 
     Point()
     {
-        point_.assign(T());
+        point_.fill(T());
     }
 
     Point(const Point &other)
@@ -154,7 +154,7 @@ struct Size
 
     Size()
     {
-        size_.assign(T());
+        size_.fill(T());
     }
 
     Size(const Size &other)
@@ -322,7 +322,7 @@ struct Rect
 
     Rect()
     {
-        rect_.assign(T());
+        rect_.fill(T());
     }
 
     Rect(const Rect &other)

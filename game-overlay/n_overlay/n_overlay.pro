@@ -28,6 +28,7 @@ QMAKE_CXXFLAGS_RELEASE += /MT
 QMAKE_CFLAGS_DEBUG += /MTd
 QMAKE_CXXFLAGS_DEBUG += /MTd
 
+QMAKE_CXXFLAGS += /std:c++latest
 
 contains(QMAKE_TARGET.arch, x86_64):{
 message( "Building for 64 bit")
@@ -40,11 +41,12 @@ LIBS += corelib.x64.lib
 !contains(QMAKE_TARGET.arch, x86_64):{
 message( "Building for 32 bit")
 LIBS += libMinHook.x86.lib
-LIBS += corelib.lib
+LIBS += corelib.x86.lib
 }
 
 
 HEADERS += dxgi1_2.h
+HEADERS += geometry.h
 SOURCES += ./main.cpp
 HEADERS += ./common.hpp
 

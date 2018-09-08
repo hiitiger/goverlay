@@ -62,6 +62,7 @@
 #include "../src/corelib/xml/xmldocument.h"
 
 #include "../src/corelib/json/json.h"
+#include "../src/corelib/json/jsonutils.h"
 
 #include "../src/corelib/io/io.h"
 
