@@ -7,10 +7,10 @@
 #include "utils.hpp"
 
 const WCHAR k_inject_helper[] = L"n_ovhelper.exe";
-const WCHAR k_inject_helper_x64[] = L"n_ovhelper_x64.exe";
+const WCHAR k_inject_helper_x64[] = L"n_ovhelper.x64.exe";
 
 const WCHAR k_inject_dll[] = L"n_overlay.dll";
-const WCHAR k_inject_dll_x64[] = L"n_overlay_x64.dll";
+const WCHAR k_inject_dll_x64[] = L"n_overlay.x64.dll";
 
 struct win_scope_handle
 {
