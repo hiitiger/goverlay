@@ -16,6 +16,8 @@ void OverlayConnector::start()
 {
     CHECK_THREAD(Threads::HookApp);
 
+    __trace__;
+
     std::string ipcName = k_overlayIpcName;
     ipcName.append("-");
     ipcName.append(win_utils::toLocal8Bit(HookApp::instance()->procName()));
@@ -24,7 +26,6 @@ void OverlayConnector::start()
     getIpcCenter()->init(ipcName);
 
     std::string mainIpcName = k_overlayIpcName;
-    mainIpcName.append("-");
     ipcLink_ = getIpcCenter()->getLink(mainIpcName);
     ipcLink_->addClient(this);
     getIpcCenter()->connectToHost(ipcLink_, "", "", false);
@@ -118,10 +119,29 @@ void OverlayConnector::sendGameWindowInput()
     });
 }
 
-std::vector<std::shared_ptr<overlay::Window>> OverlayConnector::windows()
+const std::vector<std::shared_ptr<overlay::Window>>& OverlayConnector::windows()
 {
-    std::lock_guard<std::mutex> lock(windowsLock_);
     return windows_;
+}
+
+void OverlayConnector::lockShareMem()
+{
+    shareMemoryLock_.lock();
+}
+
+void OverlayConnector::unlockShareMem()
+{
+    shareMemoryLock_.unlock();
+}
+
+void OverlayConnector::lockWindows()
+{
+    windowsLock_.lock();
+}
+
+void OverlayConnector::unlockWindows()
+{
+    windowsLock_.unlock();
 }
 
 void OverlayConnector::_heartbeat()
@@ -137,6 +157,12 @@ void OverlayConnector::_sendGameExit()
 void OverlayConnector::_sendGameProcessInfo()
 {
     CHECK_THREAD(Threads::HookApp);
+
+    overlay::GameProcessInfo message;
+    message.path = Storm::Utils::toUtf8(HookApp::instance()->procPath());
+
+    _sendMessage(&message);
+
 }
 
 void OverlayConnector::_sendInputHookInfo()
@@ -230,8 +256,12 @@ void OverlayConnector::_sendMessage(overlay::GMessage *message)
 
     overlay::json obj = message->toJson();
 
-    ipcMsg.type = message->type;
+    ipcMsg.type = message->msgType();
     ipcMsg.message = obj.dump();
+
+
+    std::cout << __FUNCTION__ << ", " << ipcMsg.type << std::endl;
+    std::cout << __FUNCTION__ << ", " << ipcMsg.message << std::endl;
 
     getIpcCenter()->sendMessage(ipcLink_, ipcClientId_, 0, &ipcMsg);
 }
@@ -262,7 +292,7 @@ void OverlayConnector::_onRemoteClose()
 
 void OverlayConnector::onLinkConnect(IIpcLink *link)
 {
-    DAssert(link == ipcLink_);
+    __trace__;
 
     LOGGER("n_overlay") << "@trace";
 
@@ -271,7 +301,8 @@ void OverlayConnector::onLinkConnect(IIpcLink *link)
 
 void OverlayConnector::onLinkClose(IIpcLink *link)
 {
-    DAssert(link == ipcLink_);
+    __trace__;
+
     ipcLink_ = nullptr;
 
     _onRemoteClose();
@@ -284,6 +315,8 @@ void OverlayConnector::onMessage(IIpcLink * /*link*/, int /*hostPort*/, const st
     {
         overlay::OverlayIpc ipcMsg;
         ipcMsg.upack(message);
+
+        std::cout << __FUNCTION__ << "," << ipcMsg.type << std::endl;
 
         if (ipcMsg.type == "overlay.init")
         {
@@ -323,6 +356,7 @@ void OverlayConnector::onMessage(IIpcLink * /*link*/, int /*hostPort*/, const st
 
 void OverlayConnector::saveClientId(IIpcLink * /*link*/, int clientId)
 {
+    __trace__;
     ipcClientId_ = clientId;
 }
 

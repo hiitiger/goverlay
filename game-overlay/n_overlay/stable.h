@@ -13,6 +13,7 @@ __pragma(warning(disable:4005))
 #include <dxgi.h>
 #include <d3d11.h>
 #include <d3d10.h>
+#include <D3DCompiler.h>
 
 #include "dxgi1_2.h"
 __pragma(warning(pop))
@@ -35,3 +36,11 @@ __pragma(warning(pop))
 
 #include "hook/apihook.hpp"
 #include "graphics/graphics.h"
+
+
+#ifndef ReleaseCOM
+#	define ReleaseCOM(p) {if (NULL != (p)) {(p)->Release(); (p) = NULL;}}
+#endif	
+
+
+#define __trace__  std::cout << __FUNCTION__ << std::endl;

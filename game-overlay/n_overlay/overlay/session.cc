@@ -2,6 +2,8 @@
 #include "graphics/d3d9hook.h"
 #include "graphics/dxgihook.h"
 #include "hook/inputhook.h"
+#include "hookapp.h"
+#include "overlay.h"
 #include "session.h"
 
 namespace session
@@ -29,17 +31,16 @@ std::atomic<bool> graphicsActive_ = false;
 std::atomic<bool> overlayConnected_ = false;
 std::atomic<bool> overlayEnabled_ = true;
 
+HMODULE hModuleD3dCompiler47_ = nullptr;
+
+
 D3d9Hook *d3d9Hook()
 {
-    DAssert(d3d9Hook_);
-
     return d3d9Hook_.get();
 }
 
 DXGIHook *dxgiHook()
 {
-    DAssert(dxgiHook_);
-
     return dxgiHook_.get();
 }
 
@@ -101,6 +102,22 @@ void saveInputHook(std::unique_ptr<InputHook> &&h)
 
     inputHooked_ = true;
     inputHook_ = std::move(h);
+}
+
+HMODULE loadModuleD3dCompiler47()
+{
+    CHECK_THREAD(Threads::Graphics);
+
+    if (!hModuleD3dCompiler47_)
+    {
+        hModuleD3dCompiler47_ = LoadLibraryW(L"d3dcompiler_47.dll");
+        if (!hModuleD3dCompiler47_)
+        {
+            hModuleD3dCompiler47_ = LoadLibraryW(HookApp::instance()->overlayConnector()->mainProcessDir().c_str());
+        }
+    }
+
+    return hModuleD3dCompiler47_;
 }
 
 overlay_game::D3d9HookInfo &d3d9HookInfo()

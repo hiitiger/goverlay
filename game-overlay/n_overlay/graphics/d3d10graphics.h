@@ -18,6 +18,4 @@ public:
     void beforePresent(IDXGISwapChain* swap) override;
     void afterPresent(IDXGISwapChain* swap) override;
 
-
-    bool initGraphicsContext(IDXGISwapChain *swap) override;
 };

@@ -100,6 +100,10 @@ class Application {
         offscreen: true
       }
     }
+
+    const Overlay = require("electron-overlay")
+    Overlay.start()
+
     const window = this.createWindow(AppWindows.osr, options)
     window.webContents.on(
       "paint",
@@ -107,6 +111,8 @@ class Application {
         this.mainWindow!.webContents.send("osrImage", {
           image: image.toDataURL()
         })
+
+        Overlay.sendFrameBuffer(window.id, image.getBitmap(), image.getSize().width, image.getSize().height)
       }
     )
 
@@ -114,6 +120,17 @@ class Application {
       mode: "detach"
     })
     window.loadURL(fileUrl(path.join(global.CONFIG.distDir, "index/osr.html")))
+
+    Overlay.addWindow(window.id, {
+      name: "MainOverlay",
+      transparent: false,
+      resizable: false,
+      rect: {
+          ...window.getBounds(),
+          x: 0, y: 0,
+      }
+    })
+
     return window
   }
 

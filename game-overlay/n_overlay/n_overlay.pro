@@ -92,5 +92,8 @@ HEADERS += ./graphics/dxgigraphics.h
 HEADERS += ./graphics/d3d10graphics.h
 SOURCES += ./graphics/d3d10graphics.cc
 
+HEADERS += ./graphics/sprites.shader.h
+HEADERS += ./graphics/d3d11sprite.h
+SOURCES += ./graphics/d3d11sprite.cc
 HEADERS += ./graphics/d3d11graphics.h
 SOURCES += ./graphics/d3d11graphics.cc

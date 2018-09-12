@@ -174,3 +174,72 @@ inline bool customizeUIPIPolicy(HWND window, UINT message, bool add)
 }
 
 } // namespace win_utils
+
+
+class win_mutex
+{
+  public:
+    win_mutex()
+        : handle_(NULL)
+    {
+    }
+
+    win_mutex(bool initialOwner)
+        : handle_(NULL)
+    {
+        handle_ = CreateMutex(NULL, initialOwner, NULL);
+    }
+
+    bool create(bool initialOwner, const std::wstring &name)
+    {
+        handle_ = CreateMutex(NULL, initialOwner, name.c_str());
+        return handle_ != NULL;
+    }
+
+    bool open(const std::wstring &name)
+    {
+        handle_ = OpenMutex(SYNCHRONIZE, FALSE, name.c_str());
+        return handle_ != NULL;
+    }
+
+    void close()
+    {
+        if (handle_)
+        {
+            CloseHandle(handle_);
+            handle_ = nullptr;
+        }
+    }
+
+    ~win_mutex()
+    {
+        if (handle_)
+        {
+            CloseHandle(handle_);
+        }
+    }
+
+    void lock()
+    {
+        DWORD ret = WaitForSingleObject(handle_, INFINITE);
+        (void)ret;
+        if (ret == WAIT_ABANDONED)
+        {
+            close();
+        }
+    }
+
+    void unlock()
+    {
+        BOOL ret = ReleaseMutex(handle_);
+        (void)ret;
+    }
+
+    HANDLE handle()
+    {
+        return handle_;
+    }
+
+  private:
+    HANDLE handle_;
+};

@@ -86,6 +86,8 @@ JSON_AUTO(WindowCaptionMargin, left, right, top, height)
 struct GMessage
 {
     std::string type = "abstract";
+    virtual std::string msgType() const { return type; }
+
     virtual bool fromJson(const json &obj) = 0;
     virtual json toJson(bool *ok = false) const = 0;
 };
@@ -93,6 +95,7 @@ struct GMessage
 struct HeartBeat : public GMessage
 {
     std::string type = "heartbeat";
+    virtual std::string msgType() const { return type; }
 
     virtual bool fromJson(const json &obj)
     {
@@ -115,6 +118,7 @@ JSON_AUTO(HeartBeat, type)
 struct Window : public GMessage
 {
     std::string type = "window";
+    virtual std::string msgType() const { return type; }
 
     std::uint32_t windowId;
     std::string name;
@@ -148,6 +152,7 @@ JSON_AUTO(Window, type, windowId, name, transparent, resizable, bufferName, rect
 struct FrameBuffer : public GMessage
 {
     std::string type = "window.framebuffer";
+    virtual std::string msgType() const { return type; }
 
     std::uint32_t windowId;
 
@@ -174,6 +179,8 @@ JSON_AUTO(FrameBuffer, type, windowId)
 struct CursorCommand : public GMessage
 {
     std::string type = "command.cursor";
+    virtual std::string msgType() const { return type; }
+
     std::string cursor;
 };
 
@@ -182,6 +189,7 @@ JSON_AUTO(CursorCommand, type, cursor)
 struct FpsCommand : public GMessage
 {
     std::string type = "command.fps";
+    virtual std::string msgType() const { return type; }
 
     bool showfps;
     int position;
@@ -192,6 +200,7 @@ JSON_AUTO(FpsCommand, type, showfps, position)
 struct OverlayInit : public GMessage
 {
     std::string type = "overlay.init";
+    virtual std::string msgType() const { return type; }
 
     bool processEnabled;
     std::string shareMemMutex;
@@ -228,6 +237,7 @@ JSON_AUTO(OverlayInit, type, processEnabled, shareMemMutex, hotkeys, windows)
 struct OverlayEnable : public GMessage
 {
     std::string type = "overlay.enable";
+    virtual std::string msgType() const { return type; }
 
     bool processEnabled;
 
@@ -255,6 +265,7 @@ JSON_AUTO(OverlayEnable, type, processEnabled)
 struct HotkeyInfo : public GMessage
 {
     std::string type = "overlay.hotkey";
+    virtual std::string msgType() const { return type; }
 
     std::vector<Hotkey> hotkeys;
 
@@ -321,6 +332,8 @@ JSON_AUTO(KeyInput)
 struct GameProcessInfo : public GMessage
 {
     std::string type = "game.process";
+    virtual std::string msgType() const { return type; }
+
     std::string path;
 
     virtual bool fromJson(const json &obj)
@@ -347,6 +360,8 @@ JSON_AUTO(GameProcessInfo, type, path)
 struct GameExit : public GMessage
 {
     std::string type = "game.exit";
+    virtual std::string msgType() const { return type; }
+
     virtual bool fromJson(const json &obj)
     {
         assert(obj["type"].get<std::string>() == this->type);
@@ -371,6 +386,8 @@ JSON_AUTO(GameExit, type)
 struct GraphicsHookInfo : public GMessage
 {
     std::string type = "graphics.hook";
+    virtual std::string msgType() const { return type; }
+
     std::string graphics;
     std::optional<D3d9HookInfo> d3d9hookInfo;
     std::optional<DxgiHookInfo> dxgihookInfo;
@@ -425,6 +442,7 @@ inline void to_json(json &j, const GraphicsHookInfo &object)
 struct GraphicsWindowSetup : public GMessage
 {
     std::string type = "graphics.window";
+    virtual std::string msgType() const { return type; }
 
     std::uint32_t window;
     int width;
@@ -456,6 +474,7 @@ JSON_AUTO(GraphicsWindowSetup, type, window, width, height, focus, hooked)
 struct GraphcisWindowFocusEvent : public GMessage
 {
     std::string type = "graphics.window.event.focus";
+    virtual std::string msgType() const { return type; }
     std::uint32_t window;
     bool focus;
 
@@ -481,6 +500,7 @@ JSON_AUTO(GraphcisWindowFocusEvent, type, window, focus)
 struct GraphcisWindowRezizeEvent : public GMessage
 {
     std::string type = "graphics.window.event.resize";
+    virtual std::string msgType() const { return type; }
     std::uint32_t window;
     int width;
     int height;
@@ -508,6 +528,7 @@ JSON_AUTO(GraphcisWindowRezizeEvent, type, window, width, height)
 struct GameInputIntercept : public GMessage
 {
     std::string type = "game.input.intercept";
+    virtual std::string msgType() const { return type; }
 
     bool intercepting;
 
@@ -535,6 +556,7 @@ JSON_AUTO(GameInputIntercept, type, intercepting)
 struct GameInput : public GMessage
 {
     std::string type = "game.input";
+    virtual std::string msgType() const { return type; }
 };
 
 } // namespace overlay

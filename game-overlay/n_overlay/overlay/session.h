@@ -67,6 +67,9 @@ class InputHook;
 
 namespace session
 {
+HMODULE loadModuleD3dCompiler47();
+
+
 
 overlay_game::D3d9HookInfo &d3d9HookInfo();
 overlay_game::DxgiHookInfo &dxgiHookInfo();

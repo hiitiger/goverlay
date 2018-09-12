@@ -12,6 +12,4 @@ public:
 
     virtual void beforePresent(IDXGISwapChain *swap) = 0;
     virtual void afterPresent(IDXGISwapChain *swap) = 0;
-
-    virtual bool initGraphicsContext(IDXGISwapChain *swap) = 0;
 };

@@ -279,11 +279,13 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="graphics\d3d11sprite.cc" />
     <ClCompile Include="graphics\d3d10graphics.cc" />
     <ClCompile Include="graphics\d3d11graphics.cc" />
     <ClCompile Include="graphics\d3d9graphics.cc" />
     <ClCompile Include="graphics\d3d9hook.cc" />
     <ClCompile Include="graphics\dxgihook.cc" />
+    <ClCompile Include="graphics\sprites.shader.h" />
     <ClCompile Include="overlay\hookapp.cc" />
     <ClCompile Include="hook\inputhook.cc" />
     <ClCompile Include="ipc\ipccenter.cc" />
@@ -294,6 +296,7 @@
     <ClCompile Include="overlay\uiapp.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="graphics\d3d11sprite.h" />
     <ClInclude Include="geometry.h" />
     <ClInclude Include="hook\apihook.hpp" />
     <ClInclude Include="common.hpp" />

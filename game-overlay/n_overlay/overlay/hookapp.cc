@@ -31,7 +31,7 @@ DWORD WINAPI HookAppThread(
 
 DWORD WINAPI hookLoopThread(_In_ LPVOID)
 {
-    while (HookApp::instance()->isQuitSet())
+    while (!HookApp::instance()->isQuitSet())
     {
         auto window = GetForegroundWindow();
         DWORD processId = 0;
@@ -111,6 +111,8 @@ void HookApp::startHook()
 {
     CHECK_THREAD(Threads::HookApp);
 
+    __trace__;
+
     if (!hookFlag_)
     {
         hookFlag_ = true;
@@ -131,7 +133,7 @@ void HookApp::async(const std::function<void()>& task)
 
 void HookApp::deferHook()
 {
-    if (!session::graphicsWindow())
+    if (!quitFlag_ && !session::graphicsActive())
     {
         async([this]() { hook(); });
     }
@@ -234,11 +236,15 @@ bool HookApp::findGameWindow()
         }
     }
 
+    std::cout << __FUNCTION__ << ", injectWindow: " << session::injectWindow() << std::endl;
+    std::cout << __FUNCTION__ << ", graphicsWindow: " << session::graphicsWindow() << std::endl;
+
     return !!session::graphicsWindow();
 }
 
 void HookApp::hook()
 {
+    __trace__;
     if (!findGameWindow())
     {
         return;
@@ -303,6 +309,8 @@ bool HookApp::hookInput()
         {
             session::saveInputHook(std::move(inputHook));
         }
+
+        std::cout << __FUNCTION__ << ", " << session::inputHooked() << std::endl;
     }
 
     return session::inputHooked();
@@ -310,7 +318,7 @@ bool HookApp::hookInput()
 
 bool HookApp::hookD3d9()
 {
-    if (!session::d3d9Hook())
+    if (!session::d3d9Hooked())
     {
         auto d3d9Hook = std::make_unique<D3d9Hook>();
 
@@ -318,6 +326,8 @@ bool HookApp::hookD3d9()
         {
             session::saveD3d9Hook(std::move(d3d9Hook));
         }
+
+        std::cout << __FUNCTION__ << ", " << session::d3d9Hooked() << std::endl;
     }
 
     return session::d3d9Hooked();
@@ -335,6 +345,7 @@ bool HookApp::hookDXGI()
         }
     }
 
+    std::cout << __FUNCTION__ << ", " << session::dxgiHooked() << std::endl;
     return session::dxgiHooked();
 }
 

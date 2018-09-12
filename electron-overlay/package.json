@@ -5,8 +5,7 @@
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "build": "node-gyp build",
-        "compile": "node-gyp rebuild",
+        "install": "node-gyp rebuild",
         "compile:electron": "electron-rebuild -v 2.0.8"
     },
     "keywords": [],

@@ -18,6 +18,8 @@ class OverlayConnector : public IIpcClient
     Storm::Event<void(std::uint32_t)> windowEvent_;
     Storm::Event<void(std::uint32_t)> frameBufferEvent_;
 
+    std::wstring mainProcessDir_;
+
 public:
     OverlayConnector();
     ~OverlayConnector();
@@ -39,10 +41,19 @@ public:
 
     void sendGameWindowInput();
 
-    std::vector<std::shared_ptr<overlay::Window>> windows();
+    const std::vector<std::shared_ptr<overlay::Window>>& windows();
 
     Storm::Event<void(std::uint32_t)>& windowEvent() { return windowEvent_; }
     Storm::Event<void(std::uint32_t)>& frameBufferEvent() { return frameBufferEvent_; }
+
+    std::wstring mainProcessDir() const { return mainProcessDir_; }
+
+    void lockShareMem();
+    void unlockShareMem();
+
+    void lockWindows();
+    void unlockWindows();
+
 
 protected:
     void _heartbeat();

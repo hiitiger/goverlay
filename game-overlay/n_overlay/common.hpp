@@ -40,7 +40,7 @@ inline bool checkThread(Threads type)
         break;
     }
 
-    return ::GetCurrentProcessId() == required;
+    return ::GetCurrentThreadId() == required;
 }
 
 #define CHECK_THREAD(type)         \
@@ -147,7 +147,7 @@ struct FrameBuffer
     {
         if (owned)
         {
-            data = (int *)malloc(width * height * sizeof(int));
+            data = (int *)malloc(width * height * sizeof(std::uint32_t));
             memcpy_s(data, width * height * sizeof(int), mem, width * height * sizeof(int));
         }
         else

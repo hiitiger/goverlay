@@ -96,7 +96,7 @@ namespace Storm
                 return runloop_;
             }
 
-            int size()
+            std::size_t size()
             {
                 std::lock_guard<std::mutex> lock(taskQueueLock_);
                 return taskQueue_.size();

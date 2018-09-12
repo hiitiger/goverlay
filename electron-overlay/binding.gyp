@@ -18,7 +18,7 @@
                 "./src/ipc/ipclink.cc",
                 "./src/ipc/ipccenter.h",
                 "./src/ipc/ipccenter.cc",
-                "./src/overlay.hpp",
+                "./src/overlay.h",
                 "./src/overlay.cc",
                 "./src/utils/windll.h",
                 "./src/utils/n-utils.h",

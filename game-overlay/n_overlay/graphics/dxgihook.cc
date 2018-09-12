@@ -66,21 +66,64 @@ void DXGIHook::unhook()
 
 HRESULT STDMETHODCALLTYPE DXGIHook::Present_hook(IDXGISwapChain *pSwapChain, UINT SyncInterval, UINT Flags)
 {
-    return this->dxgiSwapChainPresentHook_->callOrginal<HRESULT>(pSwapChain, SyncInterval, Flags);
+    this->onBeforePresent(pSwapChain);
+
+    HRESULT hr = this->dxgiSwapChainPresentHook_->callOrginal<HRESULT>(pSwapChain, SyncInterval, Flags);
+
+    if (FAILED(hr))
+    {
+        LOGGER("n_overlay") << "DXGIHook Present_hook:" << hr;
+        if (hr == DXGI_ERROR_DEVICE_REMOVED)
+        {
+            Windows::ComPtr<ID3D11Device> device11;
+            pSwapChain->GetDevice(__uuidof(ID3D11Device), (void**)device11.resetAndGetPointerAddress());
+            hr = device11->GetDeviceRemovedReason();
+            LOGGER("n_overlay") << "DXGIHook Present_hook GetDeviceRemovedReason:" << hr;
+        }
+    }
+
+
+    this->onAfterPresent(pSwapChain);
+
+    return hr;
 }
 
 HRESULT STDMETHODCALLTYPE DXGIHook::Present1_hook(IDXGISwapChain1 *pSwapChain, UINT SyncInterval, UINT PresentFlags, _In_ const DXGI_PRESENT_PARAMETERS *pPresentParameters)
 {
-    return this->dxgiSwapChainPresent1Hook_->callOrginal<HRESULT>(pSwapChain, SyncInterval, PresentFlags, pPresentParameters);
+    this->onBeforePresent(pSwapChain);
+
+    HRESULT hr = this->dxgiSwapChainPresent1Hook_->callOrginal<HRESULT>(pSwapChain, SyncInterval, PresentFlags, pPresentParameters);
+
+    if (FAILED(hr))
+    {
+        LOGGER("n_overlay") << "DXGIHook Present_hook:" << hr;
+        if (hr == DXGI_ERROR_DEVICE_REMOVED)
+        {
+            Windows::ComPtr<ID3D11Device> device11;
+            pSwapChain->GetDevice(__uuidof(ID3D11Device), (void**)device11.resetAndGetPointerAddress());
+            hr = device11->GetDeviceRemovedReason();
+            LOGGER("n_overlay") << "DXGIHook Present_hook GetDeviceRemovedReason:" << hr;
+        }
+    }
+
+
+    this->onAfterPresent(pSwapChain);
+
+    return hr;
+
 }
 
 HRESULT STDMETHODCALLTYPE DXGIHook::ResizeBuffers_hook(IDXGISwapChain *pSwapChain, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat, UINT SwapChainFlags)
 {
+    this->onResize(pSwapChain);
+
     return this->dxgiSwapChainResizeBuffersHook_->callOrginal<HRESULT>(pSwapChain, BufferCount, Width, Height, NewFormat, SwapChainFlags);
 }
 
 HRESULT STDMETHODCALLTYPE DXGIHook::ResizeTarget_hook(IDXGISwapChain *pSwapChain, __in const DXGI_MODE_DESC *pNewTargetParameters)
 {
+    this->onResize(pSwapChain);
+
     return this->dxgiSwapChainResizeTargetHook_->callOrginal<HRESULT>(pSwapChain, pNewTargetParameters);
 }
 
@@ -289,8 +332,18 @@ bool DXGIHook::initGraphics(IDXGISwapChain *swap)
 
     if (graphicsWindow != session::graphicsWindow())
     {
-        return false;
+        if (!session::injectWindow())
+        {
+            session::setGraphicsWindow(graphicsWindow);
+            std::cout << __FUNCTION__ << ", setGraphicsWindow: " << graphicsWindow << std::endl;
+        }
+        else
+        {
+            return false;
+        }
     }
+
+    session::setGraphicsThreadId(GetCurrentThreadId());
 
     Windows::ComPtr<ID3D10Device> device10 = NULL;
     Windows::ComPtr<ID3D11Device> device11 = NULL;

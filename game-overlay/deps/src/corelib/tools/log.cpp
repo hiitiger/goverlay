@@ -117,9 +117,6 @@ private:
 
     void _logThread()
     {
-        if (std::experimental::filesystem::file_size(fullPath_) > k_MAXLOGFILESIZE)
-            _backup(fullPath_);
-
         std::fstream fs;
         fs.open(fullPath_, std::ios_base::out | std::ios_base::app);
 
@@ -159,13 +156,16 @@ private:
         fs.close();
 
         running = false;
+
+        if (std::experimental::filesystem::file_size(fullPath_) > k_MAXLOGFILESIZE)
+            _backup(fullPath_);
     }
 };
 
-static Logger logInstance;
 
 static Logger* logger()
 {
+    static Logger logInstance;
     return &logInstance;
 }
 
