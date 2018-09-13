@@ -412,10 +412,10 @@ unsigned int IpcCenter::_ipcThreadProc()
     ::SetWindowLongPtr(m_ipcWindow, GWLP_USERDATA, (LONG_PTR)this);
     ::SetWindowLongPtr(m_ipcWindow, GWLP_WNDPROC, (LONG_PTR)IpcCenter::ipcWindowProc);
 
-    win_utils::customizeUIPIPolicy(m_ipcWindow, WM_COPYDATA, true);
-    win_utils::customizeUIPIPolicy(m_ipcWindow, WM_IPC_CONNECTLINK, true);
-    win_utils::customizeUIPIPolicy(m_ipcWindow, WM_IPC_CONNECTLINKACK, true);
-    win_utils::customizeUIPIPolicy(m_ipcWindow, WM_IPC_CLOSELINK, true);
+    Windows::customizeUIPIPolicy(m_ipcWindow, WM_COPYDATA, true);
+    Windows::customizeUIPIPolicy(m_ipcWindow, WM_IPC_CONNECTLINK, true);
+    Windows::customizeUIPIPolicy(m_ipcWindow, WM_IPC_CONNECTLINKACK, true);
+    Windows::customizeUIPIPolicy(m_ipcWindow, WM_IPC_CLOSELINK, true);
 
     bool running = true;
 
@@ -769,10 +769,10 @@ unsigned int IpcHostCenter::_ipcThreadProc()
     ::SetWindowLongPtr(m_ipcWindow, GWLP_USERDATA, (LONG_PTR)this);
     ::SetWindowLongPtr(m_ipcWindow, GWLP_WNDPROC, (LONG_PTR)IpcHostCenter::ipcWindowProc);
 
-    win_utils::customizeUIPIPolicy(m_ipcWindow, WM_COPYDATA, true);
-    win_utils::customizeUIPIPolicy(m_ipcWindow, WM_IPC_CONNECTLINK, true);
-    win_utils::customizeUIPIPolicy(m_ipcWindow, WM_IPC_CONNECTLINKACK, true);
-    win_utils::customizeUIPIPolicy(m_ipcWindow, WM_IPC_CLOSELINK, true);
+    Windows::customizeUIPIPolicy(m_ipcWindow, WM_COPYDATA, true);
+    Windows::customizeUIPIPolicy(m_ipcWindow, WM_IPC_CONNECTLINK, true);
+    Windows::customizeUIPIPolicy(m_ipcWindow, WM_IPC_CONNECTLINKACK, true);
+    Windows::customizeUIPIPolicy(m_ipcWindow, WM_IPC_CLOSELINK, true);
 
     bool running = true;
     SetEvent(m_ipcThreadEvent);

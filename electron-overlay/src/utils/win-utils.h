@@ -1,10 +1,11 @@
 #pragma once
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <string>
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
-namespace win_utils
+namespace Windows
 {
 inline std::wstring fromMultiByte(UINT codePage, const char *str, int size /*= -1*/)
 {
@@ -173,21 +174,82 @@ inline bool customizeUIPIPolicy(HWND window, UINT message, bool add)
     return true;
 }
 
-} // namespace win_utils
-
-
-class win_mutex
+class WaitableEvent
 {
-  public:
-    win_mutex()
+    WaitableEvent(WaitableEvent&) = delete;
+    WaitableEvent& operator = (const WaitableEvent&) = delete;
+
+    HANDLE handle_ = NULL;
+
+public:
+
+    WaitableEvent(bool manualReset = false, bool initialState = false)
+        :handle_(NULL)
+    {
+        handle_ = CreateEvent(NULL, manualReset, initialState, NULL);
+    }
+
+    ~WaitableEvent()
+    {
+        if (handle_)
+        {
+            CloseHandle(handle_);
+        }
+    }
+
+    void set()
+    {
+        SetEvent(handle_);
+    }
+
+    void reset()
+    {
+        ResetEvent(handle_);
+    }
+
+    int wait(unsigned timeout = INFINITE)
+    {
+        DWORD ret = WaitForSingleObject(handle_, timeout);
+        return ret == WAIT_OBJECT_0 ? 0 : -1;
+    }
+
+    bool isSignal()
+    {
+        return (wait(0) == 0);
+    }
+
+    HANDLE handle()
+    {
+        return handle_;
+    }
+};
+
+class Mutex
+{
+    Mutex(Mutex&) = delete;
+    Mutex& operator = (const Mutex&) = delete;
+
+    HANDLE handle_ = NULL;
+
+public:
+    //probably bad not create here
+    Mutex()
         : handle_(NULL)
     {
     }
 
-    win_mutex(bool initialOwner)
+    Mutex(bool initialOwner)
         : handle_(NULL)
     {
         handle_ = CreateMutex(NULL, initialOwner, NULL);
+    }
+
+    ~Mutex()
+    {
+        if (handle_)
+        {
+            CloseHandle(handle_);
+        }
     }
 
     bool create(bool initialOwner, const std::wstring &name)
@@ -208,14 +270,6 @@ class win_mutex
         {
             CloseHandle(handle_);
             handle_ = nullptr;
-        }
-    }
-
-    ~win_mutex()
-    {
-        if (handle_)
-        {
-            CloseHandle(handle_);
         }
     }
 
@@ -240,6 +294,58 @@ class win_mutex
         return handle_;
     }
 
-  private:
-    HANDLE handle_;
 };
+
+
+class Library
+{
+    HMODULE hModule_ = nullptr;
+    Library(const Library&) = delete;
+    Library& operator=(const Library&) = delete;
+
+public:
+    Library(const wchar_t* libName)
+    {
+        hModule_ = (::LoadLibraryW(libName));
+    }
+
+    ~Library()
+    {
+        if (hModule_)
+        {
+            ::FreeLibrary(hModule_);
+        }
+    };
+
+    Library(Library&& rhs)
+        : hModule_(rhs.hModule_)
+    {
+        rhs.hModule_ = HMODULE(0);
+    };
+
+    Library& operator=(Library&& rhs)
+    {
+        hModule_ = rhs.hModule_;
+        rhs.hModule_ = HMODULE(0);
+        return *this;
+    };
+
+    template <typename FuncPtrType>
+    FuncPtrType GetProcAddress(const char* procName) const
+    {
+        return (FuncPtrType)(::GetProcAddress(hModule_, procName));
+    };
+
+    bool loaded() const
+    {
+        return !!hModule_;
+    }
+
+    HMODULE module() const
+    {
+        return hModule_;
+    }
+};
+
+
+}

@@ -14,7 +14,6 @@
 #include <boost/interprocess/mapped_region.hpp>
 namespace share_mem = boost::interprocess;
 
-
 struct share_memory
 {
     std::string bufferName;
@@ -36,7 +35,7 @@ class OverlayMain : public IIpcHost
     std::vector<overlay::Window> windows_;
     std::map<std::uint32_t, std::shared_ptr<share_memory>> shareMemMap_;
 
-    win_mutex mutex_;
+    Windows::Mutex mutex_;
     std::string shareMemMutex_;
 
   public:
@@ -60,7 +59,7 @@ class OverlayMain : public IIpcHost
         static long long time = GetTickCount();
         std::wstring name(L"electron-overlay-sharemem-{4C4BD948-0F75-413F-9667-AC64A7944D8E}");
         name.append(std::to_wstring(pid)).append(L"-").append(std::to_wstring(time));
-        shareMemMutex_ = win_utils::toUtf8(name);
+        shareMemMutex_ = Windows::toUtf8(name);
         mutex_.create(false, name.c_str());
     }
 
@@ -204,8 +203,8 @@ class OverlayMain : public IIpcHost
             {
                 auto bufferName = (it->second)->bufferName;
 
-                auto& windowBitmapMem = it->second->windowBitmapMem;
-                auto& fullRegion = it->second->fullRegion;
+                auto &windowBitmapMem = it->second->windowBitmapMem;
+                auto &fullRegion = it->second->fullRegion;
 
                 if (fullRegion)
                 {
@@ -217,11 +216,11 @@ class OverlayMain : public IIpcHost
                     overlay::ShareMemFrameBuffer *head = (overlay::ShareMemFrameBuffer *)orgin;
                     head->width = width;
                     head->height = height;
-                    std::uint32_t *mem = (std::uint32_t*)(orgin + sizeof(overlay::ShareMemFrameBuffer));
+                    std::uint32_t *mem = (std::uint32_t *)(orgin + sizeof(overlay::ShareMemFrameBuffer));
 
                     for (int i = 0; i != height; ++i)
                     {
-                        const std::uint32_t* line = mem + i * head->width;
+                        const std::uint32_t *line = mem + i * head->width;
                         int xx = i * width;
                         memcpy((mem + xx), line, sizeof(std::uint32_t) * width);
                     }
@@ -277,10 +276,13 @@ class OverlayMain : public IIpcHost
     void onClientConnect(IIpcLink *client) override
     {
         this->ipcClients_.insert(client);
+
+        std::cout << __FUNCTION__ << "," << client->remoteIdentity() << std::endl;
     }
     void onClientClose(IIpcLink *client) override
     {
         this->ipcClients_.erase(client);
+        std::cout << __FUNCTION__ << "," << client->remoteIdentity() << std::endl;
     }
     void onMessage(IIpcLink *link, int clientId, int hostPort, const std::string &message) override
     {
@@ -291,7 +293,9 @@ class OverlayMain : public IIpcHost
             overlay::OverlayIpc ipcMsg;
             ipcMsg.upack(message);
 
-            if (message == "game.process")
+            std::cout << __FUNCTION__ << "," << ipcMsg.type << std::endl;
+
+            if (ipcMsg.type == "game.process")
             {
                 _sendOverlayInit(link);
             }
@@ -311,7 +315,7 @@ class OverlayMain : public IIpcHost
         overlay::json obj = message.toJson();
 
         ipcMsg.message = obj.dump();
-         this->ipcHostCenter_->sendMessage(link, 0, 0, &ipcMsg);
+        this->ipcHostCenter_->sendMessage(link, 0, 0, &ipcMsg);
     }
 
     std::string _shareMemoryName(std::int32_t windowId)

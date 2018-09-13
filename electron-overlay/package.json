@@ -6,14 +6,17 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "install": "node-gyp rebuild",
+        "compile": "node-gyp rebuild",
         "compile:electron": "electron-rebuild -v 2.0.8"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
-    "devDependencies": {
-        "electron-rebuild": "^1.8.2",
+    "dependencies": {
         "node-addon-api": "^1.4.0",
         "node-gyp": "^3.8.0"
+    },
+    "devDependencies": {
+        "electron-rebuild": "^1.8.2"
     }
 }
