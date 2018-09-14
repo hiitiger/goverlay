@@ -304,11 +304,7 @@ bool HookApp::hookInput()
 {
     if (!session::inputHooked())
     {
-        std::unique_ptr<InputHook> inputHook(new InputHook());
-        if (inputHook->hook())
-        {
-            session::saveInputHook(std::move(inputHook));
-        }
+        session::tryInputHook();
 
         std::cout << __FUNCTION__ << ", " << session::inputHooked() << std::endl;
     }
@@ -320,12 +316,7 @@ bool HookApp::hookD3d9()
 {
     if (!session::d3d9Hooked())
     {
-        auto d3d9Hook = std::make_unique<D3d9Hook>();
-
-        if (d3d9Hook->hook())
-        {
-            session::saveD3d9Hook(std::move(d3d9Hook));
-        }
+        session::tryD3d9Hook();
 
         std::cout << __FUNCTION__ << ", " << session::d3d9Hooked() << std::endl;
     }
@@ -337,12 +328,7 @@ bool HookApp::hookDXGI()
 {
     if (!session::dxgiHooked())
     {
-        auto dxgiHook = std::make_unique<DXGIHook>();
-
-        if (dxgiHook->hook())
-        {
-            session::saveDxgiHook(std::move(dxgiHook));
-        }
+        session::tryDxgiHook();
     }
 
     std::cout << __FUNCTION__ << ", " << session::dxgiHooked() << std::endl;

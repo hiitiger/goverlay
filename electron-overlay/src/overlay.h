@@ -193,9 +193,9 @@ class OverlayMain : public IIpcHost
         std::uint32_t *data = buffer.Data();
         std::size_t length = buffer.Length();
 
-        std::cout << "length :" << length << std::endl;
-        std::cout << "width :" << width << std::endl;
-        std::cout << "height :" << height << std::endl;
+        std::cout << "length :" << length << ", width :" << width << ",height :" << height << std::endl;
+
+        assert((length == width * height));
 
         {
             auto it = shareMemMap_.find(message.windowId);
@@ -220,7 +220,7 @@ class OverlayMain : public IIpcHost
 
                     for (int i = 0; i != height; ++i)
                     {
-                        const std::uint32_t *line = mem + i * head->width;
+                        const std::uint32_t *line = data + i * width;
                         int xx = i * width;
                         memcpy((mem + xx), line, sizeof(std::uint32_t) * width);
                     }

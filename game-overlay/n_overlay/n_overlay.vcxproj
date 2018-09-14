@@ -284,6 +284,7 @@
     <ClCompile Include="graphics\d3d11graphics.cc" />
     <ClCompile Include="graphics\d3d9graphics.cc" />
     <ClCompile Include="graphics\d3d9hook.cc" />
+    <ClCompile Include="graphics\dxgigraphics.cc" />
     <ClCompile Include="graphics\dxgihook.cc" />
     <ClCompile Include="graphics\sprites.shader.h" />
     <ClCompile Include="overlay\hookapp.cc" />

@@ -14,9 +14,9 @@ OverlayConnector::~OverlayConnector()
 
 void OverlayConnector::start()
 {
-    CHECK_THREAD(Threads::HookApp);
-
     __trace__;
+
+    CHECK_THREAD(Threads::HookApp);
 
     std::string ipcName = k_overlayIpcName;
     ipcName.append("-");
@@ -33,6 +33,8 @@ void OverlayConnector::start()
 
 void OverlayConnector::quit()
 {
+    __trace__;
+
     CHECK_THREAD(Threads::HookApp);
 
     if (ipcLink_)

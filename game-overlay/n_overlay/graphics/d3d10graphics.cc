@@ -10,47 +10,85 @@ D3d10Graphics::~D3d10Graphics()
     freeGraphics();
 }
 
-bool D3d10Graphics::initGraphics(IDXGISwapChain* swap)
+
+Windows::ComPtr<IDXGISwapChain> D3d10Graphics::swapChain() const
 {
-    DAssert(!swap_);
-
-    bool success = false;
-
-    if (!success)
-    {
-        freeGraphics();
-    }
-
-    return success;
-}
-
-void D3d10Graphics::uninitGraphics(IDXGISwapChain* swap)
-{
-    if (swap_.get() != swap)
-    {
-        return;
-    }
-
-    freeGraphics();
+    return swap_;
 }
 
 void D3d10Graphics::freeGraphics()
 {
-
+    __super::freeGraphics();
 }
 
-void D3d10Graphics::beforePresent(IDXGISwapChain* swap)
+
+bool D3d10Graphics::_initGraphicsContext(IDXGISwapChain* swap)
 {
-    if (swap_.get() != swap)
-    {
-        return;
-    }
+    return false;
 }
 
-void D3d10Graphics::afterPresent(IDXGISwapChain* swap)
+bool D3d10Graphics::_initGraphicsState()
 {
-    if (swap_.get() != swap)
-    {
-        return;
-    }
+    return false;
 }
+
+void D3d10Graphics::_initSpriteDrawer()
+{
+
+}
+
+void D3d10Graphics::_createSprites()
+{
+
+}
+
+void D3d10Graphics::_createWindowSprites()
+{
+
+}
+
+std::shared_ptr<D3d10WindowSprite> D3d10Graphics::_createWindowSprite(const std::shared_ptr<overlay::Window>& window)
+{
+    return nullptr;
+}
+
+void D3d10Graphics::_updateSprite(std::shared_ptr<D3d10WindowSprite>& sprite, bool clear /*= false*/)
+{
+
+}
+
+void D3d10Graphics::_checkAndResyncWindows()
+{
+
+}
+
+void D3d10Graphics::_drawBlockSprite()
+{
+
+}
+
+void D3d10Graphics::_drawMainSprite()
+{
+
+}
+
+void D3d10Graphics::_drawWindowSprite(std::shared_ptr<D3d10WindowSprite>&)
+{
+
+}
+
+void D3d10Graphics::_saveStatus()
+{
+
+}
+
+void D3d10Graphics::_prepareStatus()
+{
+
+}
+
+void D3d10Graphics::_restoreStatus()
+{
+
+}
+

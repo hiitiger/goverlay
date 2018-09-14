@@ -80,8 +80,8 @@ DXGIHook *dxgiHook();
 bool d3d9Hooked();
 bool dxgiHooked();
 
-void saveD3d9Hook(std::unique_ptr<D3d9Hook> &&h);
-void saveDxgiHook(std::unique_ptr<DXGIHook> &&h);
+void tryD3d9Hook();
+void tryDxgiHook();
 
 void clearD3d9Hook();
 void clearDxgiHook();
@@ -89,7 +89,7 @@ void clearDxgiHook();
 InputHook *inputHook();
 
 bool inputHooked();
-void saveInputHook(std::unique_ptr<InputHook> &&h);
+void tryInputHook();
 
 void setInjectWindow(HWND window);
 HWND injectWindow();

@@ -54,20 +54,35 @@ bool dxgiHooked()
     return dxgiHooked_;
 }
 
-void saveD3d9Hook(std::unique_ptr<D3d9Hook> &&h)
+void tryD3d9Hook()
 {
     CHECK_THREAD(Threads::HookApp);
 
-    d3d9Hook_ = std::move(h);
-    d3d9Hooked_ = true;
+    d3d9Hook_ = std::make_unique<D3d9Hook>();
+
+    if (d3d9Hook_->hook())
+    {
+        d3d9Hooked_ = true;
+    }
+    else
+    {
+        d3d9Hook_.reset();
+    }
 }
 
-void saveDxgiHook(std::unique_ptr<DXGIHook> &&h)
+void tryDxgiHook()
 {
     CHECK_THREAD(Threads::HookApp);
+    dxgiHook_ = std::make_unique<DXGIHook>();
 
-    dxgiHook_ = std::move(h);
-    dxgiHooked_ = true;
+    if (dxgiHook_->hook())
+    {
+        dxgiHooked_ = true;
+    }
+    else
+    {
+        dxgiHook_.reset();
+    }
 }
 
 void clearD3d9Hook()
@@ -96,12 +111,19 @@ bool inputHooked()
     return inputHooked_;
 }
 
-void saveInputHook(std::unique_ptr<InputHook> &&h)
+void tryInputHook()
 {
     CHECK_THREAD(Threads::HookApp);
 
-    inputHooked_ = true;
-    inputHook_ = std::move(h);
+    inputHook_ = std::make_unique<InputHook>();
+    if (inputHook_->hook())
+    {
+        inputHooked_ = true;
+    }
+    else
+    {
+        inputHook_.reset();
+    }
 }
 
 HMODULE loadModuleD3dCompiler47()

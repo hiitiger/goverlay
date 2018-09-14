@@ -16,7 +16,7 @@ namespace Storm
     typedef priv::dummy_lock st_policy;
     typedef std::mutex mt_policy;
 
-    typedef st_policy def_thread_policy;
+    typedef mt_policy def_thread_policy;
 
     template<class ThreadPolicy>
     class Trackable;

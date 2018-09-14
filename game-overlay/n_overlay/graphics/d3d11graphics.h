@@ -25,19 +25,19 @@ class D3d11Graphics : public DxgiGraphics
 
     Windows::ComPtr<IDXGISwapChain> swap_;
 
-    Windows::ComPtr<ID3D11Device> m_d3dDevice;
-    Windows::ComPtr<ID3D11DeviceContext> m_d3dContext;
-    Windows::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
+    Windows::ComPtr<ID3D11Device> d3dDevice_;
+    Windows::ComPtr<ID3D11DeviceContext> d3dContext_;
+    Windows::ComPtr<ID3D11RenderTargetView> renderTargetView_;
 
-    std::uint32_t m_targetWidth;
-    std::uint32_t m_targetHeight;
-    DXGI_FORMAT m_dxgiformat;
+    std::uint32_t targetWidth_ = 0;
+    std::uint32_t targetHeight_ = 0;
+    DXGI_FORMAT dxgiformat_ = DXGI_FORMAT_UNKNOWN;
 
-    Windows::ComPtr<ID3D11DepthStencilState> m_depthStencilState;
-    Windows::ComPtr<ID3D11BlendState> m_transparentBS;
-    Windows::ComPtr<ID3D11RasterizerState> m_rasterizeState;
+    Windows::ComPtr<ID3D11DepthStencilState> depthStencilState_;
+    Windows::ComPtr<ID3D11BlendState> transparentBlendState_;
+    Windows::ComPtr<ID3D11RasterizerState> rasterizeState_;
 
-    Windows::ComPtr<ID3D11Texture2D> m_clickHintTexture;
+    Windows::ComPtr<ID3D11Texture2D> blockSprite_;
 
 
     struct D3d11Status
@@ -66,7 +66,7 @@ class D3d11Graphics : public DxgiGraphics
         ID3D11RasterizerState *  rasterizer;
     };
 
-    D3d11Status m_savesStatus;
+    D3d11Status savedStatus_;
 
 
     std::shared_ptr<D3d11WindowSprite> mainSprite_;
@@ -75,30 +75,27 @@ public:
     D3d11Graphics();
     ~D3d11Graphics();
 
-    bool initGraphics(IDXGISwapChain* swap) override;
-
-    bool _initGraphicsContext(IDXGISwapChain* swap);
-    bool _initGraphicsState();
-
-    void uninitGraphics(IDXGISwapChain* swap) override;
+    Windows::ComPtr<IDXGISwapChain> swapChain() const override;
     void freeGraphics() override;
 
-    void beforePresent(IDXGISwapChain* swap) override;
-    void afterPresent(IDXGISwapChain* swap) override;
+    bool _initGraphicsContext(IDXGISwapChain* swap) override;
+    bool _initGraphicsState() override;
+    void _initSpriteDrawer() override;
 
-    void _createSprites();
-    void _createWindowSprites();
+    void _createSprites() override;
+    void _createWindowSprites() override;
 
     std::shared_ptr<D3d11WindowSprite> _createWindowSprite(const std::shared_ptr<overlay::Window>& window);
     void _updateSprite(std::shared_ptr<D3d11WindowSprite>& sprite, bool clear = false);
 
+    void _checkAndResyncWindows() override;
 
-    void _drawBlockSprite();
-    void _drawMainSprite();
+    void _drawBlockSprite() override;
+    void _drawMainSprite() override;
 
     void _drawWindowSprite(std::shared_ptr<D3d11WindowSprite>&);
 
-    void _saveStatus();
-    void _prepareStatus();
-    void _restoreStatus();
+    void _saveStatus() override;
+    void _prepareStatus() override;
+    void _restoreStatus() override;
 };
