@@ -388,6 +388,7 @@ void DXGIHook::uninitGraphics(IDXGISwapChain *swap)
     {
         dxgiGraphics_->uninitGraphics(swap);
         session::setGraphicsActive(false);
+        graphicsInit_ = false;
     }
 }
 
@@ -397,5 +398,6 @@ void DXGIHook::freeGraphics()
     {
         dxgiGraphics_->freeGraphics();
         session::setGraphicsActive(false);
+        graphicsInit_ = false;
     }
 }

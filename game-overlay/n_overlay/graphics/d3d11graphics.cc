@@ -272,6 +272,7 @@ void D3d11Graphics::_updateSprite(std::shared_ptr<D3d11WindowSprite>& windowSpri
             memcpy((bytePointer + xx), line, sizeof(int) * width);
         }
     }
+    HookApp::instance()->overlayConnector()->unlockShareMem();
 
     d3dContext_->Unmap(windowSprite->texture, 0);
 }
