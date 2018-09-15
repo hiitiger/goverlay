@@ -443,6 +443,29 @@ LRESULT DxAppBase::WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPa
         OnMouseMove(wParam, LOWORD(lParam), HIWORD(lParam));
         return 0;
 
+    case WM_KEYDOWN:
+    {
+        if (wParam == VK_ESCAPE)
+        {
+            WCHAR szPath[MAX_PATH] = { 0 };
+            GetModuleFileNameW(NULL, szPath, MAX_PATH);
+            WCHAR achLongPath[MAX_PATH] = { 0 };
+            TCHAR **lppPart = { NULL };
+            ::GetFullPathNameW(szPath, MAX_PATH, achLongPath, lppPart);
+
+            std::wstring dirPath = achLongPath;
+            size_t lastSepartor = dirPath.find_last_of('\\');
+            dirPath.erase(lastSepartor);
+
+#ifdef _WIN64
+            dirPath.append(L"\\n_overlay.x64.dll");
+#else
+            dirPath.append(L"\\n_overlay.dll");
+#endif
+            ::LoadLibraryW(dirPath.c_str());
+        }
+    }
+
     default:
         return DefWindowProc(hwnd, message, wParam, lParam);
     }
