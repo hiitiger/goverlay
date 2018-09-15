@@ -1,5 +1,10 @@
 
-bin
+bin/Debug/*
+bin/Release/*
+!bin/Debug/FW1FontWrapper.dll
+!bin/Debug/FW1FontWrapper.x64.dll
+!bin/Release/FW1FontWrapper.dll
+!bin/Release/FW1FontWrapper.x64.dll
 .vs
 .vscode
 .qmake.stash

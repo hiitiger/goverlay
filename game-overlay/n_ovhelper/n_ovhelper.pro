@@ -1,8 +1,9 @@
 TEMPLATE = app
 
 CONFIG -= qt
-
 CONFIG += console
+
+CharacterSet=1
 
 OBJECTS_DIR = $(SolutionDir)Objdir/$(ProjectName)/$(Configuration)
 

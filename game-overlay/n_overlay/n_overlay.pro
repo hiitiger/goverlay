@@ -2,6 +2,7 @@ TEMPLATE = lib
 
 CONFIG -= qt
 
+CharacterSet=1
 DEFINES += _WIN32_WINNT=0x0601
 DEFINES += _ENABLE_ATOMIC_ALIGNMENT_FIX
 
@@ -9,7 +10,8 @@ INCLUDEPATH += .
 INCLUDEPATH += ../deps/3rd
 INCLUDEPATH += ../deps/3rd/boost
 INCLUDEPATH += ../deps/include
-# INCLUDEPATH += $(DXSDK_DIR)Include
+INCLUDEPATH += ../deps
+
 CONFIG(debug, debug|release) {
     QMAKE_LIBDIR += ../deps/lib/debug
 }
