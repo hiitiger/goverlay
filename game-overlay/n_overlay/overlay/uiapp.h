@@ -28,6 +28,7 @@ public:
 
     void async(const std::function<void()>& task);
 
+    void toggleInputIntercept();
     void startInputIntercept();
     void stopInputIntercept();
 
@@ -49,5 +50,5 @@ private:
     LRESULT hookCallWndProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam);
     LRESULT hookCallWndRetProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam);
 
-    void checkHotkey();
+    bool checkHotkey();
 };

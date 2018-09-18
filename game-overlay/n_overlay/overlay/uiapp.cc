@@ -74,6 +74,18 @@ void UiApp::async(const std::function<void()>& task)
     tasks_.push_back(task);
 }
 
+void UiApp::toggleInputIntercept()
+{
+    if (isIntercepting_)
+    {
+        stopInputIntercept();
+    }
+    else
+    {
+        startInputIntercept();
+    }
+}
+
 void UiApp::startInputIntercept()
 {
     CHECK_THREAD(Threads::Window);
@@ -164,11 +176,84 @@ LRESULT CALLBACK UiApp::CallWndRetProc(_In_ int nCode, _In_ WPARAM wParam, _In_ 
 
 LRESULT UiApp::hookGetMsgProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
+    if (nCode >= 0 && session::graphicsActive())
+    {
+        MSG* pMsg = (MSG*)lParam;
+        if (pMsg->hwnd == graphicsWindow_ && wParam == PM_REMOVE)
+        {
+            if (pMsg->message == WM_KEYDOWN || pMsg->message == WM_SYSKEYDOWN)
+            {
+                if (checkHotkey())
+                {
+                    return 0;
+                }
+            }
+
+            if (!isIntercepting_)
+            {
+                return CallNextHookEx(msgHook_, nCode, wParam, lParam);
+            }
+
+            if (pMsg->message >= WM_MOUSEFIRST && pMsg->message <= WM_MOUSELAST)
+            {
+                POINTS pt = MAKEPOINTS(pMsg->lParam);
+
+                if (overlay_game::pointInRect(pt, windowClientRect_))
+                {
+                    if (!HookApp::instance()->overlayConnector()->processMouseMessage(pMsg->message, pMsg->wParam, pMsg->lParam))
+                    {
+                        if (pMsg->message == WM_LBUTTONUP
+                            || pMsg->message == WM_MBUTTONUP)
+                        {
+                            async([this]() { this->stopInputIntercept(); });
+                        }
+                    }
+                    pMsg->message = WM_NULL;
+                    return 0;
+                }
+            }
+
+            if ((pMsg->message >= WM_KEYFIRST && pMsg->message <= WM_KEYLAST)
+                || (pMsg->message >= WM_SYSKEYDOWN && pMsg->message <= WM_SYSDEADCHAR))
+            {
+                HookApp::instance()->overlayConnector()->processkeyboardMessage(pMsg->message, pMsg->wParam, pMsg->lParam);
+                pMsg->message = WM_NULL;
+                return 0;
+            }
+        }
+
+    }
     return CallNextHookEx(msgHook_, nCode, wParam, lParam);
 }
 
 LRESULT UiApp::hookCallWndProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
+    if (nCode >= 0)
+    {
+        CWPSTRUCT* cwp = (CWPSTRUCT*)lParam;
+
+        if (cwp->hwnd == graphicsWindow_)
+        {
+            if (cwp->message == WM_DESTROY)
+            {
+                LOGGER("n_overlay") << L"WM_DESTROY, " << graphicsWindow_;
+
+                HookApp::instance()->overlayConnector()->sendGraphicsWindowDestroy(graphicsWindow_);
+
+                unhookWindow();
+                graphicsWindow_ = nullptr;
+
+                HookApp::instance()->quit();
+            }
+
+            if (cwp->message == WM_SIZE)
+            {
+                GetClientRect(graphicsWindow_, &windowClientRect_);
+                HookApp::instance()->overlayConnector()->sendGraphicsWindowResizeEvent(graphicsWindow_, windowClientRect_.right - windowClientRect_.left, windowClientRect_.bottom - windowClientRect_.top);
+            }
+        }
+    }
+
     return CallNextHookEx(wndProcHook_, nCode, wParam, lParam);
 }
 
@@ -177,8 +262,14 @@ LRESULT UiApp::hookCallWndRetProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARA
     return CallNextHookEx(wndRetProcHook_, nCode, wParam, lParam);
 }
 
-void UiApp::checkHotkey()
+bool UiApp::checkHotkey()
 {
-    //
+    if (Windows::OrginalApi::GetAsyncKeyState(VK_F1))
+    {
+        toggleInputIntercept();
+        return true;
+    }
+
+    return false;
 }
 

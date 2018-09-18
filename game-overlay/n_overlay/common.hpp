@@ -206,4 +206,22 @@ struct FrameBuffer
     }
 };
 
+
+
+inline bool pointInRect(const POINTS& pt, const  RECT& rc)
+{
+    return pt.x >= rc.left
+        && pt.y >= rc.top
+        && pt.x <= rc.right
+        && pt.y <= rc.bottom;
+}
+
+inline bool pointInRect(const POINT& pt, const  RECT& rc)
+{
+    return pt.x >= rc.left
+        && pt.y >= rc.top
+        && pt.x <= rc.right
+        && pt.y <= rc.bottom;
+}
+
 } // namespace overlay_game

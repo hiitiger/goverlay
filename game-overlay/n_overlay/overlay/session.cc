@@ -195,6 +195,8 @@ HWND injectWindow()
 void setGraphicsWindow(HWND window)
 {
     g_graphicsWindow = window;
+
+    setWindowThreadId(GetWindowThreadProcessId(window, nullptr));
 }
 
 HWND graphicsWindow()

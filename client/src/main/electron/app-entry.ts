@@ -94,6 +94,14 @@ class Application {
   public startOverlay() {
     this.Overlay = require("electron-overlay")
     this.Overlay.start()
+
+    this.Overlay.setEventCallback((event: string, payload: any) => {
+      console.log(event, payload)
+      const osrwindow = this.getWindow(AppWindows.osr)
+      if (osrwindow) {
+        osrwindow.webContents.sendInputEvent(this.Overlay.translateInputEvent(payload))
+      }
+    })
   }
 
   public createOsrWindow() {
@@ -101,7 +109,7 @@ class Application {
       height: 360,
       width: 640,
       frame: false,
-      show: false,
+      show: true,
       transparent: true,
       webPreferences: {
         offscreen: true
@@ -129,6 +137,7 @@ class Application {
       name: "MainOverlay",
       transparent: false,
       resizable: false,
+      nativeHandle: window.getNativeWindowHandle().readUInt32LE(0),
       rect: {
           ...window.getBounds(),
           x: 0, y: 0,

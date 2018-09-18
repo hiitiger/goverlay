@@ -28,3 +28,6 @@ ipcRenderer.on("osrImage", (event: string, arg: { image: string }) => {
   }
   imageElem.src = image
 })
+
+window.onfocus = function() { console.log("focus") }
+window.onblur = function() { console.log("blur") }

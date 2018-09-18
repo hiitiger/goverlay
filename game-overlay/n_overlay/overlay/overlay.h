@@ -11,6 +11,7 @@ class OverlayConnector : public IIpcClient
 
     std::mutex windowsLock_;
     std::vector<std::shared_ptr<overlay::Window>> windows_;
+    std::uint32_t mainWindowId_ = 0;
 
     std::mutex framesLock_;
     std::map<std::uint32_t, std::shared_ptr<overlay_game::FrameBuffer>> frameBuffers_;
@@ -37,11 +38,10 @@ public:
     void sendGraphicsWindowSetupInfo(HWND window, int width, int height, bool focus, bool hooked);
     void sendGraphicsWindowResizeEvent(HWND window, int width, int height);
     void sendGraphicsWindowFocusEvent(HWND window, bool focus);
+    void sendGraphicsWindowDestroy(HWND window);
 
     void sendInputIntercept();
     void sendInputStopIntercept();
-
-    void sendGameWindowInput();
 
     const std::vector<std::shared_ptr<overlay::Window>>& windows();
 
@@ -57,6 +57,10 @@ public:
 
     void lockWindows();
     void unlockWindows();
+
+    bool processMouseMessage(UINT message, WPARAM wParam, LPARAM lParam);
+    bool processkeyboardMessage(UINT message, WPARAM wParam, LPARAM lParam);
+
 
 protected:
     void _heartbeat();
@@ -74,7 +78,7 @@ protected:
 
     void _sendInputIntercept(bool v);
 
-    void _sendGameWindowInput();
+    void _sendGameWindowInput(std::uint32_t windowId, UINT message, WPARAM wParam, LPARAM lParam);
 
     void _sendGraphicsWindowResizeEvent(HWND window, int width, int height);
     void _sendGraphicsWindowFocusEvent(HWND window, bool focus);

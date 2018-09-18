@@ -122,6 +122,7 @@ struct Window : public GMessage
     virtual std::string msgType() const { return type; }
 
     std::uint32_t windowId;
+    std::uint32_t nativeHandle;
     std::string name;
     bool transparent = false;
     bool resizable = false;
@@ -148,7 +149,7 @@ struct Window : public GMessage
     }
 };
 
-JSON_AUTO(Window, type, windowId, name, transparent, resizable, bufferName, rect, caption)
+JSON_AUTO(Window, type, windowId, nativeHandle, name, transparent, resizable, bufferName, rect, caption)
 
 
 struct WindowClose : public GMessage
@@ -608,6 +609,31 @@ struct GameInput : public GMessage
 {
     std::string type = "game.input";
     virtual std::string msgType() const { return type; }
+
+    std::uint32_t windowId;
+    std::uint32_t msg;
+    std::uint32_t wparam;
+    std::uint32_t lparam;
+
+    virtual bool fromJson(const json &obj)
+    {
+        assert(obj["type"].get<std::string>() == this->type);
+
+        *this = obj;
+
+        return true;
+    }
+
+    virtual json toJson(bool *ok = false) const
+    {
+        json result = *this;
+
+        if (ok)
+            *ok = true;
+        return result;
+    }
 };
+
+JSON_AUTO(GameInput, type, windowId, msg, wparam, lparam)
 
 } // namespace overlay

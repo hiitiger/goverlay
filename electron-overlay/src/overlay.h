@@ -1,6 +1,7 @@
 #pragma once
 #include <napi.h>
 #include "utils/n-utils.h"
+#include "utils/node_async_call.h"
 #include <assert.h>
 #include <set>
 #include <memory>
@@ -21,6 +22,216 @@ struct share_memory
     std::unique_ptr<share_mem::windows_shared_memory> windowBitmapMem;
     std::unique_ptr<share_mem::mapped_region> fullRegion;
 };
+
+inline bool isKeyDown(WPARAM wparam)
+{
+    return (GetAsyncKeyState(wparam) & 0x8000) != 0;
+}
+
+inline std::string getKeyCode(std::uint32_t key)
+{
+    static std::map<std::uint32_t, std::string> keyCodes = {
+        {1, "LButton"},
+        {2, "RButton"},
+        {4 , "MButton"},
+        {5 , "XButotn1"},
+        {6 , "XButotn2"},
+        {8 , "Backspace"},
+        {9 , "Tab"},
+        {13 , "Enter"},
+        {16 , "Shift"},
+        {17 , "Ctrl"},
+        {18 , "Alt"},
+        {19 , "Pause"},
+        {20 , "CapsLock"},
+        {27 , "Escape"},
+        {32 , " "},
+        {33 , "PageUp"},
+        {34 , "PageDown"},
+        {35 , "End"},
+        {36 , "Home"},
+        {37 , "ArrowLeft"},
+        {38 , "ArrowUp"},
+        {39 , "ArrowRight"},
+        {40 , "ArrowDown"},
+        {45 , "Insert"},
+        {46 , "Delete"},
+        {48 , "0"},
+        {49 , "1"},
+        {50 , "2"},
+        {51 , "3"},
+        {52 , "4"},
+        {53 , "5"},
+        {54 , "6"},
+        {55 , "7"},
+        {56 , "8"},
+        {57 , "9"},
+        {65 , "A"},
+        {66 , "B"},
+        {67 , "C"},
+        {68 , "D"},
+        {69 , "E"},
+        {70 , "F"},
+        {71 , "G"},
+        {72 , "H"},
+        {73 , "I"},
+        {74 , "J"},
+        {75 , "K"},
+        {76 , "L"},
+        {77 , "M"},
+        {78 , "N"},
+        {79 , "O"},
+        {80 , "P"},
+        {81 , "Q"},
+        {82 , "R"},
+        {83 , "S"},
+        {84 , "T"},
+        {85 , "U"},
+        {86 , "V"},
+        {87 , "W"},
+        {88 , "X"},
+        {89 , "Y"},
+        {90 , "Z"},
+        {91 , "Meta" },
+        {92 , "Meta"},
+        {93 , "ContextMenu"},
+        {96 , "0"},
+        {97 , " 1"},
+        {98 , " 2"},
+        {99 , " 3"},
+        {100 , " 4"},
+        {101 , " 5"},
+        {102 , " 6"},
+        {103 , " 7"},
+        {104 , " 8"},
+        {105 , " 9"},
+        {106 , " *"},
+        {107 , " +"},
+        {109 , " -"},
+        {110 , " ."},
+        {111 , " /"},
+        {112 , "F1"},
+        {113 , "F2"},
+        {114 , "F3"},
+        {115 , "F4"},
+        {116 , "F5"},
+        {117 , "F6"},
+        {118 , "F7"},
+        {119 , "F8"},
+        {120 , "F9"},
+        {121 , "F10"},
+        {122 , "F11"},
+        {123 , "F12"},
+        {144 , "NumLock"},
+        {145 , "ScrollLock" },
+    { 160, "Shift" },
+    { 161, "Shift" },
+    { 162, "Control" },
+    { 163, "Control" },
+    { 164, "Alt" },
+    {165, "Alt"},
+        {182 , "My Computer"},
+        {183 , "My Calculator"},
+        {186 , ";"},
+        {187 , "="},
+        {188 , "},"},
+        {189 , "-"},
+        {190 , "."},
+        {191 , "/"},
+        {192 , "`"},
+        {219 , "["},
+        {220 , "\\"},
+        {221 , "]"},
+        { 222 , "'" },
+        { 250 , "Play" },
+    };
+
+    return keyCodes[key];
+}
+
+inline std::vector<std::string> getKeyboardModifiers(WPARAM wparam, LPARAM lparam)
+{
+    std::vector<std::string> modifiers;
+    if (isKeyDown(VK_SHIFT))
+        modifiers.push_back("shift");
+    if (isKeyDown(VK_CONTROL))
+        modifiers.push_back("control");
+    if (isKeyDown(VK_MENU))
+        modifiers.push_back("alt");
+    if (isKeyDown(VK_LWIN) || isKeyDown(VK_RWIN))
+        modifiers.push_back("meta");
+
+    if (::GetAsyncKeyState(VK_NUMLOCK) & 1)
+        modifiers.push_back("numLock");
+    if (::GetAsyncKeyState(VK_CAPITAL) & 1)
+        modifiers.push_back("capsLock");
+
+    switch (wparam) {
+    case VK_RETURN:
+        if ((lparam >> 16) & KF_EXTENDED)
+            modifiers.push_back("isKeypad");
+        break;
+    case VK_INSERT:
+    case VK_DELETE:
+    case VK_HOME:
+    case VK_END:
+    case VK_PRIOR:
+    case VK_NEXT:
+    case VK_UP:
+    case VK_DOWN:
+    case VK_LEFT:
+    case VK_RIGHT:
+        if (!((lparam >> 16) & KF_EXTENDED))
+            modifiers.push_back("isKeypad");
+        break;
+    case VK_NUMLOCK:
+    case VK_NUMPAD0:
+    case VK_NUMPAD1:
+    case VK_NUMPAD2:
+    case VK_NUMPAD3:
+    case VK_NUMPAD4:
+    case VK_NUMPAD5:
+    case VK_NUMPAD6:
+    case VK_NUMPAD7:
+    case VK_NUMPAD8:
+    case VK_NUMPAD9:
+    case VK_DIVIDE:
+    case VK_MULTIPLY:
+    case VK_SUBTRACT:
+    case VK_ADD:
+    case VK_DECIMAL:
+    case VK_CLEAR:
+        modifiers.push_back("isKeypad");
+        break;
+    case VK_SHIFT:
+        if (isKeyDown(VK_LSHIFT))
+            modifiers.push_back("left");
+        else if (isKeyDown(VK_RSHIFT))
+            modifiers.push_back("right");
+        break;
+    case VK_CONTROL:
+        if (isKeyDown(VK_LCONTROL))
+            modifiers.push_back("left");
+        else if (isKeyDown(VK_RCONTROL))
+            modifiers.push_back("right");
+        break;
+    case VK_MENU:
+        if (isKeyDown(VK_LMENU))
+            modifiers.push_back("left");
+        else if (isKeyDown(VK_RMENU))
+            modifiers.push_back("right");
+        break;
+    case VK_LWIN:
+        modifiers.push_back("left");
+        break;
+    case VK_RWIN:
+        modifiers.push_back("right");
+        break;
+    }
+    return modifiers;
+}
+
+
 
 class OverlayMain : public IIpcHost
 {
@@ -153,6 +364,7 @@ class OverlayMain : public IIpcHost
 
         Napi::Object windowDetails = info[1].ToObject();
         message.name = windowDetails.Get("name").ToString();
+        message.nativeHandle = windowDetails.Get("nativeHandle").ToNumber();
         message.transparent = windowDetails.Get("transparent").ToBoolean();
         message.resizable = windowDetails.Get("resizable").ToBoolean();
         message.bufferName = _shareMemoryName(message.windowId);
@@ -306,6 +518,68 @@ class OverlayMain : public IIpcHost
         return env.Undefined();
     }
 
+    Napi::Value translateInputEvent(const Napi::CallbackInfo &info)
+    {
+        Napi::Env env = info.Env();
+        Napi::Object object = Napi::Object::New(env);
+        Napi::Object eventData = info[0].ToObject();
+
+        std::uint32_t msg = eventData.Get("msg").ToNumber();
+        std::uint32_t wparam = eventData.Get("wparam").ToNumber();
+        std::uint32_t lparam = eventData.Get("lparam").ToNumber();
+
+        std::cout << "msg:" << msg << ", wparam:" << wparam << ", lparam: " << lparam << std::endl;
+
+        if ((msg >= WM_KEYFIRST && msg <= WM_KEYLAST)
+            || (msg >= WM_SYSKEYDOWN && msg <= WM_SYSDEADCHAR))
+        {
+            if (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN)
+            {
+                object.Set("type", "keyDown");
+            }
+            else if (msg == WM_KEYUP || msg == WM_SYSKEYUP)
+            {
+                object.Set("type", "keyUp");
+            }
+            else
+            {
+                object.Set("type", "char");
+            }
+
+            auto modifiersVec = getKeyboardModifiers(wparam, lparam);
+
+            Napi::Array modifiers = Napi::Array::New(env, modifiersVec.size());
+
+            for (auto i = 0; i != modifiersVec.size(); ++i)
+            {
+                modifiers.Set(i, modifiersVec[i]);
+            }
+
+            object.Set("modifiers", modifiers);
+            object.Set("keyCode", getKeyCode(wparam));
+        }
+
+        else if (msg >= WM_MOUSEFIRST && msg <= WM_MOUSELAST)
+        {
+        }
+
+        return object;
+    }
+
+    void notifyInputEvent(std::uint32_t windowId, std::uint32_t msg, std::uint32_t wparam, std::uint32_t lparam)
+    {
+        if (eventCallback_)
+        {
+            Napi::HandleScope scope(eventCallback_->env);
+            Napi::Object object = Napi::Object::New(eventCallback_->env);
+            object.Set("windowId", Napi::Value::From(eventCallback_->env, windowId));
+            object.Set("msg", Napi::Value::From(eventCallback_->env, msg));
+            object.Set("wparam", Napi::Value::From(eventCallback_->env, wparam));
+            object.Set("lparam", Napi::Value::From(eventCallback_->env, lparam));
+            eventCallback_->callback.MakeCallback(eventCallback_->receiver.Value(), { Napi::Value::From(eventCallback_->env, "game.input"), object });
+        }
+    }
+
   private:
     void _makeCallback()
     {
@@ -318,6 +592,7 @@ class OverlayMain : public IIpcHost
             eventCallback_->callback.Call(eventCallback_->receiver.Value(), {object});
         }
     }
+
 
     void _sendHotkeys()
     {
@@ -371,6 +646,14 @@ class OverlayMain : public IIpcHost
             {
                 _sendOverlayInit(link);
             }
+            else if (ipcMsg.type == "game.input")
+            {
+                std::shared_ptr<overlay::GameInput> overlayMsg = std::make_shared<overlay::GameInput>();
+                overlay::json json = overlay::json::parse(ipcMsg.message);
+                overlayMsg->fromJson(json);
+
+                _onGameInput(overlayMsg);
+            }
         }
     }
 
@@ -398,5 +681,12 @@ class OverlayMain : public IIpcHost
         std::string name = std::string("electron-overlay-").append(std::to_string(pid)).append("-").append(std::to_string(time)).append("-");
         name.append(std::to_string((long long)windowId)).append("-image-").append(std::to_string(++nextImage));
         return name;
+    }
+
+    void _onGameInput(const std::shared_ptr<overlay::GameInput>& overlayMsg)
+    {
+        node_async_call::async_call([this, overlayMsg]() {
+            notifyInputEvent(overlayMsg->windowId, overlayMsg->msg, overlayMsg->wparam, overlayMsg->lparam);
+        });
     }
 };

@@ -63,6 +63,11 @@ Napi::Value sendFrameBuffer(const Napi::CallbackInfo &info)
   return gOverlayMain->sendFrameBuffer(info);
 }
 
+Napi::Value translateInputEvent(const Napi::CallbackInfo &info)
+{
+    return gOverlayMain->translateInputEvent(info);
+}
+
 } // namespace overlay
 
 Napi::String Method(const Napi::CallbackInfo &info)
@@ -85,6 +90,7 @@ Napi::Object Init(Napi::Env env, Napi::Object exports)
     exports.Set(Napi::String::New(env, "closeWindow"), Napi::Function::New(env, overlay::closeWindow));
     exports.Set(Napi::String::New(env, "sendWindowBounds"), Napi::Function::New(env, overlay::sendWindowBounds));
     exports.Set(Napi::String::New(env, "sendFrameBuffer"), Napi::Function::New(env, overlay::sendFrameBuffer));
+    exports.Set(Napi::String::New(env, "translateInputEvent"), Napi::Function::New(env, overlay::translateInputEvent));
 
     return exports;
 }

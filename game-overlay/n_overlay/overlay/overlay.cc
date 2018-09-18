@@ -96,6 +96,11 @@ void OverlayConnector::sendGraphicsWindowFocusEvent(HWND window, bool focus)
     });
 }
 
+void OverlayConnector::sendGraphicsWindowDestroy(HWND window)
+{
+
+}
+
 void OverlayConnector::sendInputIntercept()
 {
     CHECK_THREAD(Threads::Window);
@@ -109,15 +114,6 @@ void OverlayConnector::sendInputStopIntercept()
     CHECK_THREAD(Threads::Window);
     HookApp::instance()->async([this]() {
         _sendInputIntercept(false);
-    });
-}
-
-void OverlayConnector::sendGameWindowInput()
-{
-    CHECK_THREAD(Threads::Window);
-
-    HookApp::instance()->async([this]() {
-        _sendGameWindowInput();
     });
 }
 
@@ -144,6 +140,23 @@ void OverlayConnector::lockWindows()
 void OverlayConnector::unlockWindows()
 {
     windowsLock_.unlock();
+}
+
+bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM lParam)
+{
+    return false;
+}
+
+bool OverlayConnector::processkeyboardMessage(UINT message, WPARAM wParam, LPARAM lParam)
+{
+    if (mainWindowId_ != 0)
+    {
+        HookApp::instance()->async([this, windowId = mainWindowId_, message, wParam, lParam]() {
+            _sendGameWindowInput(windowId, message, wParam, lParam);
+        });
+
+        return true;
+    }
 }
 
 void OverlayConnector::_heartbeat()
@@ -226,9 +239,17 @@ void OverlayConnector::_sendInputIntercept(bool v)
     _sendMessage(&message);
 }
 
-void OverlayConnector::_sendGameWindowInput()
+void OverlayConnector::_sendGameWindowInput(std::uint32_t windowId, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     CHECK_THREAD(Threads::HookApp);
+
+    overlay::GameInput message;
+    message.windowId = windowId;
+    message.msg = msg;
+    message.wparam = wparam;
+    message.lparam = lparam;
+    _sendMessage(&message);
+
 }
 
 void OverlayConnector::_sendGraphicsWindowResizeEvent(HWND window, int width, int height)
@@ -397,6 +418,11 @@ void OverlayConnector::_onOverlayInit(std::shared_ptr<overlay::OverlayInit>& ove
         {
             _updateFrameBuffer(window.windowId, window.bufferName);
         }
+
+        if (window.name == "MainOverlay")
+        {
+            mainWindowId_ = window.windowId;
+        }
     }
 
     std::lock_guard<std::mutex> lock(windowsLock_);
@@ -413,6 +439,11 @@ void OverlayConnector::_onWindow(std::shared_ptr<overlay::Window>& overlayMsg)
     {
         std::lock_guard<std::mutex> lock(windowsLock_);
         windows_.push_back(overlayMsg);
+
+        if (overlayMsg->name == "MainOverlay")
+        {
+            mainWindowId_ = overlayMsg->windowId;
+        }
     }
     if (overlayMsg->transparent)
     {

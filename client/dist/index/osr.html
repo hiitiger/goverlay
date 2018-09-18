@@ -5,7 +5,7 @@
         body {
             background-color: rgba(67, 138, 138, 0.25);
         }
-        
+
         h1 {
             color: maroon;
             margin-left: 40px;
@@ -17,7 +17,7 @@
 <body>
     <div>
         <button id='button'>Button</button>
-        <br/> Hello Electron!
+        <br /> Hello Electron!
 
         <label id='label'>Label</label>
     </div>
@@ -25,7 +25,7 @@
         const label = document.getElementById('label')
         setInterval(() => {
             label.innerText = (new Date()).toString()
-                // console.log(label.innerText)
+            // console.log(label.innerText)
         }, 1000)
 
         setTimeout(() => {
@@ -39,6 +39,21 @@
                 ipcRenderer.send('osrClick')
             })
         }, 1000)
+
+        window.onfocus = function () {
+            console.log("focus")
+        }
+        window.onblur = function () {
+            console.log("blur")
+        }
+
+        window.onkeydown = function (e) {
+            console.log("onkeydown", e.keyCode)
+        }
+
+        window.onmousedown = function () {
+            console.log("onmousedown")
+        }
     </script>
 </body>
 
