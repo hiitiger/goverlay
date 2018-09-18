@@ -17,6 +17,8 @@ class OverlayConnector : public IIpcClient
 
     Storm::Event<void(std::uint32_t)> windowEvent_;
     Storm::Event<void(std::uint32_t)> frameBufferEvent_;
+    Storm::Event<void(std::uint32_t)> windowCloseEvent_;
+    Storm::Event<void(std::uint32_t, overlay::WindowRect)> windowBoundsEvent_;
 
     std::wstring mainProcessDir_;
 
@@ -45,6 +47,8 @@ public:
 
     Storm::Event<void(std::uint32_t)>& windowEvent() { return windowEvent_; }
     Storm::Event<void(std::uint32_t)>& frameBufferEvent() { return frameBufferEvent_; }
+    Storm::Event<void(std::uint32_t)>& windowCloseEvent() { return windowCloseEvent_; }
+    Storm::Event<void(std::uint32_t, overlay::WindowRect)>& windowBoundsEvent() { return windowBoundsEvent_; }
 
     std::wstring mainProcessDir() const { return mainProcessDir_; }
 
@@ -53,7 +57,6 @@ public:
 
     void lockWindows();
     void unlockWindows();
-
 
 protected:
     void _heartbeat();
@@ -92,7 +95,10 @@ private:
     void _onOverlayInit(std::shared_ptr<overlay::OverlayInit>& overlayMsg);
     void _onOverlayEnable(std::shared_ptr<overlay::OverlayEnable>& overlayMsg);
     void _onWindow(std::shared_ptr<overlay::Window>& overlayMsg);
-    void _onWindowFrameBuffer(std::shared_ptr<overlay::FrameBuffer>& overlayMsg);
+    void _onWindowFrameBuffer(std::shared_ptr<overlay::WindowFrameBuffer>& overlayMsg);
+
+    void _onWindowClose(std::shared_ptr<overlay::WindowClose>& overlayMsg);
+    void _onWindowBounds(std::shared_ptr<overlay::WindowBounds>& overlayMsg);
 
     void _updateFrameBuffer(std::uint32_t windowId, const std::string& bufferName);
 };

@@ -68,7 +68,7 @@ class D3d11Graphics : public DxgiGraphics
 
     D3d11Status savedStatus_;
 
-
+    std::vector<std::shared_ptr<D3d11WindowSprite>> windowSprites_;
     std::shared_ptr<D3d11WindowSprite> mainSprite_;
 
 public:
@@ -85,12 +85,14 @@ public:
     void _createSprites() override;
     void _createWindowSprites() override;
 
+    Windows::ComPtr<ID3D11Texture2D> _createDynamicTexture(std::uint32_t width, std::uint32_t height);
     std::shared_ptr<D3d11WindowSprite> _createWindowSprite(const std::shared_ptr<overlay::Window>& window);
     void _updateSprite(std::shared_ptr<D3d11WindowSprite>& sprite, bool clear = false);
 
     void _checkAndResyncWindows() override;
 
     void _drawBlockSprite() override;
+    void _drawWindowSprites() override;
     void _drawMainSprite() override;
 
     void _drawWindowSprite(std::shared_ptr<D3d11WindowSprite>&);

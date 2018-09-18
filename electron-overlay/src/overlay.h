@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <set>
 #include <memory>
+#include <mutex>
 #include <iostream>
 #include "ipc/tinyipc.h"
 #include "message/gmessage.hpp"
@@ -85,9 +86,27 @@ class OverlayMain : public IIpcHost
             Napi::Object object = arr.Get(i).ToObject();
             overlay::Hotkey hotkey;
             hotkey.name = object.Get("name").ToString();
-            hotkey.vKey = object.Get("vKey").ToNumber();
-            hotkey.modifiers = object.Get("modifiers").ToNumber();
-            hotkey.passthrough = object.Get("passthrough").ToBoolean();
+            hotkey.keyCode = object.Get("keyCode").ToNumber();
+            if (object.Has("modifiers"))
+            {
+                Napi::Object modifiers = object.Get("modifiers").ToObject();
+                if (modifiers.Has("ctrl"))
+                {
+                    hotkey.ctrl = modifiers.Get("ctrl").ToBoolean();
+                }
+                if (modifiers.Has("shift"))
+                {
+                    hotkey.shift = modifiers.Get("shift").ToBoolean();
+                }
+                if (modifiers.Has("alt"))
+                {
+                    hotkey.alt = modifiers.Get("alt").ToBoolean();
+                }
+            }
+            if (object.Has("passthrough"))
+            {
+                hotkey.passthrough = object.Get("passthrough").ToBoolean();
+            }
             hotkeys.push_back(hotkey);
         }
         this->hotkeys_ = hotkeys;
@@ -95,6 +114,7 @@ class OverlayMain : public IIpcHost
         this->_sendHotkeys();
         return env.Undefined();
     }
+
 
     Napi::Value log(const Napi::CallbackInfo &info)
     {
@@ -160,7 +180,15 @@ class OverlayMain : public IIpcHost
             share_mem::permissions perm;
             perm.set_unrestricted();
 
-            auto shareMemSize = message.rect.width * message.rect.height * sizeof(std::uint32_t) + sizeof(overlay::ShareMemFrameBuffer);
+            HMONITOR moniter = MonitorFromWindow(GetForegroundWindow(), MONITOR_DEFAULTTOPRIMARY);
+            MONITORINFO moniterInfo = { 0 };
+            moniterInfo.cbSize = sizeof(MONITORINFO);
+            GetMonitorInfoW(moniter, &moniterInfo);
+            int width = moniterInfo.rcMonitor.right - moniterInfo.rcMonitor.left;
+            int height = moniterInfo.rcMonitor.bottom- moniterInfo.rcMonitor.top;
+            std::cout << "create share mem:" << moniter<< ", " << width << "," << height << std::endl;
+
+            auto shareMemSize = width * height * sizeof(std::uint32_t) + sizeof(overlay::ShareMemFrameBuffer);
             std::shared_ptr<share_memory> imageMem = std::make_shared<share_memory>();
             imageMem->bufferName = message.bufferName;
             try
@@ -181,11 +209,57 @@ class OverlayMain : public IIpcHost
         return env.Undefined();
     }
 
+    Napi::Value closeWindow(const Napi::CallbackInfo& info)
+    {
+        Napi::Env env = info.Env();
+
+        overlay::WindowClose message;
+        message.windowId = info[0].ToNumber();
+        this->_sendMessage(&message);
+
+        auto it = std::find_if(windows_.begin(), windows_.end(), [windowId = message.windowId](const auto &window) {
+            return windowId == window.windowId;
+        });
+
+        if (it != windows_.end())
+        {
+            windows_.erase(it);
+        }
+
+        return env.Undefined();
+    }
+
+    Napi::Value sendWindowBounds(const Napi::CallbackInfo& info)
+    {
+        Napi::Env env = info.Env();
+
+        overlay::WindowBounds message;
+        message.windowId = info[0].ToNumber();
+        Napi::Object rect = info[1].ToObject().Get("rect").ToObject();
+        message.rect.x = rect.Get("x").ToNumber();
+        message.rect.y = rect.Get("y").ToNumber();
+        message.rect.width = rect.Get("width").ToNumber();
+        message.rect.height = rect.Get("height").ToNumber();
+        this->_sendMessage(&message);
+
+        auto it = std::find_if(windows_.begin(), windows_.end(), [windowId = message.windowId](const auto &window) {
+            return windowId == window.windowId;
+        });
+
+        if (it != windows_.end())
+        {
+            auto& window = *it;
+            window.rect = message.rect;
+        }
+
+        return env.Undefined();
+    }
+
     Napi::Value sendFrameBuffer(const Napi::CallbackInfo &info)
     {
         Napi::Env env = info.Env();
 
-        overlay::FrameBuffer message;
+        overlay::WindowFrameBuffer message;
         message.windowId = info[0].ToNumber();
         Napi::Buffer<std::uint32_t> buffer = info[1].As<Napi::Buffer<std::uint32_t>>();
         std::int32_t width = info[2].ToNumber();
@@ -208,7 +282,7 @@ class OverlayMain : public IIpcHost
 
                 if (fullRegion)
                 {
-                    mutex_.lock();
+                    std::lock_guard<Windows::Mutex> lock(mutex_);
 
                     char *orgin = static_cast<char *>(fullRegion->get_address());
                     std::memset(fullRegion->get_address(), 0, fullRegion->get_size());
@@ -224,8 +298,6 @@ class OverlayMain : public IIpcHost
                         int xx = i * width;
                         memcpy((mem + xx), line, sizeof(std::uint32_t) * width);
                     }
-
-                    mutex_.unlock();
                 }
             }
         }

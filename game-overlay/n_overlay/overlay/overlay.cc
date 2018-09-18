@@ -347,11 +347,28 @@ void OverlayConnector::onMessage(IIpcLink * /*link*/, int /*hostPort*/, const st
         }
         else if (ipcMsg.type == "window.framebuffer")
         {
-            std::shared_ptr<overlay::FrameBuffer> overlayMsg = std::make_shared<overlay::FrameBuffer>();
+            std::shared_ptr<overlay::WindowFrameBuffer> overlayMsg = std::make_shared<overlay::WindowFrameBuffer>();
             overlay::json json = overlay::json::parse(ipcMsg.message);
             overlayMsg->fromJson(json);
 
             _onWindowFrameBuffer(overlayMsg);
+        }
+        else if (ipcMsg.type == "window.close")
+        {
+            std::shared_ptr<overlay::WindowClose> overlayMsg = std::make_shared<overlay::WindowClose>();
+            overlay::json json = overlay::json::parse(ipcMsg.message);
+            overlayMsg->fromJson(json);
+
+            _onWindowClose(overlayMsg);
+        }
+
+        else if (ipcMsg.type == "window.close")
+        {
+            std::shared_ptr<overlay::WindowBounds> overlayMsg = std::make_shared<overlay::WindowBounds>();
+            overlay::json json = overlay::json::parse(ipcMsg.message);
+            overlayMsg->fromJson(json);
+
+            _onWindowBounds(overlayMsg);
         }
     }
 }
@@ -405,7 +422,7 @@ void OverlayConnector::_onWindow(std::shared_ptr<overlay::Window>& overlayMsg)
     this->windowEvent()(overlayMsg->windowId);
 }
 
-void OverlayConnector::_onWindowFrameBuffer(std::shared_ptr<overlay::FrameBuffer>& overlayMsg)
+void OverlayConnector::_onWindowFrameBuffer(std::shared_ptr<overlay::WindowFrameBuffer>& overlayMsg)
 {
     std::lock_guard<std::mutex> lock(windowsLock_);
 
@@ -422,6 +439,37 @@ void OverlayConnector::_onWindowFrameBuffer(std::shared_ptr<overlay::FrameBuffer
         }
 
         this->frameBufferEvent()(window->windowId);
+    }
+}
+
+void OverlayConnector::_onWindowClose(std::shared_ptr<overlay::WindowClose>& overlayMsg)
+{
+    std::lock_guard<std::mutex> lock(windowsLock_);
+    auto it = std::find_if(windows_.begin(), windows_.end(), [&](const auto &window) {
+        return overlayMsg->windowId == window->windowId;
+    });
+
+    if (it != windows_.end())
+    {
+        windows_.erase(it);
+
+        this->windowCloseEvent()(overlayMsg->windowId);
+    }
+}
+
+void OverlayConnector::_onWindowBounds(std::shared_ptr<overlay::WindowBounds>& overlayMsg)
+{
+    std::lock_guard<std::mutex> lock(windowsLock_);
+    auto it = std::find_if(windows_.begin(), windows_.end(), [&](const auto &window) {
+        return overlayMsg->windowId == window->windowId;
+    });
+
+    if (it != windows_.end())
+    {
+        auto& window = *it;
+        window->rect = overlayMsg->rect;
+
+        this->windowBoundsEvent()(overlayMsg->windowId, overlayMsg->rect);
     }
 }
 

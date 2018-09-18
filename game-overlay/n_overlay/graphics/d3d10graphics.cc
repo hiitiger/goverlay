@@ -67,6 +67,11 @@ void D3d10Graphics::_drawBlockSprite()
 
 }
 
+void D3d10Graphics::_drawWindowSprites()
+{
+
+}
+
 void D3d10Graphics::_drawMainSprite()
 {
 

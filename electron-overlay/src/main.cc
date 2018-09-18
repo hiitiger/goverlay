@@ -43,6 +43,16 @@ Napi::Value addWindow(const Napi::CallbackInfo &info)
   return gOverlayMain->addWindow(info);
 }
 
+Napi::Value closeWindow(const Napi::CallbackInfo &info)
+{
+    return gOverlayMain->closeWindow(info);
+}
+
+Napi::Value sendWindowBounds(const Napi::CallbackInfo &info)
+{
+    return gOverlayMain->sendWindowBounds(info);
+}
+
 Napi::Value sendCommand(const Napi::CallbackInfo &info)
 {
   return gOverlayMain->sendCommand(info);
@@ -63,18 +73,20 @@ Napi::String Method(const Napi::CallbackInfo &info)
 
 Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
-  exports.Set(Napi::String::New(env, "hello"), Napi::Function::New(env, Method));
+    exports.Set(Napi::String::New(env, "hello"), Napi::Function::New(env, Method));
 
-  exports.Set(Napi::String::New(env, "start"), Napi::Function::New(env, overlay::start));
-  exports.Set(Napi::String::New(env, "stop"), Napi::Function::New(env, overlay::stop));
-  exports.Set(Napi::String::New(env, "setEventCallback"), Napi::Function::New(env, overlay::setEventCallback));
-  exports.Set(Napi::String::New(env, "setHotkeys"), Napi::Function::New(env, overlay::setHotkeys));
-  exports.Set(Napi::String::New(env, "log"), Napi::Function::New(env, overlay::log));
-  exports.Set(Napi::String::New(env, "sendCommand"), Napi::Function::New(env, overlay::sendCommand));
-  exports.Set(Napi::String::New(env, "addWindow"), Napi::Function::New(env, overlay::addWindow));
-  exports.Set(Napi::String::New(env, "sendFrameBuffer"), Napi::Function::New(env, overlay::sendFrameBuffer));
+    exports.Set(Napi::String::New(env, "start"), Napi::Function::New(env, overlay::start));
+    exports.Set(Napi::String::New(env, "stop"), Napi::Function::New(env, overlay::stop));
+    exports.Set(Napi::String::New(env, "setEventCallback"), Napi::Function::New(env, overlay::setEventCallback));
+    exports.Set(Napi::String::New(env, "setHotkeys"), Napi::Function::New(env, overlay::setHotkeys));
+    exports.Set(Napi::String::New(env, "log"), Napi::Function::New(env, overlay::log));
+    exports.Set(Napi::String::New(env, "sendCommand"), Napi::Function::New(env, overlay::sendCommand));
+    exports.Set(Napi::String::New(env, "addWindow"), Napi::Function::New(env, overlay::addWindow));
+    exports.Set(Napi::String::New(env, "closeWindow"), Napi::Function::New(env, overlay::closeWindow));
+    exports.Set(Napi::String::New(env, "sendWindowBounds"), Napi::Function::New(env, overlay::sendWindowBounds));
+    exports.Set(Napi::String::New(env, "sendFrameBuffer"), Napi::Function::New(env, overlay::sendFrameBuffer));
 
-  return exports;
+    return exports;
 }
 
 NODE_API_MODULE(NODE_GYP_MODULE_NAME, Init)

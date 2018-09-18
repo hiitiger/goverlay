@@ -17,6 +17,7 @@
         "node-gyp": "^3.8.0"
     },
     "devDependencies": {
+        "@types/node": "^10.10.1",
         "electron-rebuild": "^1.8.2"
     }
 }

@@ -15,6 +15,8 @@ class Application {
   private tray: Electron.Tray | null
   private markQuit = false
 
+  private Overlay: any
+
   constructor() {
     this.windows = new Map()
     this.tray = null
@@ -89,6 +91,11 @@ class Application {
     }
   }
 
+  public startOverlay() {
+    this.Overlay = require("electron-overlay")
+    this.Overlay.start()
+  }
+
   public createOsrWindow() {
     const options: Electron.BrowserWindowConstructorOptions = {
       height: 360,
@@ -101,9 +108,6 @@ class Application {
       }
     }
 
-    const Overlay = require("electron-overlay")
-    Overlay.start()
-
     const window = this.createWindow(AppWindows.osr, options)
     window.webContents.on(
       "paint",
@@ -112,7 +116,7 @@ class Application {
           image: image.toDataURL()
         })
 
-        Overlay.sendFrameBuffer(window.id, image.getBitmap(), image.getSize().width, image.getSize().height)
+        this.Overlay.sendFrameBuffer(window.id, image.getBitmap(), image.getSize().width, image.getSize().height)
       }
     )
 
@@ -121,7 +125,7 @@ class Application {
     })
     window.loadURL(fileUrl(path.join(global.CONFIG.distDir, "index/osr.html")))
 
-    Overlay.addWindow(window.id, {
+    this.Overlay.addWindow(window.id, {
       name: "MainOverlay",
       transparent: false,
       resizable: false,
@@ -193,10 +197,12 @@ class Application {
 
   public start() {
     this.createMainWindow()
-    this.createOsrWindow()
+
     this.setupSystemTray()
 
     this.setupIpc()
+
+    this.startOverlay()
   }
 
   public activate() {
@@ -209,6 +215,10 @@ class Application {
     this.closeAllWindows()
     if (this.tray) {
       this.tray.destroy()
+    }
+
+    if (this.Overlay) {
+      this.Overlay.stop()
     }
   }
 
@@ -249,32 +259,34 @@ class Application {
       console.log("osrClick")
     })
     ipcMain.on("click", () => {
+      this.createOsrWindow().setPosition(0, 0)
+
       setInterval(() => {
-        const window = this.getWindow(AppWindows.osr)!
-        window.setPosition(0, 0)
-        // window.focus()
-
-        window.webContents.sendInputEvent({
-          type: "mouseDown",
-          button: "left",
-          x: 30,
-          y: 18,
-          //   globalX: 30,
-          //   globalY: 18,
-          clickCount: 1
-        } as any)
-
-        setTimeout(() => {
+        const window = this.getWindow(AppWindows.osr)
+        if (window) {
           window.webContents.sendInputEvent({
-            type: "mouseUp",
+            type: "mouseDown",
             button: "left",
             x: 30,
             y: 18,
-            // globalX: 30,
-            // globalY: 18,
+            //   globalX: 30,
+            //   globalY: 18,
             clickCount: 1
           } as any)
-        }, 100)
+
+          setTimeout(() => {
+            window.webContents.sendInputEvent({
+              type: "mouseUp",
+              button: "left",
+              x: 30,
+              y: 18,
+              // globalX: 30,
+              // globalY: 18,
+              clickCount: 1
+            } as any)
+          }, 100)
+        }
+
       }, 2000)
     })
   }

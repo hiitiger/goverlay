@@ -36,6 +36,7 @@ __pragma(warning(pop))
 
 #include "hook/apihook.hpp"
 #include "graphics/graphics.h"
+#include "graphics/fpstimer.h"
 
 
 #ifndef ReleaseCOM

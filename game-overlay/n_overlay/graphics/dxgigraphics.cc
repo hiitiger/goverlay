@@ -32,6 +32,18 @@ bool DxgiGraphics::initGraphics(IDXGISwapChain *swap)
             pendingFrameBuffers_.insert(windowId);
             needResync_ = true;
         }, this);
+
+        HookApp::instance()->overlayConnector()->windowCloseEvent().add([this](std::uint32_t windowId) {
+            std::lock_guard<std::mutex> lock(synclock_);
+            pendingClosed_.insert(windowId);
+            needResync_ = true;
+        });
+
+        HookApp::instance()->overlayConnector()->windowBoundsEvent().add([this](std::uint32_t windowId, overlay::WindowRect rect) {
+            std::lock_guard<std::mutex> lock(synclock_);
+            pendingBounds_.insert(std::make_pair(windowId, rect));
+            needResync_ = true;
+        });
     }
 
     return succcedd;
@@ -51,6 +63,8 @@ void DxgiGraphics::freeGraphics()
 {
     HookApp::instance()->overlayConnector()->windowEvent().remove(this);
     HookApp::instance()->overlayConnector()->frameBufferEvent().remove(this);
+    HookApp::instance()->overlayConnector()->windowCloseEvent().remove(this);
+    HookApp::instance()->overlayConnector()->windowBoundsEvent().remove(this);
 
     std::lock_guard<std::mutex> lock(synclock_);
     pendingWindows_.clear();
@@ -65,14 +79,18 @@ void DxgiGraphics::beforePresent(IDXGISwapChain *swap)
         return;
     }
 
+    fpsTimer_.tick();
+
     _saveStatus();
     _prepareStatus();
 
     _checkAndResyncWindows();
 
-    //if (HookApp::instance()->uiapp()->isInterceptingInput())
+    if (HookApp::instance()->uiapp()->isInterceptingInput())
     {
         _drawBlockSprite();
+
+        _drawWindowSprites();
     }
 
     _drawMainSprite();

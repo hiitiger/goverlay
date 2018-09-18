@@ -41,12 +41,13 @@ public:
     void _checkAndResyncWindows() override;
 
 
-    void _drawBlockSprite();
-    void _drawMainSprite();
+    void _drawBlockSprite()override;
+    void _drawWindowSprites() override;
+    void _drawMainSprite()override;
 
     void _drawWindowSprite(std::shared_ptr<D3d10WindowSprite>&);
 
-    void _saveStatus();
-    void _prepareStatus();
-    void _restoreStatus();
+    void _saveStatus() override;
+    void _prepareStatus() override;
+    void _restoreStatus() override;
 };

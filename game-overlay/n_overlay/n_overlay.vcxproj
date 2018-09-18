@@ -299,6 +299,7 @@
   <ItemGroup>
     <ClInclude Include="graphics\d3d11sprite.h" />
     <ClInclude Include="geometry.h" />
+    <ClInclude Include="graphics\fpstimer.h" />
     <ClInclude Include="hook\apihook.hpp" />
     <ClInclude Include="common.hpp" />
     <ClInclude Include="graphics\d3d10graphics.h" />
