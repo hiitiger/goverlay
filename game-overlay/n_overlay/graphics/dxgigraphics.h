@@ -9,6 +9,7 @@ protected:
     std::set<std::uint32_t> pendingFrameBuffers_;
     std::set<std::uint32_t> pendingClosed_;
     std::map<std::uint32_t, overlay::WindowRect> pendingBounds_;
+    std::set<std::uint32_t> pendingFrameBufferUpdates_;
 
     std::atomic<bool> needResync_ = false;
     FpsTimer fpsTimer_;

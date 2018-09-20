@@ -1,6 +1,14 @@
 #pragma once
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#ifdef max
+#undef max
+#endif
+
+#ifdef min
+#undef min
+#endif
+
 #include <string>
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;

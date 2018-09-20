@@ -1,9 +1,11 @@
 import { BrowserWindow, ipcMain } from "electron"
 import { Menu, Tray } from "electron"
-import { shell } from "electron"
+import { screen, shell } from "electron"
 import * as fs from "fs"
 import * as path from "path"
 import { fileUrl } from "../utils/utils"
+
+import * as IOverlay from "electron-overlay"
 
 enum AppWindows {
   main = "main",
@@ -15,7 +17,7 @@ class Application {
   private tray: Electron.Tray | null
   private markQuit = false
 
-  private Overlay: any
+  private Overlay?: typeof IOverlay
 
   constructor() {
     this.windows = new Map()
@@ -92,13 +94,13 @@ class Application {
   }
 
   public startOverlay() {
-    this.Overlay = require("electron-overlay")
-    this.Overlay.start()
+    this.Overlay = require("electron-overlay")!
+    this.Overlay!.start()
 
-    this.Overlay.setEventCallback((event: string, payload: any) => {
+    this.Overlay!.setEventCallback((event: string, payload: any) => {
       const osrwindow = this.getWindow(AppWindows.osr)
       if (osrwindow) {
-        const intpuEvent = this.Overlay.translateInputEvent(payload)
+        const intpuEvent = this.Overlay!.translateInputEvent(payload)
         if (payload.msg !== 512) {
           console.log(event, payload)
           console.log(`translate ${JSON.stringify(intpuEvent)}`)
@@ -124,11 +126,14 @@ class Application {
     window.webContents.on(
       "paint",
       (event, dirty, image: Electron.NativeImage) => {
+        if (this.markQuit) {
+          return
+        }
         this.mainWindow!.webContents.send("osrImage", {
           image: image.toDataURL()
         })
 
-        this.Overlay.sendFrameBuffer(window.id, image.getBitmap(), image.getSize().width, image.getSize().height)
+        this.Overlay!.sendFrameBuffer(window.id, image.getBitmap(), image.getSize().width, image.getSize().height)
       }
     )
 
@@ -137,7 +142,7 @@ class Application {
     })
     window.loadURL(fileUrl(path.join(global.CONFIG.distDir, "index/osr.html")))
 
-    this.Overlay.addWindow(window.id, {
+    this.Overlay!.addWindow(window.id, {
       name: "MainOverlay",
       transparent: false,
       resizable: false,
@@ -150,6 +155,10 @@ class Application {
 
     window.on("ready-to-show", () => {
       window.focusOnWebView()
+    })
+
+    window.on("resize", () => {
+      this.Overlay!.sendWindowBounds(window.id, {rect: window.getBounds()})
     })
 
     return window
@@ -272,9 +281,6 @@ class Application {
   }
 
   private setupIpc() {
-    ipcMain.on("osrClick", () => {
-      console.log("osrClick")
-    })
     ipcMain.on("click", () => {
       this.createOsrWindow().setPosition(0, 0)
     })

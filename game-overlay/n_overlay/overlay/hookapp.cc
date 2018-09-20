@@ -205,6 +205,13 @@ BOOL CALLBACK findGraphicsWindow(HWND hwnd, LPARAM lParam)
         return TRUE;
     }
 
+    WCHAR title[MAX_PATH] = { 0 };
+    GetWindowTextW(hwnd, title, MAX_PATH);
+    if (wcsstr(title, L"Debug") != nullptr)
+    {
+        return TRUE;
+    }
+
     param->window = hwnd;
     return FALSE;
 }

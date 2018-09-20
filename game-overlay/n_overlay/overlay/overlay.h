@@ -20,6 +20,7 @@ class OverlayConnector : public IIpcClient
     Storm::Event<void(std::uint32_t)> frameBufferEvent_;
     Storm::Event<void(std::uint32_t)> windowCloseEvent_;
     Storm::Event<void(std::uint32_t, overlay::WindowRect)> windowBoundsEvent_;
+    Storm::Event<void(std::uint32_t)> frameBufferUpdateEvent_;
 
     std::wstring mainProcessDir_;
 
@@ -49,6 +50,7 @@ public:
     Storm::Event<void(std::uint32_t)>& frameBufferEvent() { return frameBufferEvent_; }
     Storm::Event<void(std::uint32_t)>& windowCloseEvent() { return windowCloseEvent_; }
     Storm::Event<void(std::uint32_t, overlay::WindowRect)>& windowBoundsEvent() { return windowBoundsEvent_; }
+    Storm::Event<void(std::uint32_t)>& frameBufferUpdateEvent() { return frameBufferUpdateEvent_; }
 
     std::wstring mainProcessDir() const { return mainProcessDir_; }
 

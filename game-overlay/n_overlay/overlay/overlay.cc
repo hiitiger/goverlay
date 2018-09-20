@@ -74,6 +74,7 @@ void OverlayConnector::sendGraphicsHookInfo(const overlay_game::DxgiHookInfo &in
 
 void OverlayConnector::sendGraphicsWindowSetupInfo(HWND window, int width, int height, bool focus, bool hooked)
 {
+    std::cout << __FUNCTION__ << "hooked: " << hooked << std::endl;
     CHECK_THREAD(Threads::HookApp);
 
     HookApp::instance()->async([this, window, width, height, focus, hooked]() {
@@ -194,8 +195,8 @@ bool OverlayConnector::processkeyboardMessage(UINT message, WPARAM wParam, LPARA
         HookApp::instance()->async([this, windowId = mainWindowId_, message, wParam, lParam]() {
             _sendGameWindowInput(windowId, message, wParam, lParam);
         });
-        return true;
     }
+    return true;
 }
 
 void OverlayConnector::_heartbeat()
@@ -325,7 +326,10 @@ void OverlayConnector::_sendMessage(overlay::GMessage *message)
     //std::cout << __FUNCTION__ << ", " << ipcMsg.type << std::endl;
     //std::cout << __FUNCTION__ << ", " << ipcMsg.message << std::endl;
 
-    getIpcCenter()->sendMessage(ipcLink_, ipcClientId_, 0, &ipcMsg);
+    if (ipcLink_)
+    {
+        getIpcCenter()->sendMessage(ipcLink_, ipcClientId_, 0, &ipcMsg);
+    }
 }
 
 void OverlayConnector::_onRemoteConnect()
@@ -378,7 +382,7 @@ void OverlayConnector::onMessage(IIpcLink * /*link*/, int /*hostPort*/, const st
         overlay::OverlayIpc ipcMsg;
         ipcMsg.upack(message);
 
-        std::cout << __FUNCTION__ << "," << ipcMsg.type << std::endl;
+        //std::cout << __FUNCTION__ << "," << ipcMsg.type << std::endl;
 
         if (ipcMsg.type == "overlay.init")
         {
@@ -422,7 +426,7 @@ void OverlayConnector::onMessage(IIpcLink * /*link*/, int /*hostPort*/, const st
             _onWindowClose(overlayMsg);
         }
 
-        else if (ipcMsg.type == "window.close")
+        else if (ipcMsg.type == "window.bounds")
         {
             std::shared_ptr<overlay::WindowBounds> overlayMsg = std::make_shared<overlay::WindowBounds>();
             overlay::json json = overlay::json::parse(ipcMsg.message);
@@ -539,7 +543,20 @@ void OverlayConnector::_onWindowBounds(std::shared_ptr<overlay::WindowBounds>& o
         auto& window = *it;
         window->rect = overlayMsg->rect;
 
+        if (overlayMsg->bufferName)
+        {
+            window->bufferName = overlayMsg->bufferName.value();
+
+            if (window->transparent)
+            {
+                _updateFrameBuffer(window->windowId, window->bufferName);
+            }
+
+            this->frameBufferUpdateEvent()(overlayMsg->windowId);
+        }
+
         this->windowBoundsEvent()(overlayMsg->windowId, overlayMsg->rect);
+
     }
 }
 
@@ -571,5 +588,7 @@ void OverlayConnector::_updateFrameBuffer(std::uint32_t windowId, const std::str
 
         std::lock_guard<std::mutex> lock(framesLock_);
         frameBuffers_[windowId] = frameBuffer;
+
+        std::cout << __FUNCTION__ << ", width:" << head->width << ", height:" << head->height << std::endl;
     }
 }

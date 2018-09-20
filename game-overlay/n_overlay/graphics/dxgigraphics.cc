@@ -37,13 +37,20 @@ bool DxgiGraphics::initGraphics(IDXGISwapChain *swap)
             std::lock_guard<std::mutex> lock(synclock_);
             pendingClosed_.insert(windowId);
             needResync_ = true;
-        });
+        }, this);
 
         HookApp::instance()->overlayConnector()->windowBoundsEvent().add([this](std::uint32_t windowId, overlay::WindowRect rect) {
             std::lock_guard<std::mutex> lock(synclock_);
             pendingBounds_.insert(std::make_pair(windowId, rect));
             needResync_ = true;
-        });
+        }, this);
+
+        HookApp::instance()->overlayConnector()->frameBufferUpdateEvent().add([this](std::uint32_t windowId) {
+            std::lock_guard<std::mutex> lock(synclock_);
+            pendingFrameBufferUpdates_.insert(windowId);
+            needResync_ = true;
+        }, this);
+
     }
 
     return succcedd;
@@ -65,10 +72,14 @@ void DxgiGraphics::freeGraphics()
     HookApp::instance()->overlayConnector()->frameBufferEvent().remove(this);
     HookApp::instance()->overlayConnector()->windowCloseEvent().remove(this);
     HookApp::instance()->overlayConnector()->windowBoundsEvent().remove(this);
+    HookApp::instance()->overlayConnector()->frameBufferUpdateEvent().remove(this);
 
     std::lock_guard<std::mutex> lock(synclock_);
     pendingWindows_.clear();
     pendingFrameBuffers_.clear();
+    pendingClosed_.clear();
+    pendingBounds_.clear();
+    pendingFrameBufferUpdates_.clear();
     needResync_ = false;
 }
 

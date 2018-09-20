@@ -29,31 +29,22 @@
             // console.log(label.innerText)
         }, 1000)
 
-        setTimeout(() => {
-            const {
-                ipcRenderer
-            } = window.require('electron')
+        const {
+            ipcRenderer, remote
+        } = window.require('electron')
 
-            const button = document.getElementById('button')
-            button.addEventListener('click', () => {
-                console.log('button click ', (new Date()).toString())
-                ipcRenderer.send('osrClick')
-            })
-        }, 1000)
+        const button = document.getElementById('button')
+        button.addEventListener('click', () => {
+            remote.getCurrentWindow().setSize(window.innerWidth + 20, window.innerHeight + 20)
+            console.log('button click ', (new Date()).toString())
+            ipcRenderer.send('osrClick')
+        })
 
         window.onfocus = function () {
             console.log("focus")
         }
         window.onblur = function () {
             console.log("blur")
-        }
-
-        window.onkeydown = function (e) {
-            console.log("onkeydown", e.keyCode)
-        }
-
-        window.onmousedown = function () {
-            console.log("onmousedown")
         }
     </script>
 </body>

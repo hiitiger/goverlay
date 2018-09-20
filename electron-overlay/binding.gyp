@@ -19,7 +19,6 @@
                 "./src/ipc/ipccenter.h",
                 "./src/ipc/ipccenter.cc",
                 "./src/overlay.h",
-                "./src/overlay.cc",
                 "./src/utils/n-utils.h",
                 "./src/utils/win-utils.h",
                 "./src/utils/node_async_call.h",

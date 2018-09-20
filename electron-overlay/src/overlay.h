@@ -21,6 +21,8 @@ struct share_memory
     std::string bufferName;
     std::unique_ptr<share_mem::windows_shared_memory> windowBitmapMem;
     std::unique_ptr<share_mem::mapped_region> fullRegion;
+    int maxWidth;
+    int maxHeight;
 };
 
 inline bool isKeyDown(WPARAM wparam)
@@ -96,20 +98,20 @@ inline std::string getKeyCode(std::uint32_t key)
         {92 , "Meta"},
         {93 , "ContextMenu"},
         {96 , "0"},
-        {97 , " 1"},
-        {98 , " 2"},
-        {99 , " 3"},
-        {100 , " 4"},
-        {101 , " 5"},
-        {102 , " 6"},
-        {103 , " 7"},
-        {104 , " 8"},
-        {105 , " 9"},
-        {106 , " *"},
-        {107 , " +"},
-        {109 , " -"},
-        {110 , " ."},
-        {111 , " /"},
+        {97 , "1"},
+        {98 , "2"},
+        {99 , "3"},
+        {100 , "4"},
+        {101 , "5"},
+        {102 , "6"},
+        {103 , "7"},
+        {104 , "8"},
+        {105 , "9"},
+        {106 , "*"},
+        {107 , "+"},
+        {109 , "-"},
+        {110 , "."},
+        {111 , "/"},
         {112 , "F1"},
         {113 , "F2"},
         {114 , "F3"},
@@ -333,6 +335,37 @@ class OverlayMain : public IIpcHost
         }
     }
 
+    void createImageMem(std::uint32_t windowId, std::string bufferName, int maxWidth, int maxHeight)
+    {
+        {
+            share_mem::permissions perm;
+            perm.set_unrestricted();
+
+            std::cout << "create share mem:" << maxWidth << "," << maxHeight << std::endl;
+
+            auto shareMemSize = maxWidth * maxHeight * sizeof(std::uint32_t) + sizeof(overlay::ShareMemFrameBuffer);
+            std::shared_ptr<share_memory> imageMem = std::make_shared<share_memory>();
+            imageMem->bufferName = bufferName;
+            try
+            {
+                imageMem->windowBitmapMem.reset(new share_mem::windows_shared_memory(share_mem::create_only, bufferName.c_str(), share_mem::read_write, shareMemSize, perm));
+                imageMem->fullRegion.reset(new share_mem::mapped_region(*(imageMem->windowBitmapMem), share_mem::read_write));
+
+                char *orgin = static_cast<char *>(imageMem->fullRegion->get_address());
+                std::memset(imageMem->fullRegion->get_address(), 0, imageMem->fullRegion->get_size());
+
+                imageMem->maxWidth = maxWidth;
+                imageMem->maxHeight = maxHeight;
+            }
+            catch (...)
+            {
+                ;
+            }
+
+            shareMemMap_[windowId] = imageMem;
+        }
+    }
+
     Napi::Value setHotkeys(const Napi::CallbackInfo &info)
     {
         Napi::Env env = info.Env();
@@ -403,6 +436,7 @@ class OverlayMain : public IIpcHost
 
     Napi::Value addWindow(const Napi::CallbackInfo &info)
     {
+        std::cout << __FUNCTION__ <<std::endl;
         Napi::Env env = info.Env();
 
         overlay::Window message;
@@ -435,33 +469,13 @@ class OverlayMain : public IIpcHost
 
         windows_.push_back(message);
 
-        {
-            share_mem::permissions perm;
-            perm.set_unrestricted();
-
-            HMONITOR moniter = MonitorFromWindow(GetForegroundWindow(), MONITOR_DEFAULTTOPRIMARY);
-            MONITORINFO moniterInfo = { 0 };
-            moniterInfo.cbSize = sizeof(MONITORINFO);
-            GetMonitorInfoW(moniter, &moniterInfo);
-            int width = moniterInfo.rcMonitor.right - moniterInfo.rcMonitor.left;
-            int height = moniterInfo.rcMonitor.bottom- moniterInfo.rcMonitor.top;
-            std::cout << "create share mem:" << moniter<< ", " << width << "," << height << std::endl;
-
-            auto shareMemSize = width * height * sizeof(std::uint32_t) + sizeof(overlay::ShareMemFrameBuffer);
-            std::shared_ptr<share_memory> imageMem = std::make_shared<share_memory>();
-            imageMem->bufferName = message.bufferName;
-            try
-            {
-                imageMem->windowBitmapMem.reset(new share_mem::windows_shared_memory(share_mem::create_only, message.bufferName.c_str(), share_mem::read_write, shareMemSize, perm));
-                imageMem->fullRegion.reset(new share_mem::mapped_region(*(imageMem->windowBitmapMem), share_mem::read_write));
-            }
-            catch (...)
-            {
-                ;
-            }
-
-            shareMemMap_.insert(std::make_pair(message.windowId, imageMem));
-        }
+        HMONITOR moniter = MonitorFromWindow(GetForegroundWindow(), MONITOR_DEFAULTTOPRIMARY);
+        MONITORINFO moniterInfo = { 0 };
+        moniterInfo.cbSize = sizeof(MONITORINFO);
+        GetMonitorInfoW(moniter, &moniterInfo);
+        int width = moniterInfo.rcMonitor.right - moniterInfo.rcMonitor.left;
+        int height = moniterInfo.rcMonitor.bottom - moniterInfo.rcMonitor.top;
+        createImageMem(message.windowId, message.bufferName, std::max(width, message.rect.width), std::max(height, message.rect.height));
 
         this->_sendMessage(&message);
 
@@ -499,7 +513,32 @@ class OverlayMain : public IIpcHost
         message.rect.y = rect.Get("y").ToNumber();
         message.rect.width = rect.Get("width").ToNumber();
         message.rect.height = rect.Get("height").ToNumber();
+
+        auto& imageMem = shareMemMap_[message.windowId];
+
+        if (message.rect.width * message.rect.height > imageMem->maxWidth * imageMem->maxHeight)
+        {
+            auto it = std::find_if(windows_.begin(), windows_.end(), [windowId = message.windowId](const auto &window) {
+                return windowId == window.windowId;
+            });
+            auto& window = *it;
+
+            window.bufferName = _shareMemoryName(message.windowId);
+            message.bufferName = window.bufferName;
+
+            HMONITOR moniter = MonitorFromWindow(GetForegroundWindow(), MONITOR_DEFAULTTOPRIMARY);
+            MONITORINFO moniterInfo = { 0 };
+            moniterInfo.cbSize = sizeof(MONITORINFO);
+            GetMonitorInfoW(moniter, &moniterInfo);
+            int width = moniterInfo.rcMonitor.right - moniterInfo.rcMonitor.left;
+            int height = moniterInfo.rcMonitor.bottom - moniterInfo.rcMonitor.top;
+
+            createImageMem(window.windowId, window.bufferName, std::max(width, window.rect.width), std::max(height, window.rect.height));
+
+        }
         this->_sendMessage(&message);
+
+        std::cout << __FUNCTION__ << ", width: " << message.rect.width << ", height:"<< message.rect.height << std::endl;
 
         auto it = std::find_if(windows_.begin(), windows_.end(), [windowId = message.windowId](const auto &window) {
             return windowId == window.windowId;
@@ -532,8 +571,6 @@ class OverlayMain : public IIpcHost
             auto it = shareMemMap_.find(message.windowId);
             if (it != shareMemMap_.end())
             {
-                auto bufferName = (it->second)->bufferName;
-
                 auto &windowBitmapMem = it->second->windowBitmapMem;
                 auto &fullRegion = it->second->fullRegion;
 
@@ -621,11 +658,11 @@ class OverlayMain : public IIpcHost
                 if (msg == WM_LBUTTONDBLCLK || msg == WM_RBUTTONDBLCLK
                     || msg == WM_MBUTTONDBLCLK || msg == WM_XBUTTONDBLCLK)
                 {
-                    object.Set("clickCount ", 2);
+                    object.Set("clickCount", 2);
                 }
                 else
                 {
-                    object.Set("clickCount ", 1);
+                    object.Set("clickCount", 1);
                 }
 
                 
@@ -634,7 +671,7 @@ class OverlayMain : public IIpcHost
                 || msg == WM_MBUTTONUP || msg == WM_XBUTTONUP)
             {
                 object.Set("type", "mouseUp");
-                object.Set("clickCount ", 1);
+                object.Set("clickCount", 1);
             }
             else if (msg == WM_MOUSEMOVE)
             {

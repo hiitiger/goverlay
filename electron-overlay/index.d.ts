@@ -23,7 +23,8 @@ declare module "electron-overlay" {
         name: string;
         transparent: boolean;
         resizable: boolean;
-        rect: IRectangle
+        rect: IRectangle;
+        nativeHandle: number;
         caption?: {
             left: number;
             right: number;
@@ -39,6 +40,7 @@ declare module "electron-overlay" {
     export function sendCommand(name: string): void;
     export function addWindow(windowId: number, details: IOverlayWindowDetails): void;
     export function closeWindow(windowId: number): void;
-    export function sendWindowBounds(windowId: number, rect: IRectangle): void;
+    export function sendWindowBounds(windowId: number, details: {rect: IRectangle}): void;
     export function sendFrameBuffer(windowId: number, buffer: Buffer, width: number, height: number): void;
+    export function translateInputEvent(event: {windowId: number, msg: number, wparam: number, lparam: number}): any;
 }

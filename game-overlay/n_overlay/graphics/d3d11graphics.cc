@@ -296,12 +296,12 @@ void D3d11Graphics::_checkAndResyncWindows()
     if (needResync_)
     {
         std::lock_guard<std::mutex> lock(synclock_);
-        if (pendingWindows_.size() > 0)
+        if (pendingWindows_.size() > 0 || pendingFrameBufferUpdates_.size() > 0)
         {
             HookApp::instance()->overlayConnector()->lockWindows();
 
             auto windows = HookApp::instance()->overlayConnector()->windows();
-
+            
             for (auto windowId : pendingWindows_)
             {
                 auto it = std::find_if(windows.begin(), windows.end(), [windowId](const auto &window) {
@@ -313,6 +313,25 @@ void D3d11Graphics::_checkAndResyncWindows()
                 }
             }
             pendingWindows_.clear();
+
+            for (auto windowId: pendingFrameBufferUpdates_)
+            {
+                auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [windowId](const auto &window) {
+                    return windowId == window->windowId;
+                });
+                if (it != windowSprites_.end())
+                {
+                    auto& windowSprite = *it;
+                    try
+                    {
+                        windowSprite->windowBitmapMem.reset(new boost::interprocess::windows_shared_memory(boost::interprocess::open_only, windowSprite->bufferName.c_str(), boost::interprocess::read_only));
+                        windowSprite->fullRegion.reset(new boost::interprocess::mapped_region(*windowSprite->windowBitmapMem, boost::interprocess::read_only));
+                    }
+                    catch (...)
+                    {
+                    }
+                }
+            }
 
             HookApp::instance()->overlayConnector()->unlockWindows();
         }

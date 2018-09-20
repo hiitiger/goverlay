@@ -177,13 +177,15 @@ namespace overlay
     JSON_AUTO(WindowClose, type, windowId)
 
 
-        struct WindowBounds : public GMessage
+    struct WindowBounds : public GMessage
     {
         std::string type = "window.bounds";
         virtual std::string msgType() const { return type; }
 
         std::uint32_t windowId;
         WindowRect rect;
+
+        std::optional<std::string> bufferName;
 
         virtual bool fromJson(const json &obj)
         {
@@ -200,7 +202,7 @@ namespace overlay
             return result;
         }
     };
-    JSON_AUTO(WindowBounds, type, windowId, rect)
+    JSON_AUTO(WindowBounds, type, windowId, rect, bufferName)
 
         struct WindowFrameBuffer : public GMessage
     {

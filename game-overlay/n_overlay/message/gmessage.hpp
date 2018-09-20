@@ -183,6 +183,8 @@ struct WindowBounds : public GMessage
     std::uint32_t windowId;
     WindowRect rect;
 
+    std::optional<std::string> bufferName;
+
     virtual bool fromJson(const json &obj)
     {
         assert(obj["type"].get<std::string>() == this->type);
@@ -198,7 +200,7 @@ struct WindowBounds : public GMessage
         return result;
     }
 };
-JSON_AUTO(WindowBounds, type, windowId, rect)
+JSON_AUTO(WindowBounds, type, windowId, rect, bufferName)
 
 struct WindowFrameBuffer : public GMessage
 {
