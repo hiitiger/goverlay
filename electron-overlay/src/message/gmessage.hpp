@@ -237,6 +237,23 @@ struct CursorCommand : public GMessage
     virtual std::string msgType() const { return type; }
 
     std::string cursor;
+
+    virtual bool fromJson(const json &obj)
+    {
+        assert(obj["type"].get<std::string>() == this->type);
+
+        *this = obj;
+
+        return true;
+    }
+    virtual json toJson(bool *ok = false) const
+    {
+        json result = *this;
+
+        if (ok)
+            *ok = true;
+        return result;
+    }
 };
 
 JSON_AUTO(CursorCommand, type, cursor)
@@ -245,6 +262,23 @@ struct FpsCommand : public GMessage
 {
     std::string type = "command.fps";
     virtual std::string msgType() const { return type; }
+
+    virtual bool fromJson(const json &obj)
+    {
+        assert(obj["type"].get<std::string>() == this->type);
+
+        *this = obj;
+
+        return true;
+    }
+    virtual json toJson(bool *ok = false) const
+    {
+        json result = *this;
+
+        if (ok)
+            *ok = true;
+        return result;
+    }
 
     bool showfps;
     int position;
@@ -526,7 +560,7 @@ struct GraphicsWindowSetup : public GMessage
 
 JSON_AUTO(GraphicsWindowSetup, type, window, width, height, focus, hooked)
 
-struct GraphcisWindowFocusEvent : public GMessage
+struct GraphicsWindowFocusEvent : public GMessage
 {
     std::string type = "graphics.window.event.focus";
     virtual std::string msgType() const { return type; }
@@ -550,9 +584,9 @@ struct GraphcisWindowFocusEvent : public GMessage
     }
 };
 
-JSON_AUTO(GraphcisWindowFocusEvent, type, window, focus)
+JSON_AUTO(GraphicsWindowFocusEvent, type, window, focus)
 
-struct GraphcisWindowRezizeEvent : public GMessage
+struct GraphicsWindowRezizeEvent : public GMessage
 {
     std::string type = "graphics.window.event.resize";
     virtual std::string msgType() const { return type; }
@@ -578,7 +612,7 @@ struct GraphcisWindowRezizeEvent : public GMessage
     }
 };
 
-JSON_AUTO(GraphcisWindowRezizeEvent, type, window, width, height)
+JSON_AUTO(GraphicsWindowRezizeEvent, type, window, width, height)
 
 struct GameInputIntercept : public GMessage
 {

@@ -429,7 +429,23 @@ class OverlayMain : public IIpcHost
     {
         Napi::Env env = info.Env();
 
-        _makeCallback();
+        Napi::Object commandInfo = info[0].ToObject();
+        std::string command = commandInfo.Get("command").ToString();
+        if (command == "cursor")
+        {
+            overlay::CursorCommand message;
+            message.cursor = commandInfo.Get("cursor").ToString();
+
+            this->_sendMessage(&message);
+        }
+        else if (command == "fps")
+        {
+            overlay::FpsCommand message;
+            message.showfps = commandInfo.Get("showfps").ToBoolean();
+            message.position = commandInfo.Get("position").ToNumber();
+
+            this->_sendMessage(&message);
+        }
 
         return env.Undefined();
     }
@@ -723,6 +739,17 @@ class OverlayMain : public IIpcHost
         return object;
     }
 
+    void notifyGameProcess(std::string& path)
+    {
+        if (eventCallback_)
+        {
+            Napi::HandleScope scope(eventCallback_->env);
+            Napi::Object object = Napi::Object::New(eventCallback_->env);
+            object.Set("path", Napi::Value::From(eventCallback_->env, path));
+            eventCallback_->callback.MakeCallback(eventCallback_->receiver.Value(), { Napi::Value::From(eventCallback_->env, "game.process"), object });
+        }
+    }
+
     void notifyInputEvent(std::uint32_t windowId, std::uint32_t msg, std::uint32_t wparam, std::uint32_t lparam)
     {
         if (eventCallback_)
@@ -734,6 +761,55 @@ class OverlayMain : public IIpcHost
             object.Set("wparam", Napi::Value::From(eventCallback_->env, wparam));
             object.Set("lparam", Napi::Value::From(eventCallback_->env, lparam));
             eventCallback_->callback.MakeCallback(eventCallback_->receiver.Value(), { Napi::Value::From(eventCallback_->env, "game.input"), object });
+        }
+    }
+
+    void notifyInputIntercepEvent(bool intercepting)
+    {
+        if (eventCallback_)
+        {
+            Napi::HandleScope scope(eventCallback_->env);
+            eventCallback_->callback.MakeCallback(eventCallback_->receiver.Value(), { Napi::Value::From(eventCallback_->env, "game.input.intercept"), Napi::Value::From(eventCallback_->env, intercepting) });
+        }
+    }
+
+    void notifyGraphicsWindow(std::uint32_t window, int width, int height, bool focused, bool hooked)
+    {
+        if (eventCallback_)
+        {
+            Napi::HandleScope scope(eventCallback_->env);
+            Napi::Object object = Napi::Object::New(eventCallback_->env);
+            object.Set("nativeHandle", Napi::Value::From(eventCallback_->env, window));
+            object.Set("width", Napi::Value::From(eventCallback_->env, width));
+            object.Set("height", Napi::Value::From(eventCallback_->env, height));
+            object.Set("focused", Napi::Value::From(eventCallback_->env, focused));
+            object.Set("hooked", Napi::Value::From(eventCallback_->env, hooked));
+            eventCallback_->callback.MakeCallback(eventCallback_->receiver.Value(), { Napi::Value::From(eventCallback_->env, "graphics.window"), Napi::Value::From(eventCallback_->env, object) });
+        }
+    }
+
+    void notifyGraphicsWindowResize(std::uint32_t window, int width, int height)
+    {
+        if (eventCallback_)
+        {
+            Napi::HandleScope scope(eventCallback_->env);
+            Napi::Object object = Napi::Object::New(eventCallback_->env);
+            object.Set("nativeHandle", Napi::Value::From(eventCallback_->env, window));
+            object.Set("width", Napi::Value::From(eventCallback_->env, width));
+            object.Set("height", Napi::Value::From(eventCallback_->env, height));
+            eventCallback_->callback.MakeCallback(eventCallback_->receiver.Value(), { Napi::Value::From(eventCallback_->env, "graphics.window.event.resize"), Napi::Value::From(eventCallback_->env, object) });
+        }
+    }
+
+    void notifyGraphicsWindowFocus(std::uint32_t window, bool focused)
+    {
+        if (eventCallback_)
+        {
+            Napi::HandleScope scope(eventCallback_->env);
+            Napi::Object object = Napi::Object::New(eventCallback_->env);
+            object.Set("nativeHandle", Napi::Value::From(eventCallback_->env, window));
+            object.Set("focused", Napi::Value::From(eventCallback_->env, focused));
+            eventCallback_->callback.MakeCallback(eventCallback_->receiver.Value(), { Napi::Value::From(eventCallback_->env, "graphics.window.event.focus"), Napi::Value::From(eventCallback_->env, object) });
         }
     }
 
@@ -749,7 +825,6 @@ class OverlayMain : public IIpcHost
             eventCallback_->callback.Call(eventCallback_->receiver.Value(), {object});
         }
     }
-
 
     void _sendHotkeys()
     {
@@ -790,13 +865,18 @@ class OverlayMain : public IIpcHost
     {
         int ipcMsgId = *(int *)message.c_str();
 
-        if (ipcMsgId == overlay::OverlayIpc::MsgId)
+        if (ipcMsgId == (int)overlay::OverlayIpc::MsgId)
         {
             overlay::OverlayIpc ipcMsg;
             ipcMsg.upack(message);
 
             if (ipcMsg.type == "game.process")
             {
+                std::shared_ptr<overlay::GameProcessInfo> overlayMsg = std::make_shared<overlay::GameProcessInfo>();
+                overlay::json json = overlay::json::parse(ipcMsg.message);
+                overlayMsg->fromJson(json);
+
+                _onGameProcess(overlayMsg);
                 _sendOverlayInit(link);
             }
             else if (ipcMsg.type == "game.input")
@@ -806,6 +886,39 @@ class OverlayMain : public IIpcHost
                 overlayMsg->fromJson(json);
 
                 _onGameInput(overlayMsg);
+            }
+            else if (ipcMsg.type == "game.input.intercept")
+            {
+                std::shared_ptr<overlay::GameInputIntercept> overlayMsg = std::make_shared<overlay::GameInputIntercept>();
+                overlay::json json = overlay::json::parse(ipcMsg.message);
+                overlayMsg->fromJson(json);
+
+                _onGameInputIntercept(overlayMsg);
+            }
+            else if (ipcMsg.type == "graphics.window")
+            {
+                std::shared_ptr<overlay::GraphicsWindowSetup> overlayMsg = std::make_shared<overlay::GraphicsWindowSetup>();
+                overlay::json json = overlay::json::parse(ipcMsg.message);
+                overlayMsg->fromJson(json);
+
+                _onGraphicsWindow(overlayMsg);
+            }
+            else if (ipcMsg.type == "graphics.window.event.resize")
+            {
+                std::shared_ptr<overlay::GraphicsWindowRezizeEvent> overlayMsg = std::make_shared<overlay::GraphicsWindowRezizeEvent>();
+                overlay::json json = overlay::json::parse(ipcMsg.message);
+                overlayMsg->fromJson(json);
+
+                _onGraphicsWindowRezizeEvent(overlayMsg);
+            }
+
+            else if (ipcMsg.type == "graphics.window.event.focus")
+            {
+                std::shared_ptr<overlay::GraphicsWindowFocusEvent> overlayMsg = std::make_shared<overlay::GraphicsWindowFocusEvent>();
+                overlay::json json = overlay::json::parse(ipcMsg.message);
+                overlayMsg->fromJson(json);
+
+                _onGraphicsWindowFocusEvent(overlayMsg);
             }
         }
     }
@@ -836,10 +949,45 @@ class OverlayMain : public IIpcHost
         return name;
     }
 
+    void _onGameProcess(const std::shared_ptr<overlay::GameProcessInfo>& overlayMsg)
+    {
+        node_async_call::async_call([this, overlayMsg]() {
+            notifyGameProcess(overlayMsg->path);
+        });
+    }
+
     void _onGameInput(const std::shared_ptr<overlay::GameInput>& overlayMsg)
     {
         node_async_call::async_call([this, overlayMsg]() {
             notifyInputEvent(overlayMsg->windowId, overlayMsg->msg, overlayMsg->wparam, overlayMsg->lparam);
+        });
+    }
+
+    void _onGameInputIntercept(const std::shared_ptr<overlay::GameInputIntercept>& overlayMsg)
+    {
+        node_async_call::async_call([this, overlayMsg]() {
+            notifyInputIntercepEvent(overlayMsg->intercepting);
+        });
+    }
+
+    void _onGraphicsWindow(const std::shared_ptr<overlay::GraphicsWindowSetup>& overlayMsg)
+    {
+        node_async_call::async_call([this, overlayMsg]() {
+            notifyGraphicsWindow(overlayMsg->window, overlayMsg->width, overlayMsg->height, overlayMsg->focus, overlayMsg->hooked);
+        });
+    }
+
+    void _onGraphicsWindowRezizeEvent(const std::shared_ptr<overlay::GraphicsWindowRezizeEvent>& overlayMsg)
+    {
+        node_async_call::async_call([this, overlayMsg]() {
+            notifyGraphicsWindowResize(overlayMsg->window, overlayMsg->width, overlayMsg->height);
+        });
+    }
+
+    void _onGraphicsWindowFocusEvent(const std::shared_ptr<overlay::GraphicsWindowFocusEvent>& overlayMsg)
+    {
+        node_async_call::async_call([this, overlayMsg]() {
+            notifyGraphicsWindowFocus(overlayMsg->window, overlayMsg->focus);
         });
     }
 };

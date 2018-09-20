@@ -98,14 +98,16 @@ class Application {
     this.Overlay!.start()
 
     this.Overlay!.setEventCallback((event: string, payload: any) => {
-      const osrwindow = this.getWindow(AppWindows.osr)
-      if (osrwindow) {
-        const intpuEvent = this.Overlay!.translateInputEvent(payload)
-        if (payload.msg !== 512) {
-          console.log(event, payload)
-          console.log(`translate ${JSON.stringify(intpuEvent)}`)
+      if (event === "game.input") {
+        const osrwindow = this.getWindow(AppWindows.osr)
+        if (osrwindow) {
+          const intpuEvent = this.Overlay!.translateInputEvent(payload)
+          if (payload.msg !== 512) {
+            console.log(event, payload)
+            console.log(`translate ${JSON.stringify(intpuEvent)}`)
+          }
+          osrwindow.webContents.sendInputEvent(intpuEvent)
         }
-        osrwindow.webContents.sendInputEvent(intpuEvent)
       }
     })
   }
@@ -176,6 +178,45 @@ class Application {
     const windowId = window.id
     window.on("closed", () => {
       this.Overlay!.closeWindow(windowId)
+    })
+
+    window.webContents.on("cursor-changed", (event, type) => {
+      let cursor
+      switch (type) {
+        case "default":
+          cursor = "IDC_ARROW"
+          break
+        case "pointer":
+          cursor = "IDC_HAND"
+          break
+        case "crosshair":
+          cursor = "IDC_CROSS"
+          break
+        case "text":
+          cursor = "IDC_IBEAM"
+          break
+        case "wait":
+          cursor = "IDC_WAIT"
+          break
+        case "help":
+          cursor = "IDC_HELP"
+          break
+        case "move":
+          cursor = "IDC_SIZEALL"
+          break
+        case "nwse-resize":
+          cursor = "IDC_SIZENWSE"
+          break
+        case "nesw-resize":
+          cursor = "IDC_SIZENESW"
+          break
+        case "none":
+          cursor = ""
+          break
+      }
+      if (cursor) {
+        this.Overlay!.sendCommand( { command: "cursor", cursor })
+      }
     })
 
     return window

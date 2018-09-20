@@ -51,6 +51,7 @@ DWORD WINAPI hookLoopThread(_In_ LPVOID)
 }
 
 HookApp::HookApp()
+    : hookQuitedEvent_(true)
 {
     processPath_ = win_utils::applicationProcPath();
     processName_ = win_utils::applicationProcName();

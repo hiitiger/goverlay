@@ -1,12 +1,21 @@
 #include "stable.h"
 #include "overlay.h"
 #include "hookapp.h"
-
+#include "hook/inputhook.h"
 #include <boost/range/adaptor/reversed.hpp>
 const char k_overlayIpcName[] = "n_overlay_1a1y2o8l0b";
 
 OverlayConnector::OverlayConnector()
 {
+    arrowCursor_ = (HCURSOR)::LoadImageW(NULL, IDC_ARROW, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+    ibeamCursor_ = (HCURSOR)::LoadImageW(NULL, IDC_IBEAM, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+    handCusor_= (HCURSOR)::LoadImageW(NULL, IDC_HAND, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+    crossCusor_= (HCURSOR)::LoadImageW(NULL, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+    waitCusor_ = (HCURSOR)::LoadImageW(NULL, IDC_WAIT, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+    helpCusor_ = (HCURSOR)::LoadImageW(NULL, IDC_HELP, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+    sizeAllCusor_ = (HCURSOR)::LoadImageW(NULL, IDC_SIZEALL, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+    sizeNWSECusor_ = (HCURSOR)::LoadImageW(NULL, IDC_SIZENWSE, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+    sizeNESWCusor_ = (HCURSOR)::LoadImageW(NULL, IDC_SIZENESW, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
 }
 
 OverlayConnector::~OverlayConnector()
@@ -305,6 +314,65 @@ bool OverlayConnector::processkeyboardMessage(UINT message, WPARAM wParam, LPARA
     return true;
 }
 
+bool OverlayConnector::processSetCursor()
+{
+    if (dragMoveWindowId_)
+    {
+        Windows::OrginalApi::SetCursor(arrowCursor_);
+        return true;
+    }
+
+    if(cursorShape_ == "IDC_ARROW")
+    {
+        Windows::OrginalApi::SetCursor(arrowCursor_);
+        return true;
+    }
+    else if (cursorShape_ == "IDC_IBEAM")
+    {
+        Windows::OrginalApi::SetCursor(ibeamCursor_);
+        return true;
+    }
+    else if (cursorShape_ == "IDC_HAND")
+    {
+        Windows::OrginalApi::SetCursor(handCusor_);
+        return true;
+    }
+    else if (cursorShape_ == "IDC_CROSS")
+    {
+        Windows::OrginalApi::SetCursor(crossCusor_);
+        return true;
+    }
+    else if (cursorShape_ == "IDC_WAIT")
+    {
+        Windows::OrginalApi::SetCursor(waitCusor_);
+        return true;
+    }
+    else if (cursorShape_ == "IDC_HELP")
+    {
+        Windows::OrginalApi::SetCursor(helpCusor_);
+        return true;
+    }
+    else if (cursorShape_ == "IDC_SIZEALL")
+    {
+        Windows::OrginalApi::SetCursor(sizeAllCusor_);
+        return true;
+    }
+    else if (cursorShape_ == "IDC_SIZENWSE")
+    {
+        Windows::OrginalApi::SetCursor(sizeNWSECusor_);
+        return true;
+    }
+    else if (cursorShape_ == "IDC_SIZENESW")
+    {
+        Windows::OrginalApi::SetCursor(sizeNESWCusor_);
+    }
+    else
+    {
+        Windows::OrginalApi::SetCursor(arrowCursor_);
+        return true;
+    }
+}
+
 void OverlayConnector::clearMouseDrag()
 {
     std::lock_guard<std::recursive_mutex> lock(mouseDragLock_);
@@ -409,7 +477,7 @@ void OverlayConnector::_sendGameWindowInput(std::uint32_t windowId, UINT msg, WP
 void OverlayConnector::_sendGraphicsWindowResizeEvent(HWND window, int width, int height)
 {
     CHECK_THREAD(Threads::HookApp);
-    overlay::GraphcisWindowRezizeEvent message;
+    overlay::GraphicsWindowRezizeEvent message;
     message.window = (std::uint32_t)window;
     message.width = width;
     message.height = height;
@@ -420,7 +488,7 @@ void OverlayConnector::_sendGraphicsWindowResizeEvent(HWND window, int width, in
 void OverlayConnector::_sendGraphicsWindowFocusEvent(HWND window, bool focus)
 {
     CHECK_THREAD(Threads::HookApp);
-    overlay::GraphcisWindowFocusEvent message;
+    overlay::GraphicsWindowFocusEvent message;
     message.window = (std::uint32_t)window;
     message.focus = focus;
 
@@ -493,7 +561,7 @@ void OverlayConnector::onLinkClose(IIpcLink *link)
 void OverlayConnector::onMessage(IIpcLink * /*link*/, int /*hostPort*/, const std::string &message)
 {
     int ipcMsgId = *(int *)message.c_str();
-    if (ipcMsgId == overlay::OverlayIpc::MsgId)
+    if (ipcMsgId == (int)overlay::OverlayIpc::MsgId)
     {
         overlay::OverlayIpc ipcMsg;
         ipcMsg.upack(message);
@@ -541,7 +609,6 @@ void OverlayConnector::onMessage(IIpcLink * /*link*/, int /*hostPort*/, const st
 
             _onWindowClose(overlayMsg);
         }
-
         else if (ipcMsg.type == "window.bounds")
         {
             std::shared_ptr<overlay::WindowBounds> overlayMsg = std::make_shared<overlay::WindowBounds>();
@@ -549,6 +616,14 @@ void OverlayConnector::onMessage(IIpcLink * /*link*/, int /*hostPort*/, const st
             overlayMsg->fromJson(json);
 
             _onWindowBounds(overlayMsg);
+        }
+        else if (ipcMsg.type == "command.cursor")
+        {
+            std::shared_ptr<overlay::CursorCommand> overlayMsg = std::make_shared<overlay::CursorCommand>();
+            overlay::json json = overlay::json::parse(ipcMsg.message);
+            overlayMsg->fromJson(json);
+
+            _onCursorCommand(overlayMsg);
         }
     }
 }
@@ -715,4 +790,9 @@ void OverlayConnector::_updateFrameBuffer(std::uint32_t windowId, const std::str
 
         std::cout << __FUNCTION__ << ", width:" << head->width << ", height:" << head->height << std::endl;
     }
+}
+
+void OverlayConnector::_onCursorCommand(std::shared_ptr<overlay::CursorCommand>& overlayMsg)
+{
+    cursorShape_ = overlayMsg->cursor;
 }

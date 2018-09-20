@@ -249,11 +249,31 @@ LRESULT UiApp::hookCallWndProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM l
 
                 HookApp::instance()->quit();
             }
-
-            if (cwp->message == WM_SIZE)
+            else if (cwp->message == WM_SIZE)
             {
                 GetClientRect(graphicsWindow_, &windowClientRect_);
                 HookApp::instance()->overlayConnector()->sendGraphicsWindowResizeEvent(graphicsWindow_, windowClientRect_.right - windowClientRect_.left, windowClientRect_.bottom - windowClientRect_.top);
+            }
+
+            else if (cwp->message == WM_KILLFOCUS)
+            {
+                windowFocus_ = false;
+                HookApp::instance()->overlayConnector()->sendGraphicsWindowFocusEvent(graphicsWindow_, windowFocus_);
+            }
+            else if (cwp->message == WM_SETFOCUS)
+            {
+                windowFocus_ = true;
+                HookApp::instance()->overlayConnector()->sendGraphicsWindowFocusEvent(graphicsWindow_, windowFocus_);
+            }
+            else if (cwp->message == WM_SETCURSOR && LOWORD(cwp->lParam) == HTCLIENT)
+            {
+                if (isIntercepting_)
+                {
+                    if (HookApp::instance()->overlayConnector()->processSetCursor())
+                    {
+                        return 0;
+                    }
+                }
             }
         }
     }
@@ -263,6 +283,24 @@ LRESULT UiApp::hookCallWndProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM l
 
 LRESULT UiApp::hookCallWndRetProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
+    if (nCode >= 0)
+    {
+        CWPRETSTRUCT * cwp = (CWPRETSTRUCT *)lParam;
+
+        if (cwp->hwnd == graphicsWindow_)
+        {
+            if (cwp->message == WM_SETCURSOR && LOWORD(cwp->lParam) == HTCLIENT)
+            {
+                if (isIntercepting_)
+                {
+                    if (HookApp::instance()->overlayConnector()->processSetCursor())
+                    {
+                        return 0;
+                    }
+                }
+            }
+        }
+    }
     return CallNextHookEx(wndRetProcHook_, nCode, wParam, lParam);
 }
 

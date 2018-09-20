@@ -31,6 +31,18 @@ class OverlayConnector : public IIpcClient
     std::uint32_t dragMoveWindowHandle_ = 0;
     POINT dragMoveLastMousePos_ = {0};
 
+    std::string cursorShape_;
+
+    HCURSOR arrowCursor_ = nullptr ;
+    HCURSOR ibeamCursor_ = nullptr;
+    HCURSOR handCusor_ = nullptr;
+    HCURSOR crossCusor_ = nullptr;
+    HCURSOR waitCusor_ = nullptr;
+    HCURSOR helpCusor_ = nullptr;
+    HCURSOR sizeAllCusor_ = nullptr;
+    HCURSOR sizeNWSECusor_ = nullptr;
+    HCURSOR sizeNESWCusor_ = nullptr;
+
 public:
     OverlayConnector();
     ~OverlayConnector();
@@ -69,6 +81,8 @@ public:
 
     bool processMouseMessage(UINT message, WPARAM wParam, LPARAM lParam);
     bool processkeyboardMessage(UINT message, WPARAM wParam, LPARAM lParam);
+
+    bool processSetCursor();
 
     void clearMouseDrag();
 
@@ -115,4 +129,6 @@ private:
     void _onWindowBounds(std::shared_ptr<overlay::WindowBounds>& overlayMsg);
 
     void _updateFrameBuffer(std::uint32_t windowId, const std::string& bufferName);
+
+    void _onCursorCommand(std::shared_ptr<overlay::CursorCommand>& overlayMsg);
 };

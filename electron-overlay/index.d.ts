@@ -33,12 +33,20 @@ declare module "electron-overlay" {
             height: number;
         }
     }
+
+    enum FpsPosition {
+        TopLeft = "TopLeft",
+        TopRight = "TopRight",
+        BottomLeft = "BottomLeft",
+        BottomRight = "BottomRight",
+    }
  
     export function start(): void;
     export function stop(): void;
     export function setEventCallback(cb: (event: string, ...args: any[]) => void): void;
     export function setHotkeys(hotkeys: IHotkey[]): void;
-    export function sendCommand(name: string): void;
+    export function sendCommand(arg: {command: "cursor", cursor: string}): void;
+    export function sendCommand(arg: {command: "fps", showfps: boolean, position: FpsPosition}): void;
     export function addWindow(windowId: number, details: IOverlayWindowDetails): void;
     export function closeWindow(windowId: number): void;
     export function sendWindowBounds(windowId: number, details: {rect: IRectangle}): void;
