@@ -24,6 +24,13 @@ class OverlayConnector : public IIpcClient
 
     std::wstring mainProcessDir_;
 
+    std::atomic<std::uint32_t> mousePressWindowId_ = 0;
+
+    std::recursive_mutex mouseDragLock_;
+    std::uint32_t dragMoveWindowId_ = 0;
+    std::uint32_t dragMoveWindowHandle_ = 0;
+    POINT dragMoveLastMousePos_ = {0};
+
 public:
     OverlayConnector();
     ~OverlayConnector();
@@ -63,6 +70,7 @@ public:
     bool processMouseMessage(UINT message, WPARAM wParam, LPARAM lParam);
     bool processkeyboardMessage(UINT message, WPARAM wParam, LPARAM lParam);
 
+    void clearMouseDrag();
 
 protected:
     void _heartbeat();

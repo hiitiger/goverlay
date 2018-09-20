@@ -75,10 +75,10 @@ JSON_AUTO(WindowRect, x, y, width, height)
 
 struct WindowCaptionMargin
 {
-    int left;
-    int right;
-    int top;
-    int height;
+    int left = 0;
+    int right = 0;
+    int top = 0;
+    int height = 0;
 
     WindowCaptionMargin() = default;
 };
@@ -127,6 +127,7 @@ struct Window : public GMessage
     std::string name;
     bool transparent = false;
     bool resizable = false;
+    std::uint32_t dragBorderWidth = 0;
 
     std::string bufferName;
 
@@ -150,7 +151,7 @@ struct Window : public GMessage
     }
 };
 
-JSON_AUTO(Window, type, windowId, nativeHandle, name, transparent, resizable, bufferName, rect, caption)
+JSON_AUTO(Window, type, windowId, nativeHandle, name, transparent, resizable, dragBorderWidth, bufferName, rect, caption)
 
 struct WindowClose : public GMessage
 {

@@ -117,6 +117,7 @@ class Application {
       frame: false,
       show: false,
       transparent: true,
+      backgroundColor: "#f0ffffff",
       webPreferences: {
         offscreen: true
       }
@@ -145,12 +146,18 @@ class Application {
     this.Overlay!.addWindow(window.id, {
       name: "MainOverlay",
       transparent: false,
-      resizable: false,
+      resizable: true,
       nativeHandle: window.getNativeWindowHandle().readUInt32LE(0),
       rect: {
           ...window.getBounds(),
-          x: 0, y: 0,
-      }
+      },
+      caption: {
+        left: 10,
+        right: 10,
+        top: 10,
+        height: 40
+      },
+      dragBorderWidth: 10
     })
 
     window.on("ready-to-show", () => {
@@ -159,6 +166,16 @@ class Application {
 
     window.on("resize", () => {
       this.Overlay!.sendWindowBounds(window.id, {rect: window.getBounds()})
+    })
+
+    window.on("move", () => {
+      console.log("move", window.getBounds())
+      this.Overlay!.sendWindowBounds(window.id, {rect: window.getBounds()})
+    })
+
+    const windowId = window.id
+    window.on("closed", () => {
+      this.Overlay!.closeWindow(windowId)
     })
 
     return window

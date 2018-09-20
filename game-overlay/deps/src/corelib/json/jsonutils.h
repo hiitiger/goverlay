@@ -56,6 +56,9 @@ using namespace nlohmann;
 #define FOR_EACH_9(what, x1, x2, x3, x4, x5, x6, x7, x8, x9)\
   what(x1);\
   FOR_EACH_8(what,  x2, x3, x4, x5, x6, x7, x8, x9)
+#define FOR_EACH_10(what, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10)\
+  what(x1);\
+  FOR_EACH_9(what,  x2, x3, x4, x5, x6, x7, x8, x9, x10)
 
 
 #define VA_ARGS(...)  , ##__VA_ARGS__

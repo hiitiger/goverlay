@@ -6,6 +6,8 @@ import { Application } from "./electron/app-entry"
 
 const appEntry = new Application()
 
+ElectronApp.disableHardwareAcceleration()
+
 ElectronApp.on("ready", () => {
     appEntry.start()
 })

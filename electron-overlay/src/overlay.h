@@ -52,10 +52,10 @@ inline std::string getKeyCode(std::uint32_t key)
         {34 , "PageDown"},
         {35 , "End"},
         {36 , "Home"},
-        {37 , "ArrowLeft"},
-        {38 , "ArrowUp"},
-        {39 , "ArrowRight"},
-        {40 , "ArrowDown"},
+        {37 , "Left"},
+        {38 , "Up"},
+        {39 , "Right"},
+        {40 , "Down"},
         {45 , "Insert"},
         {46 , "Delete"},
         {48 , "0"},
@@ -450,6 +450,11 @@ class OverlayMain : public IIpcHost
         message.resizable = windowDetails.Get("resizable").ToBoolean();
         message.bufferName = _shareMemoryName(message.windowId);
 
+        if (windowDetails.Has("dragBorderWidth"))
+        {
+            message.dragBorderWidth = windowDetails.Get("dragBorderWidth").ToNumber();
+        }
+
         Napi::Object rect = windowDetails.Get("rect").ToObject();
         message.rect.x = rect.Get("x").ToNumber();
         message.rect.y = rect.Get("y").ToNumber();
@@ -537,8 +542,6 @@ class OverlayMain : public IIpcHost
 
         }
         this->_sendMessage(&message);
-
-        std::cout << __FUNCTION__ << ", width: " << message.rect.width << ", height:"<< message.rect.height << std::endl;
 
         auto it = std::find_if(windows_.begin(), windows_.end(), [windowId = message.windowId](const auto &window) {
             return windowId == window.windowId;

@@ -25,6 +25,7 @@ declare module "electron-overlay" {
         resizable: boolean;
         rect: IRectangle;
         nativeHandle: number;
+        dragBorderWidth?: number;
         caption?: {
             left: number;
             right: number;

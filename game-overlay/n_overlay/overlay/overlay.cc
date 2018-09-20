@@ -96,6 +96,11 @@ void OverlayConnector::sendGraphicsWindowFocusEvent(HWND window, bool focus)
     HookApp::instance()->async([this, window, focus]() {
         _sendGraphicsWindowFocusEvent(window, focus);
     });
+
+    if (!focus)
+    {
+        clearMouseDrag();
+    }
 }
 
 void OverlayConnector::sendGraphicsWindowDestroy(HWND window)
@@ -147,8 +152,52 @@ void OverlayConnector::unlockWindows()
 bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM lParam)
 {
     std::lock_guard<std::mutex> lock(windowsLock_);
-
     POINTS mousePointInGameClient{ LOWORD(lParam), HIWORD(lParam) };
+
+    {
+        std::lock_guard<std::recursive_mutex> lock(mouseDragLock_);
+        //move by caption hittest
+        if (dragMoveWindowId_ != 0)
+        {
+            auto it = std::find_if(windows_.begin(), windows_.end(), [&](const auto& window) {
+                return window->windowId == dragMoveWindowId_;
+            });
+            if (it != windows_.end())
+            {
+                auto& window = *it;
+
+                POINT mousePointinWindowClient = { mousePointInGameClient.x, mousePointInGameClient.y };
+                mousePointinWindowClient.x -= window->rect.x;
+                mousePointinWindowClient.y -= window->rect.y;
+
+                if (message == WM_MOUSEMOVE)
+                {
+                    int xdiff = mousePointinWindowClient.x - dragMoveLastMousePos_.x;
+                    int ydiff = mousePointinWindowClient.y - dragMoveLastMousePos_.y;
+                    window->rect.x += xdiff;
+                    window->rect.y += ydiff;
+
+                    dragMoveLastMousePos_.x = mousePointInGameClient.x - window->rect.x;
+                    dragMoveLastMousePos_.y = mousePointInGameClient.y - window->rect.y;
+
+                    SetWindowPos((HWND)window->nativeHandle, NULL, window->rect.x, window->rect.y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+
+                    this->windowBoundsEvent()(dragMoveWindowId_, window->rect);
+                }
+                else if (message == WM_LBUTTONUP)
+                {
+                    clearMouseDrag();
+                }
+            }
+            else
+            {
+                clearMouseDrag();
+            }
+            return true;
+        }
+
+    }
+   
     if (message == WM_MOUSEWHEEL)
     {
         POINT gx = { 0, 0 };
@@ -156,6 +205,42 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
 
         mousePointInGameClient.x -= (SHORT)gx.x;
         mousePointInGameClient.y -= (SHORT)gx.y;
+    }
+
+    {
+        if (mousePressWindowId_)
+        {
+            auto it = std::find_if(windows_.begin(), windows_.end(), [&](const auto& window) {
+                return window->windowId == mousePressWindowId_;
+            });
+
+            if (it != windows_.end())
+            {
+                auto& window = *it;
+
+                POINT mousePointinWindowClient = { mousePointInGameClient.x, mousePointInGameClient.y };
+                mousePointinWindowClient.x -= window->rect.x;
+                mousePointinWindowClient.y -= window->rect.y;
+
+                DWORD pos = mousePointinWindowClient.x + (mousePointinWindowClient.y << 16);
+                lParam = (LPARAM)pos;
+
+                HookApp::instance()->async([this, windowId = window->windowId, message, wParam, lParam]() {
+                    _sendGameWindowInput(windowId, message, wParam, lParam);
+                });
+
+                if (message == WM_LBUTTONUP)
+                {
+                    mousePressWindowId_ = 0;
+                }
+            }
+            else
+            {
+                mousePressWindowId_ = 0;
+            }
+
+            return true;
+        }
     }
 
     for (auto & window :boost::adaptors::reverse(windows_))
@@ -171,9 +256,31 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
             DWORD pos = mousePointinWindowClient.x + (mousePointinWindowClient.y << 16);
             lParam = (LPARAM)pos;
 
-            HookApp::instance()->async([this, windowId = window->windowId, message, wParam, lParam]() {
-                _sendGameWindowInput(windowId, message, wParam, lParam);
-            });
+            if (message == WM_LBUTTONDOWN)
+            {
+                mousePressWindowId_ = window->windowId;
+
+                int hitTest = overlay_game::hitTest(mousePointinWindowClient, window->rect, window->resizable, window->caption ? window->caption.value() : overlay::WindowCaptionMargin(), window->dragBorderWidth);
+                if (hitTest == HTCAPTION)
+                {
+                    std::lock_guard<std::recursive_mutex> lock(mouseDragLock_);
+                    dragMoveWindowId_ = window->windowId;
+                    dragMoveWindowHandle_ = window->nativeHandle;
+                    dragMoveLastMousePos_.x = mousePointinWindowClient.x;
+                    dragMoveLastMousePos_.y = mousePointinWindowClient.y;
+                }
+            }
+            else if (message == WM_LBUTTONUP)
+            {
+                mousePressWindowId_ = 0;
+            }
+
+            if (dragMoveWindowId_ == 0)
+            {
+                HookApp::instance()->async([this, windowId = window->windowId, message, wParam, lParam]() {
+                    _sendGameWindowInput(windowId, message, wParam, lParam);
+                });
+            }
 
             return true;
         }
@@ -183,7 +290,6 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
     HookApp::instance()->async([this, windowId = 0, message, wParam, lParam]() {
         _sendGameWindowInput(windowId, message, wParam, lParam);
     });
-
 
     return false;
 }
@@ -197,6 +303,14 @@ bool OverlayConnector::processkeyboardMessage(UINT message, WPARAM wParam, LPARA
         });
     }
     return true;
+}
+
+void OverlayConnector::clearMouseDrag()
+{
+    std::lock_guard<std::recursive_mutex> lock(mouseDragLock_);
+    mousePressWindowId_ = 0;
+    dragMoveWindowId_ = 0;
+    dragMoveWindowHandle_ = 0;
 }
 
 void OverlayConnector::_heartbeat()
@@ -351,6 +465,8 @@ void OverlayConnector::_onRemoteClose()
     }
 
     shareMemoryLock_.close();
+
+    clearMouseDrag();
 
     session::setOverlayEnabled(false);
     session::setOverlayConnected(false);
@@ -528,6 +644,14 @@ void OverlayConnector::_onWindowClose(std::shared_ptr<overlay::WindowClose>& ove
         windows_.erase(it);
 
         this->windowCloseEvent()(overlayMsg->windowId);
+
+        {
+            std::lock_guard<std::recursive_mutex> lock(mouseDragLock_);
+            if (overlayMsg->windowId == dragMoveWindowId_)
+            {
+                clearMouseDrag();
+            }
+        }
     }
 }
 

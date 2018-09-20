@@ -242,4 +242,71 @@ inline bool pointInRect(const POINT& pt, const  overlay::WindowRect& rc)
 }
 
 
+inline int hitTest(POINT pt, const overlay::WindowRect& rect, bool resizable, const overlay::WindowCaptionMargin& caption, int borderWidth)
+{
+    Storm::Point<int> mousePt(pt.x, pt.y);
+
+    Storm::Rect<int> dragBarRect(caption.left, caption.top, rect.width - caption.right, caption.top + caption.height);
+    if (dragBarRect.isValid() && dragBarRect.contains(pt.x, pt.y))
+    {
+        return HTCAPTION;
+    }
+
+    if (!resizable)
+    {
+        return HTCLIENT;
+    }
+
+    Storm::Rect<int> topLeftBorder(0, 0, borderWidth, borderWidth);
+    if (topLeftBorder.contains(mousePt))
+    {
+        return HTTOPLEFT;
+    }
+
+    Storm::Rect<int>  topBorder(borderWidth, 0, rect.width - borderWidth, borderWidth);
+    if (topBorder.contains(mousePt))
+    {
+        return HTTOP;
+    }
+
+    Storm::Rect<int>  topRightBorder(rect.width - borderWidth, 0, rect.width, borderWidth);
+    if (topRightBorder.contains(mousePt))
+    {
+        return HTTOPRIGHT;
+    }
+
+    Storm::Rect<int>  leftBorder(0, borderWidth, borderWidth, rect.height - borderWidth);
+    if (leftBorder.contains(mousePt))
+    {
+        return HTLEFT;
+    }
+
+    Storm::Rect<int>  bottomLeftBorder(0, rect.height - borderWidth, borderWidth, rect.height);
+    if (bottomLeftBorder.contains(mousePt))
+    {
+        return HTBOTTOMLEFT;
+    }
+
+    Storm::Rect<int>  rightBorder(rect.width - borderWidth, borderWidth, rect.width, rect.height - borderWidth);
+    if (rightBorder.contains(mousePt))
+    {
+        return HTRIGHT;
+    }
+
+    Storm::Rect<int>  bottomRightBorder(rect.width - borderWidth, rect.height - borderWidth, rect.width, rect.height);
+    if (bottomRightBorder.contains(mousePt))
+    {
+        return HTBOTTOMRIGHT;
+    }
+
+
+    Storm::Rect<int>  bottomBorder(borderWidth, rect.height - borderWidth, rect.width - borderWidth, rect.height);
+    if (bottomBorder.contains(mousePt))
+    {
+        return HTBOTTOM;
+    }
+
+    return HTCLIENT;
+}
+
 } // namespace overlay_game
