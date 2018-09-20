@@ -1,5 +1,6 @@
 #pragma once
 #include "overlay/session.h"
+#include "message/gmessage.hpp"
 
 struct IHookModule
 {
@@ -207,7 +208,6 @@ struct FrameBuffer
 };
 
 
-
 inline bool pointInRect(const POINTS& pt, const  RECT& rc)
 {
     return pt.x >= rc.left
@@ -223,5 +223,23 @@ inline bool pointInRect(const POINT& pt, const  RECT& rc)
         && pt.x <= rc.right
         && pt.y <= rc.bottom;
 }
+
+
+inline bool pointInRect(const POINTS& pt, const  overlay::WindowRect& rc)
+{
+    return pt.x >= rc.x
+        && pt.y >= rc.y
+        && pt.x <= rc.x + rc.width
+        && pt.y <= rc.y + rc.height;
+}
+
+inline bool pointInRect(const POINT& pt, const  overlay::WindowRect& rc)
+{
+    return pt.x >= rc.x
+        && pt.y >= rc.y
+        && pt.x <= rc.x + rc.width
+        && pt.y <= rc.y + rc.height;
+}
+
 
 } // namespace overlay_game

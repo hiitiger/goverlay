@@ -2,6 +2,7 @@
 #include "overlay.h"
 #include "hookapp.h"
 
+#include <boost/range/adaptor/reversed.hpp>
 const char k_overlayIpcName[] = "n_overlay_1a1y2o8l0b";
 
 OverlayConnector::OverlayConnector()
@@ -144,6 +145,45 @@ void OverlayConnector::unlockWindows()
 
 bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM lParam)
 {
+    std::lock_guard<std::mutex> lock(windowsLock_);
+
+    POINTS mousePointInGameClient{ LOWORD(lParam), HIWORD(lParam) };
+    if (message == WM_MOUSEWHEEL)
+    {
+        POINT gx = { 0, 0 };
+        ClientToScreen(session::graphicsWindow(), &gx);
+
+        mousePointInGameClient.x -= (SHORT)gx.x;
+        mousePointInGameClient.y -= (SHORT)gx.y;
+    }
+
+    for (auto & window :boost::adaptors::reverse(windows_))
+    {
+        if (overlay_game::pointInRect(mousePointInGameClient, window->rect))
+        {
+            POINT mousePointinWindowClient = { mousePointInGameClient.x, mousePointInGameClient.y };
+            mousePointinWindowClient.x -= window->rect.x;
+            mousePointinWindowClient.y -= window->rect.y;
+
+            //even for mousewheel we translate it to local cord
+
+            DWORD pos = mousePointinWindowClient.x + (mousePointinWindowClient.y << 16);
+            lParam = (LPARAM)pos;
+
+            HookApp::instance()->async([this, windowId = window->windowId, message, wParam, lParam]() {
+                _sendGameWindowInput(windowId, message, wParam, lParam);
+            });
+
+            return true;
+        }
+    }
+
+    // notify mouse is not accept
+    HookApp::instance()->async([this, windowId = 0, message, wParam, lParam]() {
+        _sendGameWindowInput(windowId, message, wParam, lParam);
+    });
+
+
     return false;
 }
 
@@ -154,7 +194,6 @@ bool OverlayConnector::processkeyboardMessage(UINT message, WPARAM wParam, LPARA
         HookApp::instance()->async([this, windowId = mainWindowId_, message, wParam, lParam]() {
             _sendGameWindowInput(windowId, message, wParam, lParam);
         });
-
         return true;
     }
 }
@@ -283,8 +322,8 @@ void OverlayConnector::_sendMessage(overlay::GMessage *message)
     ipcMsg.message = obj.dump();
 
 
-    std::cout << __FUNCTION__ << ", " << ipcMsg.type << std::endl;
-    std::cout << __FUNCTION__ << ", " << ipcMsg.message << std::endl;
+    //std::cout << __FUNCTION__ << ", " << ipcMsg.type << std::endl;
+    //std::cout << __FUNCTION__ << ", " << ipcMsg.message << std::endl;
 
     getIpcCenter()->sendMessage(ipcLink_, ipcClientId_, 0, &ipcMsg);
 }

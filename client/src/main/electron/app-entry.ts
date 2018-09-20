@@ -96,10 +96,14 @@ class Application {
     this.Overlay.start()
 
     this.Overlay.setEventCallback((event: string, payload: any) => {
-      console.log(event, payload)
       const osrwindow = this.getWindow(AppWindows.osr)
       if (osrwindow) {
-        osrwindow.webContents.sendInputEvent(this.Overlay.translateInputEvent(payload))
+        const intpuEvent = this.Overlay.translateInputEvent(payload)
+        if (payload.msg !== 512) {
+          console.log(event, payload)
+          console.log(`translate ${JSON.stringify(intpuEvent)}`)
+        }
+        osrwindow.webContents.sendInputEvent(intpuEvent)
       }
     })
   }
@@ -109,7 +113,7 @@ class Application {
       height: 360,
       width: 640,
       frame: false,
-      show: true,
+      show: false,
       transparent: true,
       webPreferences: {
         offscreen: true
@@ -142,6 +146,10 @@ class Application {
           ...window.getBounds(),
           x: 0, y: 0,
       }
+    })
+
+    window.on("ready-to-show", () => {
+      window.focusOnWebView()
     })
 
     return window
@@ -269,34 +277,6 @@ class Application {
     })
     ipcMain.on("click", () => {
       this.createOsrWindow().setPosition(0, 0)
-
-      setInterval(() => {
-        const window = this.getWindow(AppWindows.osr)
-        if (window) {
-          window.webContents.sendInputEvent({
-            type: "mouseDown",
-            button: "left",
-            x: 30,
-            y: 18,
-            //   globalX: 30,
-            //   globalY: 18,
-            clickCount: 1
-          } as any)
-
-          setTimeout(() => {
-            window.webContents.sendInputEvent({
-              type: "mouseUp",
-              button: "left",
-              x: 30,
-              y: 18,
-              // globalX: 30,
-              // globalY: 18,
-              clickCount: 1
-            } as any)
-          }, 100)
-        }
-
-      }, 2000)
     })
   }
 }

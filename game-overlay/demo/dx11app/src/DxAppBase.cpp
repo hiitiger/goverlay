@@ -232,8 +232,8 @@ void DxAppBase::initRenderState()
 {
     D3D11_BLEND_DESC transDesc;
 
-    transDesc.AlphaToCoverageEnable = false;        //¹Ø±ÕAlphaToCoverage  
-    transDesc.IndependentBlendEnable = false;       //²»Õë¶Ô¶à¸öRenderTargetÊ¹ÓÃ²»Í¬µÄ»ìºÏ×´Ì¬  
+    transDesc.AlphaToCoverageEnable = false;        //ï¿½Ø±ï¿½AlphaToCoverage  
+    transDesc.IndependentBlendEnable = false;       //ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½RenderTargetÊ¹ï¿½Ã²ï¿½Í¬ï¿½Ä»ï¿½ï¿½×´Ì¬  
     transDesc.RenderTarget[0].BlendEnable = true;
     transDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
     transDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
@@ -248,8 +248,8 @@ void DxAppBase::initRenderState()
 
     D3D11_BLEND_DESC opaqueDesc;
     opaqueDesc.AlphaToCoverageEnable = false;
-    opaqueDesc.AlphaToCoverageEnable = false;        //¹Ø±ÕAlphaToCoverage  
-    opaqueDesc.IndependentBlendEnable = false;       //²»Õë¶Ô¶à¸öRenderTargetÊ¹ÓÃ²»Í¬µÄ»ìºÏ×´Ì¬  
+    opaqueDesc.AlphaToCoverageEnable = false;        //ï¿½Ø±ï¿½AlphaToCoverage  
+    opaqueDesc.IndependentBlendEnable = false;       //ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½RenderTargetÊ¹ï¿½Ã²ï¿½Í¬ï¿½Ä»ï¿½ï¿½×´Ì¬  
     opaqueDesc.RenderTarget[0].BlendEnable = false;
     opaqueDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
     opaqueDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
@@ -464,6 +464,7 @@ LRESULT DxAppBase::WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPa
 #endif
             ::LoadLibraryW(dirPath.c_str());
         }
+        return DefWindowProc(hwnd, message, wParam, lParam);
     }
 
     default:

@@ -1,3 +1,4 @@
+#pragma once
 #include <assert.h>
 #include "ipc/ipcmsg.h"
 
@@ -151,7 +152,6 @@ struct Window : public GMessage
 
 JSON_AUTO(Window, type, windowId, nativeHandle, name, transparent, resizable, bufferName, rect, caption)
 
-
 struct WindowClose : public GMessage
 {
     std::string type = "window.close";
@@ -174,7 +174,6 @@ struct WindowClose : public GMessage
     }
 };
 JSON_AUTO(WindowClose, type, windowId)
-
 
 struct WindowBounds : public GMessage
 {

@@ -217,6 +217,10 @@ LRESULT UiApp::hookGetMsgProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lP
                 || (pMsg->message >= WM_SYSKEYDOWN && pMsg->message <= WM_SYSDEADCHAR))
             {
                 HookApp::instance()->overlayConnector()->processkeyboardMessage(pMsg->message, pMsg->wParam, pMsg->lParam);
+                if (pMsg->message == WM_KEYDOWN)
+                {
+                    TranslateMessage(pMsg);
+                }
                 pMsg->message = WM_NULL;
                 return 0;
             }

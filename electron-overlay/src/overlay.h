@@ -161,9 +161,9 @@ inline std::vector<std::string> getKeyboardModifiers(WPARAM wparam, LPARAM lpara
     if (isKeyDown(VK_LWIN) || isKeyDown(VK_RWIN))
         modifiers.push_back("meta");
 
-    if (::GetAsyncKeyState(VK_NUMLOCK) & 1)
+    if (::GetAsyncKeyState(VK_NUMLOCK) & 0x0001)
         modifiers.push_back("numLock");
-    if (::GetAsyncKeyState(VK_CAPITAL) & 1)
+    if (::GetAsyncKeyState(VK_CAPITAL) & 0x0001)
         modifiers.push_back("capsLock");
 
     switch (wparam) {
@@ -231,6 +231,53 @@ inline std::vector<std::string> getKeyboardModifiers(WPARAM wparam, LPARAM lpara
     return modifiers;
 }
 
+inline std::vector<std::string> getMouseModifiers(WPARAM wparam, LPARAM lparam)
+{
+    std::vector<std::string> modifiers;
+
+    WORD vkState = GET_KEYSTATE_WPARAM(wparam);
+    if (vkState & MK_CONTROL)
+    {
+        modifiers.push_back("control");
+        if (isKeyDown(VK_LCONTROL))
+            modifiers.push_back("left");
+        else if (isKeyDown(VK_RCONTROL))
+            modifiers.push_back("right");
+    }
+    if (vkState & MK_SHIFT)
+    {
+        modifiers.push_back("shift");
+        if (isKeyDown(VK_LSHIFT))
+            modifiers.push_back("left");
+        else if (isKeyDown(VK_RSHIFT))
+            modifiers.push_back("right");
+    }
+    if (isKeyDown(VK_MENU))
+    {
+        modifiers.push_back("alt");
+        if (isKeyDown(VK_LMENU))
+            modifiers.push_back("left");
+        else if (isKeyDown(VK_RMENU))
+            modifiers.push_back("right");
+    }
+
+    if (vkState & MK_LBUTTON)
+        modifiers.push_back("leftButtonDown");
+    if (vkState & MK_RBUTTON)
+        modifiers.push_back("rightButtonDown");
+    if (vkState & MK_MBUTTON)
+        modifiers.push_back("middleButtonDown");
+
+    if (isKeyDown(VK_LWIN) || isKeyDown(VK_RWIN))
+        modifiers.push_back("meta");
+
+    if (::GetAsyncKeyState(VK_NUMLOCK) & 0x0001)
+        modifiers.push_back("numLock");
+    if (::GetAsyncKeyState(VK_CAPITAL) & 0x0001)
+        modifiers.push_back("capsLock");
+
+    return modifiers;
+}
 
 
 class OverlayMain : public IIpcHost
@@ -479,8 +526,6 @@ class OverlayMain : public IIpcHost
         std::uint32_t *data = buffer.Data();
         std::size_t length = buffer.Length();
 
-        std::cout << "length :" << length << ", width :" << width << ",height :" << height << std::endl;
-
         assert((length == width * height));
 
         {
@@ -528,22 +573,25 @@ class OverlayMain : public IIpcHost
         std::uint32_t wparam = eventData.Get("wparam").ToNumber();
         std::uint32_t lparam = eventData.Get("lparam").ToNumber();
 
-        std::cout << "msg:" << msg << ", wparam:" << wparam << ", lparam: " << lparam << std::endl;
-
         if ((msg >= WM_KEYFIRST && msg <= WM_KEYLAST)
             || (msg >= WM_SYSKEYDOWN && msg <= WM_SYSDEADCHAR))
         {
             if (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN)
             {
                 object.Set("type", "keyDown");
+                object.Set("keyCode", getKeyCode(wparam));
             }
             else if (msg == WM_KEYUP || msg == WM_SYSKEYUP)
             {
                 object.Set("type", "keyUp");
+                object.Set("keyCode", getKeyCode(wparam));
             }
-            else
+            else if (msg == WM_CHAR)
             {
                 object.Set("type", "char");
+                WCHAR code = wparam;
+                std::wstring keyCode(1, code);
+                object.Set("keyCode", Windows::toUtf8(keyCode));
             }
 
             auto modifiersVec = getKeyboardModifiers(wparam, lparam);
@@ -556,11 +604,80 @@ class OverlayMain : public IIpcHost
             }
 
             object.Set("modifiers", modifiers);
-            object.Set("keyCode", getKeyCode(wparam));
         }
 
         else if (msg >= WM_MOUSEFIRST && msg <= WM_MOUSELAST)
         {
+            auto modifiersVec = getMouseModifiers(wparam, lparam);
+
+            if (msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN 
+                ||msg == WM_MBUTTONDOWN || msg == WM_XBUTTONDOWN
+                || msg == WM_LBUTTONDBLCLK || msg == WM_RBUTTONDBLCLK
+                || msg == WM_MBUTTONDBLCLK || msg == WM_XBUTTONDBLCLK
+                )
+            {
+                object.Set("type", "mouseDown");
+
+                if (msg == WM_LBUTTONDBLCLK || msg == WM_RBUTTONDBLCLK
+                    || msg == WM_MBUTTONDBLCLK || msg == WM_XBUTTONDBLCLK)
+                {
+                    object.Set("clickCount ", 2);
+                }
+                else
+                {
+                    object.Set("clickCount ", 1);
+                }
+
+                
+            }
+            else if (msg == WM_LBUTTONUP || msg == WM_RBUTTONUP
+                || msg == WM_MBUTTONUP || msg == WM_XBUTTONUP)
+            {
+                object.Set("type", "mouseUp");
+                object.Set("clickCount ", 1);
+            }
+            else if (msg == WM_MOUSEMOVE)
+            {
+                object.Set("type", "mouseMove");
+            }
+            else if (msg == WM_MOUSEWHEEL)
+            {
+                object.Set("type", "mouseWheel");
+
+                int delta = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
+                object.Set("deltaY", delta);
+                object.Set("canScroll ", true);
+            }
+
+            //for mousewheel the cord is already translated
+
+            int x = LOWORD(lparam);
+            int y = HIWORD(lparam);
+            object.Set("x", x);
+            object.Set("y", y);
+
+            if (msg == WM_LBUTTONDOWN || msg == WM_LBUTTONUP || msg == WM_LBUTTONDBLCLK)
+            {
+                object.Set("button", "left");
+            }
+            else if (msg == WM_RBUTTONDOWN || msg == WM_RBUTTONUP || msg == WM_RBUTTONDBLCLK)
+            {
+                object.Set("button", "right");
+            }
+            else if (msg == WM_MBUTTONDOWN || msg == WM_MBUTTONUP || msg == WM_MBUTTONDBLCLK)
+            {
+                object.Set("button", "middle");
+            }
+
+            Napi::Array modifiers = Napi::Array::New(env, modifiersVec.size());
+
+            for (auto i = 0; i != modifiersVec.size(); ++i)
+            {
+                modifiers.Set(i, modifiersVec[i]);
+            }
+
+            object.Set("modifiers", modifiers);
+
         }
 
         return object;
@@ -611,8 +728,6 @@ class OverlayMain : public IIpcHost
 
         ipcMsg.message = obj.dump();
 
-        std::cout << ipcMsg.message << std::endl;
-
         for (auto link : this->ipcClients_)
         {
             this->ipcHostCenter_->sendMessage(link, 0, 0, &ipcMsg);
@@ -639,8 +754,6 @@ class OverlayMain : public IIpcHost
         {
             overlay::OverlayIpc ipcMsg;
             ipcMsg.upack(message);
-
-            std::cout << __FUNCTION__ << "," << ipcMsg.type << std::endl;
 
             if (ipcMsg.type == "game.process")
             {
