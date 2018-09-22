@@ -406,16 +406,6 @@ struct DxgiHookInfo
 
 JSON_AUTO(DxgiHookInfo, presentHooked, present1Hooked, resizeBufferHooked, resizeTargetHooked)
 
-struct MouseInput
-{
-};
-JSON_AUTO(MouseInput)
-
-struct KeyInput
-{
-};
-JSON_AUTO(KeyInput)
-
 struct GameProcessInfo : public GMessage
 {
     std::string type = "game.process";
@@ -452,16 +442,13 @@ struct GameExit : public GMessage
     virtual bool fromJson(const json &obj)
     {
         assert(obj["type"].get<std::string>() == this->type);
-
         *this = obj;
-
         return true;
     }
 
     virtual json toJson(bool *ok = false) const
     {
         json result = *this;
-
         if (ok)
             *ok = true;
         return result;
@@ -469,6 +456,30 @@ struct GameExit : public GMessage
 };
 
 JSON_AUTO(GameExit, type)
+
+struct InputHookInfo : public GMessage
+{
+    std::string type = "input.hook";
+    virtual std::string msgType() const { return type; }
+
+    bool hooked;
+
+    virtual bool fromJson(const json &obj)
+    {
+        assert(obj["type"].get<std::string>() == this->type);
+        *this = obj;
+        return true;
+    }
+
+    virtual json toJson(bool *ok = false) const
+    {
+        json result = *this;
+        if (ok)
+            *ok = true;
+        return result;
+    }
+};
+JSON_AUTO(InputHookInfo, type, hooked)
 
 struct GraphicsHookInfo : public GMessage
 {
@@ -596,14 +607,12 @@ struct GraphicsWindowRezizeEvent : public GMessage
     {
         assert(obj["type"].get<std::string>() == this->type);
         *this = obj;
-
         return true;
     }
 
     virtual json toJson(bool *ok = false) const
     {
         json result = *this;
-
         if (ok)
             *ok = true;
         return result;
@@ -611,6 +620,30 @@ struct GraphicsWindowRezizeEvent : public GMessage
 };
 
 JSON_AUTO(GraphicsWindowRezizeEvent, type, window, width, height)
+
+struct GraphicsWindowDestroyEvent : public GMessage
+{
+    std::string type = "graphics.window.event.destroy";
+    virtual std::string msgType() const { return type; }
+    std::uint32_t window;
+
+    virtual bool fromJson(const json &obj)
+    {
+        assert(obj["type"].get<std::string>() == this->type);
+        *this = obj;
+        return true;
+    }
+
+    virtual json toJson(bool *ok = false) const
+    {
+        json result = *this;
+        if (ok)
+            *ok = true;
+        return result;
+    }
+};
+
+JSON_AUTO(GraphicsWindowDestroyEvent, type, window)
 
 struct GameInputIntercept : public GMessage
 {

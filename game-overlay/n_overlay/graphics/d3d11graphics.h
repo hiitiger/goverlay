@@ -66,7 +66,7 @@ class D3d11Graphics : public DxgiGraphics
         ID3D11RasterizerState *  rasterizer;
     };
 
-    D3d11Status savedStatus_;
+    D3d11Status savedStatus_ = {0};
 
     std::vector<std::shared_ptr<D3d11WindowSprite>> windowSprites_;
     std::shared_ptr<D3d11WindowSprite> mainSprite_;

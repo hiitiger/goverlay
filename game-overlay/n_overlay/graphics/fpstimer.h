@@ -40,7 +40,7 @@ float inline FpsTimer::tick()
     frames_ += 1;
 
     auto cur = std::chrono::steady_clock::now();
-    std::chrono::duration<double> diff = cur - lastTime_;
+    std::chrono::duration<float, std::milli> diff = cur - lastTime_;
     auto delta = diff.count();
 
     if (delta >= 1000.0f)

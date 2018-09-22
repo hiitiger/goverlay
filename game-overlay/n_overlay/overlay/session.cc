@@ -54,7 +54,7 @@ bool dxgiHooked()
     return dxgiHooked_;
 }
 
-void tryD3d9Hook()
+bool tryD3d9Hook()
 {
     CHECK_THREAD(Threads::HookApp);
 
@@ -68,9 +68,10 @@ void tryD3d9Hook()
     {
         d3d9Hook_.reset();
     }
+    return d3d9Hooked_;
 }
 
-void tryDxgiHook()
+bool tryDxgiHook()
 {
     CHECK_THREAD(Threads::HookApp);
     dxgiHook_ = std::make_unique<DXGIHook>();
@@ -83,6 +84,8 @@ void tryDxgiHook()
     {
         dxgiHook_.reset();
     }
+
+    return dxgiHooked_;
 }
 
 void clearD3d9Hook()
@@ -111,7 +114,7 @@ bool inputHooked()
     return inputHooked_;
 }
 
-void tryInputHook()
+bool tryInputHook()
 {
     CHECK_THREAD(Threads::HookApp);
 
@@ -124,6 +127,8 @@ void tryInputHook()
     {
         inputHook_.reset();
     }
+
+    return inputHooked_;
 }
 
 HMODULE loadModuleD3dCompiler47()

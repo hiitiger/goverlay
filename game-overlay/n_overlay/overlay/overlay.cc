@@ -56,11 +56,11 @@ void OverlayConnector::quit()
     getIpcCenter()->uninit();
 }
 
-void OverlayConnector::sendInputHookInfo()
+void OverlayConnector::sendInputHookInfo(bool hooked)
 {
     CHECK_THREAD(Threads::HookApp);
 
-    _sendInputHookInfo();
+    _sendInputHookInfo(hooked);
 }
 
 void OverlayConnector::sendGraphicsHookInfo(const overlay_game::D3d9HookInfo &info)
@@ -114,7 +114,10 @@ void OverlayConnector::sendGraphicsWindowFocusEvent(HWND window, bool focus)
 
 void OverlayConnector::sendGraphicsWindowDestroy(HWND window)
 {
-
+    CHECK_THREAD(Threads::Window);
+    HookApp::instance()->async([this, window]() {
+        _sendGraphicsWindowDestroy(window);
+    });
 }
 
 void OverlayConnector::sendInputIntercept()
@@ -161,7 +164,7 @@ void OverlayConnector::unlockWindows()
 bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM lParam)
 {
     std::lock_guard<std::mutex> lock(windowsLock_);
-    POINTS mousePointInGameClient{ LOWORD(lParam), HIWORD(lParam) };
+    POINT mousePointInGameClient{ LOWORD(lParam), HIWORD(lParam) };
 
     {
         std::lock_guard<std::recursive_mutex> lock(mouseDragLock_);
@@ -216,40 +219,38 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
         mousePointInGameClient.y -= (SHORT)gx.y;
     }
 
+    if (mousePressWindowId_)
     {
-        if (mousePressWindowId_)
+        auto it = std::find_if(windows_.begin(), windows_.end(), [&](const auto& window) {
+            return window->windowId == mousePressWindowId_;
+        });
+
+        if (it != windows_.end())
         {
-            auto it = std::find_if(windows_.begin(), windows_.end(), [&](const auto& window) {
-                return window->windowId == mousePressWindowId_;
+            auto& window = *it;
+
+            POINT mousePointinWindowClient = { mousePointInGameClient.x, mousePointInGameClient.y };
+            mousePointinWindowClient.x -= window->rect.x;
+            mousePointinWindowClient.y -= window->rect.y;
+
+            DWORD pos = mousePointinWindowClient.x + (mousePointinWindowClient.y << 16);
+            lParam = (LPARAM)pos;
+
+            HookApp::instance()->async([this, windowId = window->windowId, message, wParam, lParam]() {
+                _sendGameWindowInput(windowId, message, wParam, lParam);
             });
 
-            if (it != windows_.end())
-            {
-                auto& window = *it;
-
-                POINT mousePointinWindowClient = { mousePointInGameClient.x, mousePointInGameClient.y };
-                mousePointinWindowClient.x -= window->rect.x;
-                mousePointinWindowClient.y -= window->rect.y;
-
-                DWORD pos = mousePointinWindowClient.x + (mousePointinWindowClient.y << 16);
-                lParam = (LPARAM)pos;
-
-                HookApp::instance()->async([this, windowId = window->windowId, message, wParam, lParam]() {
-                    _sendGameWindowInput(windowId, message, wParam, lParam);
-                });
-
-                if (message == WM_LBUTTONUP)
-                {
-                    mousePressWindowId_ = 0;
-                }
-            }
-            else
+            if (message == WM_LBUTTONUP)
             {
                 mousePressWindowId_ = 0;
             }
-
-            return true;
         }
+        else
+        {
+            mousePressWindowId_ = 0;
+        }
+
+        return true;
     }
 
     for (auto & window :boost::adaptors::reverse(windows_))
@@ -295,7 +296,7 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
         }
     }
 
-    // notify mouse is not accept
+    // notify mouse is not accepted
     HookApp::instance()->async([this, windowId = 0, message, wParam, lParam]() {
         _sendGameWindowInput(windowId, message, wParam, lParam);
     });
@@ -365,6 +366,7 @@ bool OverlayConnector::processSetCursor()
     else if (cursorShape_ == "IDC_SIZENESW")
     {
         Windows::OrginalApi::SetCursor(sizeNESWCusor_);
+        return true;
     }
     else
     {
@@ -384,11 +386,17 @@ void OverlayConnector::clearMouseDrag()
 void OverlayConnector::_heartbeat()
 {
     CHECK_THREAD(Threads::HookApp);
+
+    overlay::HeartBeat message;
+    _sendMessage(&message);
 }
 
 void OverlayConnector::_sendGameExit()
 {
     CHECK_THREAD(Threads::HookApp);
+
+    overlay::GameExit message;
+    _sendMessage(&message);
 }
 
 void OverlayConnector::_sendGameProcessInfo()
@@ -397,14 +405,16 @@ void OverlayConnector::_sendGameProcessInfo()
 
     overlay::GameProcessInfo message;
     message.path = Storm::Utils::toUtf8(HookApp::instance()->procPath());
-
     _sendMessage(&message);
-
 }
 
-void OverlayConnector::_sendInputHookInfo()
+void OverlayConnector::_sendInputHookInfo(bool hooked)
 {
     CHECK_THREAD(Threads::HookApp);
+
+    overlay::InputHookInfo message;
+    message.hooked = hooked;
+    _sendMessage(&message);
 }
 
 void OverlayConnector::_sendGraphicsHookInfo(const overlay_game::D3d9HookInfo &info)
@@ -430,6 +440,10 @@ void OverlayConnector::_sendGraphicsHookInfo(const overlay_game::DxgiHookInfo &i
 {
     CHECK_THREAD(Threads::HookApp);
     overlay::DxgiHookInfo hookInfo;
+    hookInfo.presentHooked = info.presentHooked;
+    hookInfo.present1Hooked = info.present1Hooked;
+    hookInfo.resizeBufferHooked = info.resizeBufferHooked;
+    hookInfo.resizeTargetHooked = info.resizeTargetHooked;
 
     overlay::GraphicsHookInfo message;
     message.graphics = "dxgi";
@@ -488,9 +502,20 @@ void OverlayConnector::_sendGraphicsWindowResizeEvent(HWND window, int width, in
 void OverlayConnector::_sendGraphicsWindowFocusEvent(HWND window, bool focus)
 {
     CHECK_THREAD(Threads::HookApp);
+
     overlay::GraphicsWindowFocusEvent message;
     message.window = (std::uint32_t)window;
     message.focus = focus;
+
+    _sendMessage(&message);
+}
+
+void OverlayConnector::_sendGraphicsWindowDestroy(HWND window)
+{
+    CHECK_THREAD(Threads::HookApp);
+
+    overlay::GraphicsWindowDestroyEvent message;
+    message.window = (std::uint32_t)window;
 
     _sendMessage(&message);
 }
@@ -540,7 +565,7 @@ void OverlayConnector::_onRemoteClose()
     session::setOverlayConnected(false);
 }
 
-void OverlayConnector::onLinkConnect(IIpcLink *link)
+void OverlayConnector::onLinkConnect(IIpcLink */*link*/)
 {
     __trace__;
 
@@ -549,7 +574,7 @@ void OverlayConnector::onLinkConnect(IIpcLink *link)
     _onRemoteConnect();
 }
 
-void OverlayConnector::onLinkClose(IIpcLink *link)
+void OverlayConnector::onLinkClose(IIpcLink */*link*/)
 {
     __trace__;
 

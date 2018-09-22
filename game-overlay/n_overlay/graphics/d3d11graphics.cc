@@ -174,16 +174,15 @@ void D3d11Graphics::_createWindowSprites()
     for (const auto& w : windows)
     {
         auto windowSprite = _createWindowSprite(w);
-        windowSprites_.push_back(windowSprite);
-
-        if (w->name == "MainOverlay")
+        if (windowSprite)
         {
-            mainSprite_ = windowSprite;
+            if (w->name == "MainOverlay")
+                mainSprite_ = windowSprite;
+            windowSprites_.push_back(windowSprite);
         }
     }
 
     HookApp::instance()->overlayConnector()->unlockWindows();
-
 }
 
 Windows::ComPtr<ID3D11Texture2D> D3d11Graphics::_createDynamicTexture(std::uint32_t width, std::uint32_t height)
@@ -309,9 +308,13 @@ void D3d11Graphics::_checkAndResyncWindows()
                 });
                 if (it != windows.end())
                 {
-                    windowSprites_.push_back(_createWindowSprite(*it));
+                    if (auto windowSprite = _createWindowSprite(*it))
+                    {
+                        windowSprites_.push_back(windowSprite);
+                    }
                 }
             }
+
             pendingWindows_.clear();
 
             for (auto windowId: pendingFrameBufferUpdates_)
@@ -359,52 +362,49 @@ void D3d11Graphics::_checkAndResyncWindows()
 
         if (pendingBounds_.size() > 0)
         {
-            if (pendingBounds_.size() > 0)
+            for (const auto& [windowId, rect] : pendingBounds_)
             {
-                for (auto& wkv : pendingBounds_)
+                auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [windowId](const auto &window) {
+                    return windowId == window->windowId;
+                });
+                if (it != windowSprites_.end())
                 {
-                    auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [windowId = wkv.first](const auto &window) {
-                        return windowId == window->windowId;
-                    });
-                    if (it != windowSprites_.end())
+                    auto& windowSprite = *it;
+                    windowSprite->rect = rect;
+
+                    D3D11_TEXTURE2D_DESC desc = {0};
+
+                    if (windowSprite->texture)
                     {
-                        auto& windowSprite = *it;
-                        windowSprite->rect = wkv.second;
+                        windowSprite->texture->GetDesc(&desc);
+                    }
 
-                        D3D11_TEXTURE2D_DESC desc = {0};
+                    if (desc.Width == windowSprite->rect.width
+                        && desc.Height == windowSprite->rect.height)
+                    {
+                        continue;
+                    }
+                    else if (desc.Width < (UINT)windowSprite->rect.width
+                        || desc.Height < (UINT)windowSprite->rect.height)
+                    {
+                        //create a new larger texture
 
-                        if (windowSprite->texture)
+                        windowSprite->texture = _createDynamicTexture(windowSprite->rect.width, windowSprite->rect.height);
+                        if (!windowSprite->texture)
                         {
-                            windowSprite->texture->GetDesc(&desc);
-                        }
-
-                        if (desc.Width == windowSprite->rect.width
-                            && desc.Height == windowSprite->rect.height)
-                        {
+                            windowSprites_.erase(it);
                             continue;
                         }
-                        else if (desc.Width < windowSprite->rect.width
-                            || desc.Height < windowSprite->rect.height)
-                        {
-                            //create a new larger texture
 
-                            windowSprite->texture = _createDynamicTexture(windowSprite->rect.width, windowSprite->rect.height);
-                            if (!windowSprite->texture)
-                            {
-                                windowSprites_.erase(it);
-                                continue;
-                            }
-
-                            _updateSprite(windowSprite, true);
-                        }
-                        else
-                        {
-                            _updateSprite(windowSprite, true);
-                        }
+                        _updateSprite(windowSprite, true);
+                    }
+                    else
+                    {
+                        _updateSprite(windowSprite, true);
                     }
                 }
-                pendingBounds_.clear();
             }
+            pendingBounds_.clear();
         }
 
         if (pendingFrameBuffers_.size() > 0)

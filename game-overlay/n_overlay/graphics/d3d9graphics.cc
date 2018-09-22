@@ -10,7 +10,7 @@ D3d9Graphics::~D3d9Graphics()
     freeGraphics();
 }
 
-bool D3d9Graphics::initGraphics(IDirect3DDevice9* device, HWND hDestWindowOverride, bool isD9Ex)
+bool D3d9Graphics::initGraphics(IDirect3DDevice9* device, HWND /*hDestWindowOverride*/, bool isD9Ex)
 {
     DAssert(!device_);
 

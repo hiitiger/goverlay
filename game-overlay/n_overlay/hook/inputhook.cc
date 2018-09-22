@@ -268,6 +268,8 @@ bool InputHook::hook()
     DoInputHook(hUser32, GetRawInputData);
     DoInputHook(hUser32, GetRawInputBuffer);
 
+    HookApp::instance()->overlayConnector()->sendInputHookInfo(result);
+
     this->hooked_ = result;
     return result;
 }

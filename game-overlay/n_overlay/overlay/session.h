@@ -80,8 +80,8 @@ DXGIHook *dxgiHook();
 bool d3d9Hooked();
 bool dxgiHooked();
 
-void tryD3d9Hook();
-void tryDxgiHook();
+bool tryD3d9Hook();
+bool tryDxgiHook();
 
 void clearD3d9Hook();
 void clearDxgiHook();
@@ -89,7 +89,7 @@ void clearDxgiHook();
 InputHook *inputHook();
 
 bool inputHooked();
-void tryInputHook();
+bool tryInputHook();
 
 void setInjectWindow(HWND window);
 HWND injectWindow();

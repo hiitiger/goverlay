@@ -50,7 +50,7 @@ public:
     void start();
     void quit();
 
-    void sendInputHookInfo();
+    void sendInputHookInfo(bool hooked);
 
     void sendGraphicsHookInfo(const overlay_game::D3d9HookInfo& info);
     void sendGraphicsHookInfo(const overlay_game::DxgiHookInfo& info);
@@ -93,7 +93,7 @@ protected:
 
     void _sendGameProcessInfo();
 
-    void _sendInputHookInfo();
+    void _sendInputHookInfo(bool hooked);
 
     void _sendGraphicsHookInfo(const overlay_game::D3d9HookInfo&);
     void _sendGraphicsHookInfo(const overlay_game::DxgiHookInfo&);
@@ -106,6 +106,7 @@ protected:
 
     void _sendGraphicsWindowResizeEvent(HWND window, int width, int height);
     void _sendGraphicsWindowFocusEvent(HWND window, bool focus);
+    void _sendGraphicsWindowDestroy(HWND window);
 
     void _sendMessage(overlay::GMessage* message);
 
