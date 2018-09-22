@@ -30,6 +30,7 @@ class OverlayConnector : public IIpcClient
     std::uint32_t dragMoveWindowId_ = 0;
     std::uint32_t dragMoveWindowHandle_ = 0;
     POINT dragMoveLastMousePos_ = {0};
+    std::uint32_t dragMoveMode_ = HTNOWHERE;
 
     std::string cursorShape_;
 

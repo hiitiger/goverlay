@@ -149,6 +149,10 @@ class Application {
       name: "MainOverlay",
       transparent: false,
       resizable: true,
+      maxWidth: 1920,
+      maxHeight: 1920,
+      minWidth : 100,
+      minHeight: 100,
       nativeHandle: window.getNativeWindowHandle().readUInt32LE(0),
       rect: {
           ...window.getBounds(),

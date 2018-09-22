@@ -23,6 +23,10 @@ declare module "electron-overlay" {
         name: string;
         transparent: boolean;
         resizable: boolean;
+        maxWidth: number;
+        maxHeight: number;
+        minWidth: number;
+        minHeight: number;
         rect: IRectangle;
         nativeHandle: number;
         dragBorderWidth?: number;

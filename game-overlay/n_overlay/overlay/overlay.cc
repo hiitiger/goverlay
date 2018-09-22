@@ -5,6 +5,8 @@
 #include <boost/range/adaptor/reversed.hpp>
 const char k_overlayIpcName[] = "n_overlay_1a1y2o8l0b";
 
+
+
 OverlayConnector::OverlayConnector()
 {
     arrowCursor_ = (HCURSOR)::LoadImageW(NULL, IDC_ARROW, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
@@ -176,25 +178,123 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
             });
             if (it != windows_.end())
             {
-                auto& window = *it;
-
-                POINT mousePointinWindowClient = { mousePointInGameClient.x, mousePointInGameClient.y };
-                mousePointinWindowClient.x -= window->rect.x;
-                mousePointinWindowClient.y -= window->rect.y;
-
                 if (message == WM_MOUSEMOVE)
                 {
+                    auto& window = *it;
+
+                    POINT mousePointinWindowClient = { mousePointInGameClient.x, mousePointInGameClient.y };
+                    mousePointinWindowClient.x -= window->rect.x;
+                    mousePointinWindowClient.y -= window->rect.y;
+
                     int xdiff = mousePointinWindowClient.x - dragMoveLastMousePos_.x;
                     int ydiff = mousePointinWindowClient.y - dragMoveLastMousePos_.y;
-                    window->rect.x += xdiff;
-                    window->rect.y += ydiff;
 
-                    dragMoveLastMousePos_.x = mousePointInGameClient.x - window->rect.x;
-                    dragMoveLastMousePos_.y = mousePointInGameClient.y - window->rect.y;
+                    if (dragMoveMode_ == HTCAPTION)
+                    {
+                        window->rect.x += xdiff;
+                        window->rect.y += ydiff;
 
-                    SetWindowPos((HWND)window->nativeHandle, NULL, window->rect.x, window->rect.y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+                        dragMoveLastMousePos_.x = mousePointInGameClient.x - window->rect.x;
+                        dragMoveLastMousePos_.y = mousePointInGameClient.y - window->rect.y;
 
-                    this->windowBoundsEvent()(dragMoveWindowId_, window->rect);
+                        SetWindowPos((HWND)window->nativeHandle, NULL, window->rect.x, window->rect.y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+
+                        this->windowBoundsEvent()(dragMoveWindowId_, window->rect);
+                    }
+                    else
+                    {
+                        auto maxWidth = window->maxWidth;
+                        auto maxHeight = window->maxHeight;
+                        auto minWidth = window->minWidth;
+                        auto minHeight = window->minHeight;
+                        auto curWidth = window->rect.width;
+                        auto curHeight = window->rect.height;
+                        auto curRight = window->rect.width + window->rect.x;
+                        auto curBottom = window->rect.height + window->rect.y;
+
+                        static auto _syncDragResizeLeft = [&](auto& window) {
+                            curWidth -= xdiff;
+                            if (curWidth < (int)minWidth)
+                                curWidth = minWidth;
+                            else if (curWidth >(int)maxWidth)
+                                curWidth = maxWidth;
+                            window->rect.x = curRight - curWidth;
+                            window->rect.width = curWidth;
+                        };
+
+                        static auto _syncDragResizeRight = [&](auto& window) {
+                            curWidth += xdiff;
+                            if (curWidth < (int)minWidth)
+                                curWidth = minWidth;
+                            else if (curWidth >(int)maxWidth)
+                                curWidth = maxWidth;
+                            window->rect.width = curWidth;
+                        };
+
+                        static auto _syncDragResizeTop = [&](auto& window) {
+                            curHeight -= ydiff;
+                            if (curHeight < (int)minHeight)
+                                curHeight = minHeight;
+                            else if (curHeight >(int)maxHeight)
+                                curHeight = maxHeight;
+                            window->rect.y = curBottom - curHeight;
+                            window->rect.height = curHeight;
+                        };
+
+                        static auto _syncDragResizeBottom = [&](auto& window) {
+                            curHeight += ydiff;
+                            if (curHeight < (int)minHeight)
+                                curHeight = minHeight;
+                            else if (curHeight >(int)maxHeight)
+                                curHeight = maxHeight;
+                            window->rect.height = curHeight;
+                        };
+
+                        if (dragMoveMode_ == HTLEFT)
+                        {
+                            _syncDragResizeLeft(window);
+                        }
+                        else if (dragMoveMode_ == HTRIGHT)
+                        {
+                            _syncDragResizeRight(window);
+                        }
+                        else if (dragMoveMode_ == HTTOP)
+                        {
+                            _syncDragResizeTop(window);
+                        }
+                        else if (dragMoveMode_ == HTBOTTOM)
+                        {
+                            _syncDragResizeBottom(window);
+                        }
+                        else if (dragMoveMode_ == HTTOPLEFT)
+                        {
+                            _syncDragResizeLeft(window);
+                            _syncDragResizeTop(window);
+                        }
+                        else if (dragMoveMode_ == HTTOPRIGHT)
+                        {
+                            _syncDragResizeRight(window);
+                            _syncDragResizeTop(window);
+                        }
+                        else if (dragMoveMode_ == HTBOTTOMLEFT)
+                        {
+                            _syncDragResizeLeft(window);
+                            _syncDragResizeBottom(window);
+                        }
+                        else if (dragMoveMode_ == HTBOTTOMRIGHT)
+                        {
+                            _syncDragResizeRight(window);
+                            _syncDragResizeBottom(window);
+                        }
+
+                        dragMoveLastMousePos_.x = mousePointInGameClient.x - window->rect.x;
+                        dragMoveLastMousePos_.y = mousePointInGameClient.y - window->rect.y;
+
+                        SetWindowPos((HWND)window->nativeHandle, NULL, window->rect.x, window->rect.y, window->rect.width, window->rect.height, SWP_NOZORDER | SWP_NOACTIVATE);
+
+                        this->windowBoundsEvent()(dragMoveWindowId_, window->rect);
+                    }
+                    return true;
                 }
                 else if (message == WM_LBUTTONUP)
                 {
@@ -207,7 +307,6 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
             }
             return true;
         }
-
     }
    
     if (message == WM_MOUSEWHEEL)
@@ -278,6 +377,16 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
                     dragMoveWindowHandle_ = window->nativeHandle;
                     dragMoveLastMousePos_.x = mousePointinWindowClient.x;
                     dragMoveLastMousePos_.y = mousePointinWindowClient.y;
+                    dragMoveMode_ = HTCAPTION;
+                }
+                else if(hitTest != HTCLIENT)
+                {
+                    std::lock_guard<std::recursive_mutex> lock(mouseDragLock_);
+                    dragMoveWindowId_ = window->windowId;
+                    dragMoveWindowHandle_ = window->nativeHandle;
+                    dragMoveLastMousePos_.x = mousePointinWindowClient.x;
+                    dragMoveLastMousePos_.y = mousePointinWindowClient.y;
+                    dragMoveMode_ = hitTest;
                 }
             }
             else if (message == WM_LBUTTONUP)
@@ -381,6 +490,7 @@ void OverlayConnector::clearMouseDrag()
     mousePressWindowId_ = 0;
     dragMoveWindowId_ = 0;
     dragMoveWindowHandle_ = 0;
+    dragMoveMode_ = HTNOWHERE;
 }
 
 void OverlayConnector::_heartbeat()
@@ -565,7 +675,7 @@ void OverlayConnector::_onRemoteClose()
     session::setOverlayConnected(false);
 }
 
-void OverlayConnector::onLinkConnect(IIpcLink */*link*/)
+void OverlayConnector::onLinkConnect(IIpcLink *)
 {
     __trace__;
 
@@ -574,7 +684,7 @@ void OverlayConnector::onLinkConnect(IIpcLink */*link*/)
     _onRemoteConnect();
 }
 
-void OverlayConnector::onLinkClose(IIpcLink */*link*/)
+void OverlayConnector::onLinkClose(IIpcLink *)
 {
     __trace__;
 

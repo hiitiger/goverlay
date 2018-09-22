@@ -464,6 +464,11 @@ class OverlayMain : public IIpcHost
         message.nativeHandle = windowDetails.Get("nativeHandle").ToNumber();
         message.transparent = windowDetails.Get("transparent").ToBoolean();
         message.resizable = windowDetails.Get("resizable").ToBoolean();
+        message.maxWidth = windowDetails.Get("maxWidth").ToNumber();
+        message.maxHeight = windowDetails.Get("maxHeight").ToNumber();
+        message.minWidth = windowDetails.Get("minWidth").ToNumber();
+        message.minHeight = windowDetails.Get("minHeight").ToNumber();
+
         message.bufferName = _shareMemoryName(message.windowId);
 
         if (windowDetails.Has("dragBorderWidth"))

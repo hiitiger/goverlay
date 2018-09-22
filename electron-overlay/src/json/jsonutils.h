@@ -59,6 +59,19 @@ using namespace nlohmann;
 #define FOR_EACH_10(what, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10)\
   what(x1);\
   FOR_EACH_9(what,  x2, x3, x4, x5, x6, x7, x8, x9, x10)
+#define FOR_EACH_11(what, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11)\
+  what(x1);\
+  FOR_EACH_10(what,  x2, x3, x4, x5, x6, x7, x8, x9, x10, x11)
+#define FOR_EACH_12(what, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12)\
+  what(x1);\
+  FOR_EACH_11(what,  x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12)
+#define FOR_EACH_13(what, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13)\
+  what(x1);\
+  FOR_EACH_12(what,  x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13)
+#define FOR_EACH_14(what, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14)\
+  what(x1);\
+  FOR_EACH_13(what,  x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14)
+
 
 #define VA_ARGS(...)  , ##__VA_ARGS__
 
