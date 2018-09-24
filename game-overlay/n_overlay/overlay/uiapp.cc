@@ -95,6 +95,13 @@ void UiApp::startInputIntercept()
         isIntercepting_ = true;
         session::inputHook()->saveInputState();
         HookApp::instance()->overlayConnector()->sendInputIntercept();
+
+        POINT pt{};
+        Windows::OrginalApi::GetCursorPos(&pt);
+        LPARAM lParam = 0;
+        lParam = pt.x + (pt.y << 16);
+        HookApp::instance()->overlayConnector()->processNCHITTEST(WM_NCHITTEST, 0, lParam);
+        HookApp::instance()->overlayConnector()->processSetCursor();
     }
 }
 

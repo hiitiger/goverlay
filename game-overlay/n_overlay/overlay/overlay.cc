@@ -165,7 +165,7 @@ void OverlayConnector::unlockWindows()
     windowsLock_.unlock();
 }
 
-bool OverlayConnector::processNCHITTEST(UINT message, WPARAM wParam, LPARAM lParam)
+bool OverlayConnector::processNCHITTEST(UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
 {
     if (dragMoveWindowId_ != 0)
     {
