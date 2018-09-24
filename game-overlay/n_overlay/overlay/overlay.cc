@@ -6,6 +6,52 @@
 const char k_overlayIpcName[] = "n_overlay_1a1y2o8l0b";
 
 
+static auto _syncDragResizeLeft = [&](auto& window, std::int32_t xdiff, std::int32_t /*ydiff*/) {
+    auto curWidth = window->rect.width;
+    auto curRight = window->rect.width + window->rect.x;
+
+    curWidth -= xdiff;
+    if (curWidth < (int)window->minWidth)
+        curWidth = window->minWidth;
+    else if (curWidth > (int)window->maxWidth)
+        curWidth = window->maxWidth;
+    window->rect.x = curRight - curWidth;
+    window->rect.width = curWidth;
+};
+
+static auto _syncDragResizeRight = [&](auto& window, std::int32_t xdiff, std::int32_t /*ydiff*/) {
+    auto curWidth = window->rect.width;
+
+    curWidth += xdiff;
+    if (curWidth < (int)window->minWidth)
+        curWidth = window->minWidth;
+    else if (curWidth > (int)window->maxHeight)
+        curWidth = window->maxHeight;
+    window->rect.width = curWidth;
+};
+
+static auto _syncDragResizeTop = [&](auto& window, std::int32_t /*xdiff*/, std::int32_t ydiff) {
+    auto curHeight = window->rect.height;
+    auto curBottom = window->rect.height + window->rect.y;
+    curHeight -= ydiff;
+    if (curHeight < (int)window->minHeight)
+        curHeight = window->minHeight;
+    else if (curHeight > (int)window->maxHeight)
+        curHeight = window->maxHeight;
+    window->rect.y = curBottom - curHeight;
+    window->rect.height = curHeight;
+};
+
+static auto _syncDragResizeBottom = [&](auto& window, std::int32_t /*xdiff*/, std::int32_t ydiff) {
+    auto curHeight = window->rect.height;
+    curHeight += ydiff;
+    if (curHeight < (int)window->minHeight)
+        curHeight = window->minHeight;
+    else if (curHeight > (int)window->maxHeight)
+        curHeight = window->maxHeight;
+    window->rect.height = curHeight;
+};
+
 
 OverlayConnector::OverlayConnector()
 {
@@ -236,88 +282,41 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
                     }
                     else
                     {
-                        auto maxWidth = window->maxWidth;
-                        auto maxHeight = window->maxHeight;
-                        auto minWidth = window->minWidth;
-                        auto minHeight = window->minHeight;
-                        auto curWidth = window->rect.width;
-                        auto curHeight = window->rect.height;
-                        auto curRight = window->rect.width + window->rect.x;
-                        auto curBottom = window->rect.height + window->rect.y;
-
-                        static auto _syncDragResizeLeft = [&](auto& window) {
-                            curWidth -= xdiff;
-                            if (curWidth < (int)minWidth)
-                                curWidth = minWidth;
-                            else if (curWidth >(int)maxWidth)
-                                curWidth = maxWidth;
-                            window->rect.x = curRight - curWidth;
-                            window->rect.width = curWidth;
-                        };
-
-                        static auto _syncDragResizeRight = [&](auto& window) {
-                            curWidth += xdiff;
-                            if (curWidth < (int)minWidth)
-                                curWidth = minWidth;
-                            else if (curWidth >(int)maxWidth)
-                                curWidth = maxWidth;
-                            window->rect.width = curWidth;
-                        };
-
-                        static auto _syncDragResizeTop = [&](auto& window) {
-                            curHeight -= ydiff;
-                            if (curHeight < (int)minHeight)
-                                curHeight = minHeight;
-                            else if (curHeight >(int)maxHeight)
-                                curHeight = maxHeight;
-                            window->rect.y = curBottom - curHeight;
-                            window->rect.height = curHeight;
-                        };
-
-                        static auto _syncDragResizeBottom = [&](auto& window) {
-                            curHeight += ydiff;
-                            if (curHeight < (int)minHeight)
-                                curHeight = minHeight;
-                            else if (curHeight >(int)maxHeight)
-                                curHeight = maxHeight;
-                            window->rect.height = curHeight;
-                        };
-
                         if (dragMoveMode_ == HTLEFT)
                         {
-                            _syncDragResizeLeft(window);
+                            _syncDragResizeLeft(window, xdiff, ydiff);
                         }
                         else if (dragMoveMode_ == HTRIGHT)
                         {
-                            _syncDragResizeRight(window);
+                            _syncDragResizeRight(window, xdiff, ydiff);
                         }
                         else if (dragMoveMode_ == HTTOP)
                         {
-                            _syncDragResizeTop(window);
+                            _syncDragResizeTop(window, xdiff, ydiff);
                         }
                         else if (dragMoveMode_ == HTBOTTOM)
                         {
-                            _syncDragResizeBottom(window);
+                            _syncDragResizeBottom(window, xdiff, ydiff);
                         }
                         else if (dragMoveMode_ == HTTOPLEFT)
                         {
-                            _syncDragResizeLeft(window);
-                            _syncDragResizeTop(window);
+                            _syncDragResizeLeft(window, xdiff, ydiff);
+                            _syncDragResizeTop(window, xdiff, ydiff);
                         }
                         else if (dragMoveMode_ == HTTOPRIGHT)
                         {
-                            _syncDragResizeRight(window);
-                            _syncDragResizeTop(window);
+                            _syncDragResizeRight(window, xdiff, ydiff);
+                            _syncDragResizeTop(window, xdiff, ydiff);
                         }
                         else if (dragMoveMode_ == HTBOTTOMLEFT)
                         {
-                            _syncDragResizeLeft(window);
-                            _syncDragResizeBottom(window);
+                            _syncDragResizeLeft(window, xdiff, ydiff);
+                            _syncDragResizeBottom(window, xdiff, ydiff);
                         }
                         else if (dragMoveMode_ == HTBOTTOMRIGHT)
                         {
-                            _syncDragResizeRight(window);
-                            _syncDragResizeBottom(window);
+                            _syncDragResizeRight(window, xdiff, ydiff);
+                            _syncDragResizeBottom(window, xdiff, ydiff);
                         }
 
                         dragMoveLastMousePos_.x = mousePointInGameClient.x - window->rect.x;
