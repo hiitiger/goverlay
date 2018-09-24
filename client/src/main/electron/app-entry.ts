@@ -9,7 +9,8 @@ import * as IOverlay from "electron-overlay"
 
 enum AppWindows {
   main = "main",
-  osr = "osr"
+  osr = "osr",
+  osrpopup = "osrpopup"
 }
 
 class Application {
