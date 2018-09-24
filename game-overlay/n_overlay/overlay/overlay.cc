@@ -18,6 +18,8 @@ OverlayConnector::OverlayConnector()
     sizeAllCusor_ = (HCURSOR)::LoadImageW(NULL, IDC_SIZEALL, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
     sizeNWSECusor_ = (HCURSOR)::LoadImageW(NULL, IDC_SIZENWSE, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
     sizeNESWCusor_ = (HCURSOR)::LoadImageW(NULL, IDC_SIZENESW, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+    sizeNSCusor_ = (HCURSOR)::LoadImageW(NULL, IDC_SIZENS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+    sizeWECusor_ = (HCURSOR)::LoadImageW(NULL, IDC_SIZEWE, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
 }
 
 OverlayConnector::~OverlayConnector()
@@ -161,6 +163,37 @@ void OverlayConnector::lockWindows()
 void OverlayConnector::unlockWindows()
 {
     windowsLock_.unlock();
+}
+
+bool OverlayConnector::processNCHITTEST(UINT message, WPARAM wParam, LPARAM lParam)
+{
+    if (dragMoveWindowId_ != 0)
+    {
+        return false;
+    }
+
+    POINTS screenPoint = MAKEPOINTS(lParam);
+    POINT mousePointInGameClient = { screenPoint.x, screenPoint.y };
+    ScreenToClient(session::graphicsWindow(), &mousePointInGameClient);
+
+    std::lock_guard<std::mutex> lock(windowsLock_);
+
+    for (auto& window :boost::adaptors::reverse(windows_))
+    {
+        if (overlay_game::pointInRect(mousePointInGameClient, window->rect))
+        {
+            POINT mousePointinWindowClient = { mousePointInGameClient.x, mousePointInGameClient.y };
+            mousePointinWindowClient.x -= window->rect.x;
+            mousePointinWindowClient.y -= window->rect.y;
+
+            hitTest_ = overlay_game::hitTest(mousePointinWindowClient, window->rect, window->resizable, window->caption.value(), window->dragBorderWidth);
+            return false;
+        }
+    }
+
+    hitTest_ = HTNOWHERE;
+
+    return false;
 }
 
 bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM lParam)
@@ -369,8 +402,7 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
             {
                 mousePressWindowId_ = window->windowId;
 
-                int hitTest = overlay_game::hitTest(mousePointinWindowClient, window->rect, window->resizable, window->caption ? window->caption.value() : overlay::WindowCaptionMargin(), window->dragBorderWidth);
-                if (hitTest == HTCAPTION)
+                if (hitTest_ == HTCAPTION)
                 {
                     std::lock_guard<std::recursive_mutex> lock(mouseDragLock_);
                     dragMoveWindowId_ = window->windowId;
@@ -379,14 +411,14 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
                     dragMoveLastMousePos_.y = mousePointinWindowClient.y;
                     dragMoveMode_ = HTCAPTION;
                 }
-                else if(hitTest != HTCLIENT)
+                else if(hitTest_ != HTCLIENT)
                 {
                     std::lock_guard<std::recursive_mutex> lock(mouseDragLock_);
                     dragMoveWindowId_ = window->windowId;
                     dragMoveWindowHandle_ = window->nativeHandle;
                     dragMoveLastMousePos_.x = mousePointinWindowClient.x;
                     dragMoveLastMousePos_.y = mousePointinWindowClient.y;
-                    dragMoveMode_ = hitTest;
+                    dragMoveMode_ = hitTest_;
                 }
             }
             else if (message == WM_LBUTTONUP)
@@ -426,55 +458,89 @@ bool OverlayConnector::processkeyboardMessage(UINT message, WPARAM wParam, LPARA
 
 bool OverlayConnector::processSetCursor()
 {
-    if (dragMoveWindowId_)
+    if (hitTest_ == HTCAPTION)
     {
         Windows::OrginalApi::SetCursor(arrowCursor_);
         return true;
     }
 
-    if(cursorShape_ == "IDC_ARROW")
+    if (hitTest_ == HTLEFT || hitTest_ == HTRIGHT)
     {
-        Windows::OrginalApi::SetCursor(arrowCursor_);
+        Windows::OrginalApi::SetCursor(sizeWECusor_);
         return true;
     }
-    else if (cursorShape_ == "IDC_IBEAM")
+
+    if (hitTest_ == HTTOP || hitTest_ == HTBOTTOM)
     {
-        Windows::OrginalApi::SetCursor(ibeamCursor_);
+        Windows::OrginalApi::SetCursor(sizeNSCusor_);
         return true;
     }
-    else if (cursorShape_ == "IDC_HAND")
-    {
-        Windows::OrginalApi::SetCursor(handCusor_);
-        return true;
-    }
-    else if (cursorShape_ == "IDC_CROSS")
-    {
-        Windows::OrginalApi::SetCursor(crossCusor_);
-        return true;
-    }
-    else if (cursorShape_ == "IDC_WAIT")
-    {
-        Windows::OrginalApi::SetCursor(waitCusor_);
-        return true;
-    }
-    else if (cursorShape_ == "IDC_HELP")
-    {
-        Windows::OrginalApi::SetCursor(helpCusor_);
-        return true;
-    }
-    else if (cursorShape_ == "IDC_SIZEALL")
-    {
-        Windows::OrginalApi::SetCursor(sizeAllCusor_);
-        return true;
-    }
-    else if (cursorShape_ == "IDC_SIZENWSE")
+
+    if (hitTest_ == HTTOPLEFT || hitTest_ == HTBOTTOMRIGHT)
     {
         Windows::OrginalApi::SetCursor(sizeNWSECusor_);
         return true;
     }
-    else if (cursorShape_ == "IDC_SIZENESW")
+
+    if (hitTest_ == HTTOPRIGHT || hitTest_ == HTBOTTOMLEFT)
     {
         Windows::OrginalApi::SetCursor(sizeNESWCusor_);
+        return true;
+    }
+
+    if(cursorShape_ == overlay_game::Cursor::ARROW)
+    {
+        Windows::OrginalApi::SetCursor(arrowCursor_);
+        return true;
+    }
+    else if (cursorShape_ == overlay_game::Cursor::IBEAM)
+    {
+        Windows::OrginalApi::SetCursor(ibeamCursor_);
+        return true;
+    }
+    else if (cursorShape_ == overlay_game::Cursor::HAND )
+    {
+        Windows::OrginalApi::SetCursor(handCusor_);
+        return true;
+    }
+    else if (cursorShape_ == overlay_game::Cursor::CROSS)
+    {
+        Windows::OrginalApi::SetCursor(crossCusor_);
+        return true;
+    }
+    else if (cursorShape_ == overlay_game::Cursor::WAIT)
+    {
+        Windows::OrginalApi::SetCursor(waitCusor_);
+        return true;
+    }
+    else if (cursorShape_ == overlay_game::Cursor::HELP)
+    {
+        Windows::OrginalApi::SetCursor(helpCusor_);
+        return true;
+    }
+    else if (cursorShape_ == overlay_game::Cursor::SIZEALL)
+    {
+        Windows::OrginalApi::SetCursor(sizeAllCusor_);
+        return true;
+    }
+    else if (cursorShape_ == overlay_game::Cursor::SIZENWSE)
+    {
+        Windows::OrginalApi::SetCursor(sizeNWSECusor_);
+        return true;
+    }
+    else if (cursorShape_ == overlay_game::Cursor::SIZENESW)
+    {
+        Windows::OrginalApi::SetCursor(sizeNESWCusor_);
+        return true;
+    }
+    else if (cursorShape_ == overlay_game::Cursor::SIZENS)
+    {
+        Windows::OrginalApi::SetCursor(sizeNSCusor_);
+        return true;
+    }
+    else if (cursorShape_ == overlay_game::Cursor::SIZEWE)
+    {
+        Windows::OrginalApi::SetCursor(sizeWECusor_);
         return true;
     }
     else
@@ -491,6 +557,7 @@ void OverlayConnector::clearMouseDrag()
     dragMoveWindowId_ = 0;
     dragMoveWindowHandle_ = 0;
     dragMoveMode_ = HTNOWHERE;
+    hitTest_ = HTNOWHERE;
 }
 
 void OverlayConnector::_heartbeat()
@@ -929,5 +996,18 @@ void OverlayConnector::_updateFrameBuffer(std::uint32_t windowId, const std::str
 
 void OverlayConnector::_onCursorCommand(std::shared_ptr<overlay::CursorCommand>& overlayMsg)
 {
-    cursorShape_ = overlayMsg->cursor;
+    static std::map<std::string, overlay_game::Cursor> cursorMap = {
+        { "IDC_ARROW", overlay_game::Cursor::ARROW },
+        { "IDC_IBEAM", overlay_game::Cursor::IBEAM },
+        { "IDC_HAND", overlay_game::Cursor::HAND },
+        { "IDC_CROSS", overlay_game::Cursor::CROSS },
+        { "IDC_WAIT", overlay_game::Cursor::WAIT },
+        { "IDC_HELP", overlay_game::Cursor::HELP },
+        { "IDC_SIZEALL", overlay_game::Cursor::SIZEALL},
+        { "IDC_SIZENWSE", overlay_game::Cursor::SIZENWSE },
+        { "IDC_SIZENESW", overlay_game::Cursor::SIZENESW },
+        { "IDC_SIZENS", overlay_game::Cursor::SIZENS },
+        {"IDC_SIZEWE", overlay_game::Cursor::SIZEWE},
+    };
+    cursorShape_ = cursorMap[overlayMsg->cursor];
 }

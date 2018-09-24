@@ -27,12 +27,13 @@ class OverlayConnector : public IIpcClient
     std::atomic<std::uint32_t> mousePressWindowId_ = 0;
 
     std::recursive_mutex mouseDragLock_;
-    std::uint32_t dragMoveWindowId_ = 0;
+    std::atomic<std::uint32_t> dragMoveWindowId_ = 0;
     std::uint32_t dragMoveWindowHandle_ = 0;
     POINT dragMoveLastMousePos_ = {0};
     std::uint32_t dragMoveMode_ = HTNOWHERE;
 
-    std::string cursorShape_;
+    std::int32_t hitTest_ = HTNOWHERE;
+    std::atomic<overlay_game::Cursor> cursorShape_ = overlay_game::Cursor::ARROW;
 
     HCURSOR arrowCursor_ = nullptr ;
     HCURSOR ibeamCursor_ = nullptr;
@@ -43,6 +44,8 @@ class OverlayConnector : public IIpcClient
     HCURSOR sizeAllCusor_ = nullptr;
     HCURSOR sizeNWSECusor_ = nullptr;
     HCURSOR sizeNESWCusor_ = nullptr;
+    HCURSOR sizeNSCusor_ = nullptr;
+    HCURSOR sizeWECusor_ = nullptr;
 
 public:
     OverlayConnector();
@@ -80,6 +83,7 @@ public:
     void lockWindows();
     void unlockWindows();
 
+    bool processNCHITTEST(UINT message, WPARAM wParam, LPARAM lParam);
     bool processMouseMessage(UINT message, WPARAM wParam, LPARAM lParam);
     bool processkeyboardMessage(UINT message, WPARAM wParam, LPARAM lParam);
 

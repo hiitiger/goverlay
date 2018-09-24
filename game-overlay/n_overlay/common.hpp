@@ -52,6 +52,21 @@ inline bool checkThread(Threads type)
 
 namespace overlay_game
 {
+enum class Cursor: std::uint16_t
+{
+    ARROW = 0,
+    IBEAM,
+    HAND,
+    CROSS,
+    WAIT,
+    HELP,
+    SIZEALL,
+    SIZENWSE,
+    SIZENESW,
+    SIZEWE,
+    SIZENS,
+};
+
 
 class ColorARGB
 {
@@ -307,6 +322,28 @@ inline int hitTest(POINT pt, const overlay::WindowRect& rect, bool resizable, co
     }
 
     return HTCLIENT;
+}
+
+inline Cursor hittest2Cursor(int hittest)
+{
+    switch (hittest)
+    {
+    case HTLEFT:
+    case HTRIGHT:
+        return Cursor::SIZEWE;
+    case HTTOP:
+    case HTBOTTOM:
+        return Cursor::SIZENS;
+    case HTTOPLEFT:
+    case HTBOTTOMRIGHT:
+        return Cursor::SIZENWSE;
+    case HTTOPRIGHT:
+    case HTBOTTOMLEFT:
+        return Cursor::SIZENESW;
+    default:
+        return Cursor::ARROW;
+        break;
+    }
 }
 
 } // namespace overlay_game

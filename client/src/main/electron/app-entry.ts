@@ -215,6 +215,12 @@ class Application {
         case "nesw-resize":
           cursor = "IDC_SIZENESW"
           break
+        case "ns-resize":
+          cursor = "IDC_SIZENS"
+          break
+        case "ew-resize":
+          cursor = "IDC_SIZEWE"
+          break
         case "none":
           cursor = ""
           break
