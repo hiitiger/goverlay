@@ -28,22 +28,24 @@ public:
     Windows::ComPtr<IDXGISwapChain> swapChain() const override;
     void freeGraphics() override;
 
-    bool _initGraphicsContext(IDXGISwapChain* swap);
-    bool _initGraphicsState();
-    void _initSpriteDrawer();
+    bool _initGraphicsContext(IDXGISwapChain* swap) override;
+    bool _initGraphicsState() override;
+    void _initSpriteDrawer() override;
 
-    void _createSprites();
-    void _createWindowSprites();
+    void _createSprites() override;
+    void _createWindowSprites() override;
 
     std::shared_ptr<D3d10WindowSprite> _createWindowSprite(const std::shared_ptr<overlay::Window>& window);
     void _updateSprite(std::shared_ptr<D3d10WindowSprite>& sprite, bool clear = false);
 
     void _checkAndResyncWindows() override;
 
-
-    void _drawBlockSprite()override;
+    void _drawBlockSprite() override;
     void _drawWindowSprites() override;
-    void _drawMainSprite()override;
+
+    void _drawMainSprite() override;
+    void _drawStatutBarSprite() override;
+    void _drawPopupTipSprite() override;
 
     void _drawWindowSprite(std::shared_ptr<D3d10WindowSprite>&);
 

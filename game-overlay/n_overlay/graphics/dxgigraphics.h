@@ -38,7 +38,11 @@ public:
 
     virtual void _drawBlockSprite() = 0;
     virtual void _drawWindowSprites() = 0;
+
     virtual void _drawMainSprite() = 0;
+    virtual void _drawStatutBarSprite() = 0;
+    virtual void _drawPopupTipSprite() = 0;
+
 
     virtual void _saveStatus() = 0;
     virtual void _prepareStatus() = 0;

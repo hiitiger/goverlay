@@ -110,7 +110,12 @@ void DxgiGraphics::beforePresent(IDXGISwapChain *swap)
         _drawWindowSprites();
     }
 
-    //_drawMainSprite();
+#if 0
+    _drawMainSprite();
+#endif
+
+    _drawPopupTipSprite();
+    _drawStatutBarSprite();
 
     _restoreStatus();
 }
@@ -121,5 +126,4 @@ void DxgiGraphics::afterPresent(IDXGISwapChain *swap)
     {
         return;
     }
-
 }

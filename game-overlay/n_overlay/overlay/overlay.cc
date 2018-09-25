@@ -57,8 +57,8 @@ OverlayConnector::OverlayConnector()
 {
     arrowCursor_ = (HCURSOR)::LoadImageW(NULL, IDC_ARROW, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
     ibeamCursor_ = (HCURSOR)::LoadImageW(NULL, IDC_IBEAM, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
-    handCusor_= (HCURSOR)::LoadImageW(NULL, IDC_HAND, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
-    crossCusor_= (HCURSOR)::LoadImageW(NULL, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+    handCusor_ = (HCURSOR)::LoadImageW(NULL, IDC_HAND, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+    crossCusor_ = (HCURSOR)::LoadImageW(NULL, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
     waitCusor_ = (HCURSOR)::LoadImageW(NULL, IDC_WAIT, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
     helpCusor_ = (HCURSOR)::LoadImageW(NULL, IDC_HELP, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
     sizeAllCusor_ = (HCURSOR)::LoadImageW(NULL, IDC_SIZEALL, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
@@ -810,7 +810,6 @@ void OverlayConnector::onMessage(IIpcLink * /*link*/, int /*hostPort*/, const st
 
             _onOverlayEnable(overlayMsg);
         }
-        
         else if (ipcMsg.type == "window")
         {
             std::shared_ptr<overlay::Window> overlayMsg = std::make_shared<overlay::Window>();
@@ -904,7 +903,6 @@ void OverlayConnector::_onWindow(std::shared_ptr<overlay::Window>& overlayMsg)
         {
             mainWindowId_ = overlayMsg->windowId;
         }
-
     }
     if (overlayMsg->transparent)
     {
@@ -1039,7 +1037,7 @@ void OverlayConnector::_onCursorCommand(std::shared_ptr<overlay::CursorCommand>&
         { "IDC_SIZENWSE", overlay_game::Cursor::SIZENWSE },
         { "IDC_SIZENESW", overlay_game::Cursor::SIZENESW },
         { "IDC_SIZENS", overlay_game::Cursor::SIZENS },
-        {"IDC_SIZEWE", overlay_game::Cursor::SIZEWE},
+        { "IDC_SIZEWE", overlay_game::Cursor::SIZEWE },
     };
     cursorShape_ = cursorMap[overlayMsg->cursor];
 }

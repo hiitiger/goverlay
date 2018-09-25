@@ -77,6 +77,16 @@ void D3d10Graphics::_drawMainSprite()
 
 }
 
+void D3d10Graphics::_drawStatutBarSprite()
+{
+
+}
+
+void D3d10Graphics::_drawPopupTipSprite()
+{
+
+}
+
 void D3d10Graphics::_drawWindowSprite(std::shared_ptr<D3d10WindowSprite>&)
 {
 

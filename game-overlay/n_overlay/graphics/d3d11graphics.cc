@@ -178,6 +178,8 @@ void D3d11Graphics::_createWindowSprites()
         {
             if (w->name == "MainOverlay")
                 mainSprite_ = windowSprite;
+            else if (w->name == "StatusBar")
+                statusBarSprite_ = windowSprite;
             windowSprites_.push_back(windowSprite);
         }
     }
@@ -349,9 +351,9 @@ void D3d11Graphics::_checkAndResyncWindows()
                 if (it != windowSprites_.end())
                 {
                     if ((*it)->name == "MainOverlay")
-                    {
                         mainSprite_ = nullptr;
-                    }
+                    else if((*it)->name == "StatusBar")
+                        statusBarSprite_ = nullptr;
 
                     windowSprites_.erase(it);
                 }
@@ -455,11 +457,15 @@ void D3d11Graphics::_drawWindowSprites()
     for (auto& windowSprite : windowSprites_)
     {
 #if 0
-        if (windowSprite->name != "MainOverlay")
+        if (windowSprite->name == "MainOverlay")
+            continue;
 #endif
-        {
-            _drawWindowSprite(windowSprite);
-        }
+        if (windowSprite->name == "StatusBar")
+            continue;
+        if (windowSprite->name == "PopupTip")
+            continue;
+
+       _drawWindowSprite(windowSprite);
     }
 }
 
@@ -469,6 +475,19 @@ void D3d11Graphics::_drawMainSprite()
     {
         _drawWindowSprite(mainSprite_);
     }
+}
+
+void D3d11Graphics::_drawStatutBarSprite()
+{
+    if (statusBarSprite_)
+    {
+        _drawWindowSprite(statusBarSprite_);
+    }
+}
+
+void D3d11Graphics::_drawPopupTipSprite()
+{
+
 }
 
 void D3d11Graphics::_drawWindowSprite(std::shared_ptr<D3d11WindowSprite>& windowSprite)
