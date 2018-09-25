@@ -113,20 +113,32 @@ class Application {
     })
   }
 
-  public createOsrWindow() {
-    const options: Electron.BrowserWindowConstructorOptions = {
-      height: 360,
-      width: 640,
-      frame: false,
-      show: false,
-      transparent: true,
-      backgroundColor: "#f0ffffff",
-      webPreferences: {
-        offscreen: true
-      }
-    }
+  public addOverlayWindow(name: string, window: Electron.BrowserWindow,
+                          dragborder: number = 0, captionHeight: number = 0) {
 
-    const window = this.createWindow(AppWindows.osr, options)
+    const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint())
+
+    this.Overlay!.addWindow(window.id, {
+      name,
+      transparent: false,
+      resizable: true,
+      maxWidth: window.isResizable ? display.bounds.width : window.getBounds().width,
+      maxHeight: window.isResizable ? display.bounds.height : window.getBounds().height,
+      minWidth : window.isResizable ? 100 : window.getBounds().width,
+      minHeight:  window.isResizable ? 100 : window.getBounds().height,
+      nativeHandle: window.getNativeWindowHandle().readUInt32LE(0),
+      rect: {
+          ...window.getBounds(),
+      },
+      caption: {
+        left: dragborder,
+        right: dragborder,
+        top: dragborder,
+        height: captionHeight
+      },
+      dragBorderWidth: dragborder
+    })
+
     window.webContents.on(
       "paint",
       (event, dirty, image: Electron.NativeImage) => {
@@ -140,32 +152,6 @@ class Application {
         this.Overlay!.sendFrameBuffer(window.id, image.getBitmap(), image.getSize().width, image.getSize().height)
       }
     )
-
-    window.webContents.openDevTools({
-      mode: "detach"
-    })
-    window.loadURL(fileUrl(path.join(global.CONFIG.distDir, "index/osr.html")))
-
-    this.Overlay!.addWindow(window.id, {
-      name: "MainOverlay",
-      transparent: false,
-      resizable: true,
-      maxWidth: 1920,
-      maxHeight: 1920,
-      minWidth : 100,
-      minHeight: 100,
-      nativeHandle: window.getNativeWindowHandle().readUInt32LE(0),
-      rect: {
-          ...window.getBounds(),
-      },
-      caption: {
-        left: 10,
-        right: 10,
-        top: 10,
-        height: 40
-      },
-      dragBorderWidth: 10
-    })
 
     window.on("ready-to-show", () => {
       window.focusOnWebView()
@@ -229,7 +215,29 @@ class Application {
         this.Overlay!.sendCommand( { command: "cursor", cursor })
       }
     })
+  }
 
+  public createOsrWindow() {
+    const options: Electron.BrowserWindowConstructorOptions = {
+      height: 360,
+      width: 640,
+      frame: false,
+      show: false,
+      transparent: true,
+      backgroundColor: "#f0ffffff",
+      webPreferences: {
+        offscreen: true
+      }
+    }
+
+    const window = this.createWindow(AppWindows.osr, options)
+
+    window.webContents.openDevTools({
+      mode: "detach"
+    })
+    window.loadURL(fileUrl(path.join(global.CONFIG.distDir, "index/osr.html")))
+
+    this.addOverlayWindow("MainOverlay", window, 10, 40)
     return window
   }
 
