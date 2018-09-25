@@ -470,7 +470,7 @@ bool OverlayConnector::processkeyboardMessage(UINT message, WPARAM wParam, LPARA
 {
     if (focusWindowId_ != 0)
     {
-        HookApp::instance()->async([this, windowId = focusWindowId_, message, wParam, lParam]() {
+        HookApp::instance()->async([this, windowId = focusWindowId_.load(), message, wParam, lParam]() {
             _sendGameWindowInput(windowId, message, wParam, lParam);
         });
     }
@@ -905,7 +905,6 @@ void OverlayConnector::_onWindow(std::shared_ptr<overlay::Window>& overlayMsg)
             mainWindowId_ = overlayMsg->windowId;
         }
 
-        focusWindowId_ = overlayMsg->windowId;
     }
     if (overlayMsg->transparent)
     {
@@ -913,6 +912,9 @@ void OverlayConnector::_onWindow(std::shared_ptr<overlay::Window>& overlayMsg)
     }
 
     this->windowEvent()(overlayMsg->windowId);
+
+    focusWindowId_ = overlayMsg->windowId;
+    this->windowFocusEvent()(overlayMsg->windowId);
 }
 
 void OverlayConnector::_onWindowFrameBuffer(std::shared_ptr<overlay::WindowFrameBuffer>& overlayMsg)
@@ -988,7 +990,6 @@ void OverlayConnector::_onWindowBounds(std::shared_ptr<overlay::WindowBounds>& o
         }
 
         this->windowBoundsEvent()(overlayMsg->windowId, overlayMsg->rect);
-
     }
 }
 

@@ -11,8 +11,8 @@ class OverlayConnector : public IIpcClient
 
     std::mutex windowsLock_;
     std::vector<std::shared_ptr<overlay::Window>> windows_;
-    std::uint32_t mainWindowId_ = 0;
-    std::uint32_t focusWindowId_ = 0;
+    volatile std::uint32_t mainWindowId_ = 0;
+    std::atomic<std::uint32_t> focusWindowId_ = 0;
 
     std::mutex framesLock_;
     std::map<std::uint32_t, std::shared_ptr<overlay_game::FrameBuffer>> frameBuffers_;
