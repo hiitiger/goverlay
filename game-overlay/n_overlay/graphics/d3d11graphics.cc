@@ -424,6 +424,22 @@ void D3d11Graphics::_checkAndResyncWindows()
             pendingFrameBuffers_.clear();
         }
 
+        if (focusWindowId_)
+        {
+            if (windowSprites_.at(windowSprites_.size() - 1)->windowId != focusWindowId_)
+            {
+                auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [&](const auto& w) {
+                    return w->windowId == focusWindowId_;
+                });
+                if (it != windowSprites_.end())
+                {
+                    auto focusWindow = *it;
+                    windowSprites_.erase(it);
+                    windowSprites_.push_back(focusWindow);
+                }
+            }
+        }
+
         needResync_ = false;
     }
 }
@@ -438,7 +454,9 @@ void D3d11Graphics::_drawWindowSprites()
 {
     for (auto& windowSprite : windowSprites_)
     {
+#if 0
         if (windowSprite->name != "MainOverlay")
+#endif
         {
             _drawWindowSprite(windowSprite);
         }

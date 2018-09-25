@@ -400,6 +400,7 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
             if (message == WM_LBUTTONDOWN)
             {
                 mousePressWindowId_ = window->windowId;
+                focusWindowId_ = window->windowId;
 
                 if (hitTest_ == HTCAPTION)
                 {
@@ -432,6 +433,22 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
                 });
             }
 
+            if (focusWindowId_)
+            {
+                if (windows_.at(windows_.size() -1)->windowId != focusWindowId_)
+                {
+                    auto it = std::find_if(windows_.begin(), windows_.end(), [&](const auto& w) {
+                        return w->windowId == focusWindowId_;
+                    });
+
+                    auto focusWindow = *it;
+                    windows_.erase(it);
+                    windows_.push_back(focusWindow);
+
+                    this->windowFocusEvent()(focusWindowId_);
+                }
+            }
+
             return true;
         }
     }
@@ -441,14 +458,19 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
         _sendGameWindowInput(windowId, message, wParam, lParam);
     });
 
+    if (message == WM_LBUTTONDOWN)
+    {
+        focusWindowId_ = 0;
+    }
+
     return false;
 }
 
 bool OverlayConnector::processkeyboardMessage(UINT message, WPARAM wParam, LPARAM lParam)
 {
-    if (mainWindowId_ != 0)
+    if (focusWindowId_ != 0)
     {
-        HookApp::instance()->async([this, windowId = mainWindowId_, message, wParam, lParam]() {
+        HookApp::instance()->async([this, windowId = focusWindowId_, message, wParam, lParam]() {
             _sendGameWindowInput(windowId, message, wParam, lParam);
         });
     }
@@ -737,6 +759,9 @@ void OverlayConnector::_onRemoteClose()
 
     clearMouseDrag();
 
+    mainWindowId_ = 0;
+    focusWindowId_ = 0;
+
     session::setOverlayEnabled(false);
     session::setOverlayConnected(false);
 }
@@ -879,6 +904,8 @@ void OverlayConnector::_onWindow(std::shared_ptr<overlay::Window>& overlayMsg)
         {
             mainWindowId_ = overlayMsg->windowId;
         }
+
+        focusWindowId_ = overlayMsg->windowId;
     }
     if (overlayMsg->transparent)
     {
@@ -927,6 +954,11 @@ void OverlayConnector::_onWindowClose(std::shared_ptr<overlay::WindowClose>& ove
             {
                 clearMouseDrag();
             }
+        }
+
+        if (focusWindowId_ == overlayMsg->windowId )
+        {
+            focusWindowId_ = 0;
         }
     }
 }

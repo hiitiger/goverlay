@@ -51,6 +51,11 @@ bool DxgiGraphics::initGraphics(IDXGISwapChain *swap)
             needResync_ = true;
         }, this);
 
+        HookApp::instance()->overlayConnector()->windowFocusEvent().add([this](std::uint32_t windowId) {
+            std::lock_guard<std::mutex> lock(synclock_);
+            focusWindowId_ = windowId;
+            needResync_ = true;
+        }, this);
     }
 
     return succcedd;
@@ -73,6 +78,7 @@ void DxgiGraphics::freeGraphics()
     HookApp::instance()->overlayConnector()->windowCloseEvent().remove(this);
     HookApp::instance()->overlayConnector()->windowBoundsEvent().remove(this);
     HookApp::instance()->overlayConnector()->frameBufferUpdateEvent().remove(this);
+    HookApp::instance()->overlayConnector()->windowFocusEvent().remove(this);
 
     std::lock_guard<std::mutex> lock(synclock_);
     pendingWindows_.clear();
@@ -104,7 +110,7 @@ void DxgiGraphics::beforePresent(IDXGISwapChain *swap)
         _drawWindowSprites();
     }
 
-    _drawMainSprite();
+    //_drawMainSprite();
 
     _restoreStatus();
 }

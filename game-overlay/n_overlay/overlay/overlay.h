@@ -12,6 +12,7 @@ class OverlayConnector : public IIpcClient
     std::mutex windowsLock_;
     std::vector<std::shared_ptr<overlay::Window>> windows_;
     std::uint32_t mainWindowId_ = 0;
+    std::uint32_t focusWindowId_ = 0;
 
     std::mutex framesLock_;
     std::map<std::uint32_t, std::shared_ptr<overlay_game::FrameBuffer>> frameBuffers_;
@@ -21,6 +22,7 @@ class OverlayConnector : public IIpcClient
     Storm::Event<void(std::uint32_t)> windowCloseEvent_;
     Storm::Event<void(std::uint32_t, overlay::WindowRect)> windowBoundsEvent_;
     Storm::Event<void(std::uint32_t)> frameBufferUpdateEvent_;
+    Storm::Event<void(std::uint32_t)> windowFocusEvent_;
 
     std::wstring mainProcessDir_;
 
@@ -74,6 +76,7 @@ public:
     Storm::Event<void(std::uint32_t)>& windowCloseEvent() { return windowCloseEvent_; }
     Storm::Event<void(std::uint32_t, overlay::WindowRect)>& windowBoundsEvent() { return windowBoundsEvent_; }
     Storm::Event<void(std::uint32_t)>& frameBufferUpdateEvent() { return frameBufferUpdateEvent_; }
+    Storm::Event<void(std::uint32_t)>& windowFocusEvent() { return windowFocusEvent_; }
 
     std::wstring mainProcessDir() const { return mainProcessDir_; }
 

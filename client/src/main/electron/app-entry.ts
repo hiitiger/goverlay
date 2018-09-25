@@ -100,14 +100,14 @@ class Application {
 
     this.Overlay!.setEventCallback((event: string, payload: any) => {
       if (event === "game.input") {
-        const osrwindow = this.getWindow(AppWindows.osr)
-        if (osrwindow) {
+        const window = BrowserWindow.fromId(payload.windowId)
+        if (window) {
           const intpuEvent = this.Overlay!.translateInputEvent(payload)
           if (payload.msg !== 512) {
             console.log(event, payload)
             console.log(`translate ${JSON.stringify(intpuEvent)}`)
           }
-          osrwindow.webContents.sendInputEvent(intpuEvent)
+          window.webContents.sendInputEvent(intpuEvent)
         }
       }
     })
@@ -145,10 +145,6 @@ class Application {
         if (this.markQuit) {
           return
         }
-        this.mainWindow!.webContents.send("osrImage", {
-          image: image.toDataURL()
-        })
-
         this.Overlay!.sendFrameBuffer(window.id, image.getBitmap(), image.getSize().width, image.getSize().height)
       }
     )
@@ -232,12 +228,54 @@ class Application {
 
     const window = this.createWindow(AppWindows.osr, options)
 
+    window.setPosition(0, 0)
     window.webContents.openDevTools({
       mode: "detach"
     })
     window.loadURL(fileUrl(path.join(global.CONFIG.distDir, "index/osr.html")))
 
+    window.webContents.on(
+      "paint",
+      (event, dirty, image: Electron.NativeImage) => {
+        if (this.markQuit) {
+          return
+        }
+        this.mainWindow!.webContents.send("osrImage", {
+          image: image.toDataURL()
+        })
+      }
+    )
+
     this.addOverlayWindow("MainOverlay", window, 10, 40)
+    return window
+  }
+
+  public createOsrTipWindow() {
+    const options: Electron.BrowserWindowConstructorOptions = {
+      height: 220,
+      width: 320,
+      frame: false,
+      show: false,
+      transparent: true,
+      backgroundColor: "#f0ffffff",
+      webPreferences: {
+        offscreen: true
+      }
+    }
+
+    const getRandomInt = (min: number, max: number) => {
+      return Math.floor(Math.random() * (max - min + 1)) + min
+    }
+    const name = `osrtip ${getRandomInt(1, 10000)}`
+    const window = this.createWindow(name, options)
+
+    window.setPosition(0, 0)
+    window.webContents.openDevTools({
+      mode: "detach"
+    })
+    window.loadURL(fileUrl(path.join(global.CONFIG.distDir, "index/osrtip.html")))
+
+    this.addOverlayWindow(name, window, 10, 40)
     return window
   }
 
@@ -330,7 +368,7 @@ class Application {
   }
 
   private createWindow(
-    name: AppWindows,
+    name: string,
     option: Electron.BrowserWindowConstructorOptions
   ) {
     const window = new BrowserWindow(option)
@@ -359,7 +397,11 @@ class Application {
 
   private setupIpc() {
     ipcMain.on("click", () => {
-      this.createOsrWindow().setPosition(0, 0)
+      this.createOsrWindow()
+    })
+
+    ipcMain.on("osrClick", () => {
+      this.createOsrTipWindow()
     })
   }
 }
