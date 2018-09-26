@@ -121,7 +121,7 @@ class Application {
     this.Overlay!.addWindow(window.id, {
       name,
       transparent: false,
-      resizable: true,
+      resizable: window.isResizable(),
       maxWidth: window.isResizable ? display.bounds.width : window.getBounds().width,
       maxHeight: window.isResizable ? display.bounds.height : window.getBounds().height,
       minWidth : window.isResizable ? 100 : window.getBounds().width,
@@ -247,6 +247,33 @@ class Application {
     )
 
     this.addOverlayWindow("MainOverlay", window, 10, 40)
+    return window
+  }
+
+  public createOsrStatusbarWindow() {
+    const options: Electron.BrowserWindowConstructorOptions = {
+      height: 40,
+      width: 100,
+      frame: false,
+      show: false,
+      transparent: true,
+      resizable: false,
+      backgroundColor: "#00000000",
+      webPreferences: {
+        offscreen: true
+      }
+    }
+
+    const name = "StatusBar"
+    const window = this.createWindow(name, options)
+
+    window.setPosition(100, 0)
+    window.webContents.openDevTools({
+      mode: "detach"
+    })
+    window.loadURL(fileUrl(path.join(global.CONFIG.distDir, "index/statusbar.html")))
+
+    this.addOverlayWindow(name, window, 0, 0)
     return window
   }
 
@@ -396,8 +423,9 @@ class Application {
   }
 
   private setupIpc() {
-    ipcMain.on("click", () => {
+    ipcMain.once("click", () => {
       this.createOsrWindow()
+      this.createOsrStatusbarWindow()
     })
 
     ipcMain.on("osrClick", () => {

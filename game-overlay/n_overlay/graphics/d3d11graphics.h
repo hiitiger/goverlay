@@ -39,7 +39,6 @@ class D3d11Graphics : public DxgiGraphics
 
     Windows::ComPtr<ID3D11Texture2D> blockSprite_;
 
-
     struct D3d11Status
     {
         UINT view_port_nums;
