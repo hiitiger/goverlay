@@ -3,6 +3,7 @@
 
 class UiApp 
 {
+    std::uint32_t overlayMagicMsg_ =0;
     std::mutex uilock_;
     HHOOK msgHook_ = nullptr;
     HHOOK wndProcHook_ = nullptr;
@@ -51,4 +52,6 @@ private:
     LRESULT hookCallWndRetProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam);
 
     bool checkHotkey();
+
+    void _runTask();
 };

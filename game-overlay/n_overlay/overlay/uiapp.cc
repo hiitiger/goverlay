@@ -5,9 +5,16 @@
 #include "hookapp.h"
 #include "hook/inputhook.h"
 
+#define  OVERLAY_MAGIC 0x908988
+#define  OVERLAY_TASK 0x908987
 
 UiApp::UiApp()
 {
+    overlayMagicMsg_ = RegisterWindowMessageW(L"n_overlay_0x010101");
+    if (overlayMagicMsg_ == 0)
+    {
+        overlayMagicMsg_ = WM_USER + 0x88;
+    }
 }
 
 UiApp::~UiApp()
@@ -72,6 +79,8 @@ void UiApp::async(const std::function<void()>& task)
 
     std::lock_guard<std::mutex> lock(taskLock_);
     tasks_.push_back(task);
+
+    PostMessage(graphicsWindow_, overlayMagicMsg_, OVERLAY_MAGIC, OVERLAY_TASK);
 }
 
 void UiApp::toggleInputIntercept()
@@ -198,6 +207,14 @@ LRESULT UiApp::hookGetMsgProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lP
                     if (checkHotkey())
                     {
                         return 0;
+                    }
+                }
+
+                if (pMsg->message == overlayMagicMsg_ && pMsg->wParam == OVERLAY_MAGIC)
+                {
+                    if (pMsg->lParam == OVERLAY_TASK)
+                    {
+                        _runTask();
                     }
                 }
 
@@ -332,5 +349,19 @@ bool UiApp::checkHotkey()
     }
 
     return false;
+}
+
+void UiApp::_runTask()
+{
+    std::deque<std::function<void()>> tasks;
+    {
+        std::lock_guard<std::mutex> lock(taskLock_);
+        tasks.swap(tasks_);
+    }
+
+    for (auto& task : tasks)
+    {
+        task();
+    }
 }
 
