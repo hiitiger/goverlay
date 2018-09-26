@@ -170,6 +170,14 @@ void OverlayConnector::sendGraphicsWindowDestroy(HWND window)
     });
 }
 
+void OverlayConnector::sendGraphicsFps(std::uint32_t fps)
+{
+    CHECK_THREAD(Threads::Graphics);
+    HookApp::instance()->async([this, fps]() {
+        _sendGraphicsFps(fps);
+    });
+}
+
 void OverlayConnector::sendInputIntercept()
 {
     CHECK_THREAD(Threads::Window);
@@ -583,24 +591,18 @@ void OverlayConnector::clearMouseDrag()
 
 void OverlayConnector::_heartbeat()
 {
-    CHECK_THREAD(Threads::HookApp);
-
     overlay::HeartBeat message;
     _sendMessage(&message);
 }
 
 void OverlayConnector::_sendGameExit()
 {
-    CHECK_THREAD(Threads::HookApp);
-
     overlay::GameExit message;
     _sendMessage(&message);
 }
 
 void OverlayConnector::_sendGameProcessInfo()
 {
-    CHECK_THREAD(Threads::HookApp);
-
     overlay::GameProcessInfo message;
     message.path = Storm::Utils::toUtf8(HookApp::instance()->procPath());
     _sendMessage(&message);
@@ -608,8 +610,6 @@ void OverlayConnector::_sendGameProcessInfo()
 
 void OverlayConnector::_sendInputHookInfo(bool hooked)
 {
-    CHECK_THREAD(Threads::HookApp);
-
     overlay::InputHookInfo message;
     message.hooked = hooked;
     _sendMessage(&message);
@@ -617,8 +617,6 @@ void OverlayConnector::_sendInputHookInfo(bool hooked)
 
 void OverlayConnector::_sendGraphicsHookInfo(const overlay_game::D3d9HookInfo &info)
 {
-    CHECK_THREAD(Threads::HookApp);
-
     overlay::D3d9HookInfo hookInfo;
     hookInfo.endSceneHooked = info.endSceneHooked;
     hookInfo.presentHooked = info.presentHooked;
@@ -636,7 +634,6 @@ void OverlayConnector::_sendGraphicsHookInfo(const overlay_game::D3d9HookInfo &i
 
 void OverlayConnector::_sendGraphicsHookInfo(const overlay_game::DxgiHookInfo &info)
 {
-    CHECK_THREAD(Threads::HookApp);
     overlay::DxgiHookInfo hookInfo;
     hookInfo.presentHooked = info.presentHooked;
     hookInfo.present1Hooked = info.present1Hooked;
@@ -652,21 +649,18 @@ void OverlayConnector::_sendGraphicsHookInfo(const overlay_game::DxgiHookInfo &i
 
 void OverlayConnector::_sendGraphicsWindowSetupInfo(HWND window, int width, int height, bool focus, bool hooked)
 {
-    CHECK_THREAD(Threads::HookApp);
-
     overlay::GraphicsWindowSetup message;
     message.window = (std::uint32_t)window;
     message.width = width;
     message.height = height;
     message.focus = focus;
     message.hooked = hooked;
+
     _sendMessage(&message);
 }
 
 void OverlayConnector::_sendInputIntercept(bool v)
 {
-    CHECK_THREAD(Threads::HookApp);
-
     overlay::GameInputIntercept message;
     message.intercepting = v;
 
@@ -675,20 +669,17 @@ void OverlayConnector::_sendInputIntercept(bool v)
 
 void OverlayConnector::_sendGameWindowInput(std::uint32_t windowId, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-    CHECK_THREAD(Threads::HookApp);
-
     overlay::GameInput message;
     message.windowId = windowId;
     message.msg = msg;
     message.wparam = wparam;
     message.lparam = lparam;
-    _sendMessage(&message);
 
+    _sendMessage(&message);
 }
 
 void OverlayConnector::_sendGraphicsWindowResizeEvent(HWND window, int width, int height)
 {
-    CHECK_THREAD(Threads::HookApp);
     overlay::GraphicsWindowRezizeEvent message;
     message.window = (std::uint32_t)window;
     message.width = width;
@@ -699,8 +690,6 @@ void OverlayConnector::_sendGraphicsWindowResizeEvent(HWND window, int width, in
 
 void OverlayConnector::_sendGraphicsWindowFocusEvent(HWND window, bool focus)
 {
-    CHECK_THREAD(Threads::HookApp);
-
     overlay::GraphicsWindowFocusEvent message;
     message.window = (std::uint32_t)window;
     message.focus = focus;
@@ -710,10 +699,16 @@ void OverlayConnector::_sendGraphicsWindowFocusEvent(HWND window, bool focus)
 
 void OverlayConnector::_sendGraphicsWindowDestroy(HWND window)
 {
-    CHECK_THREAD(Threads::HookApp);
-
     overlay::GraphicsWindowDestroyEvent message;
     message.window = (std::uint32_t)window;
+
+    _sendMessage(&message);
+}
+
+void OverlayConnector::_sendGraphicsFps(std::uint32_t fps)
+{
+    overlay::GraphicsFps message;
+    message.fps = fps;
 
     _sendMessage(&message);
 }

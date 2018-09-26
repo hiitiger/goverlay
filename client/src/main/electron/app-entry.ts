@@ -63,7 +63,7 @@ class Application {
     }
   }
 
-  public getWindow(window: AppWindows) {
+  public getWindow(window: string) {
     return this.windows.get(window) || null
   }
 
@@ -108,6 +108,11 @@ class Application {
             console.log(`translate ${JSON.stringify(intpuEvent)}`)
           }
           window.webContents.sendInputEvent(intpuEvent)
+        }
+      } else if (event === "graphics.fps") {
+        const window = this.getWindow("StatusBar")
+        if (window) {
+          window.webContents.send("fps", payload.fps)
         }
       }
     })

@@ -10,11 +10,11 @@ public:
     void start();
     float tick();
 
-    int fps();
+    std::uint32_t fps();
 
 private:
-    int frames_ = 0;
-    int fps_ = 0;
+    std::uint32_t frames_ = 0;
+    std::uint32_t fps_ = 0;
     std::chrono::time_point<std::chrono::steady_clock> lastTime_;
 };
 
@@ -53,7 +53,7 @@ float inline FpsTimer::tick()
     return delta;
 }
 
-inline int FpsTimer::fps()
+inline std::uint32_t FpsTimer::fps()
 {
     return fps_;
 }

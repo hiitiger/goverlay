@@ -21,12 +21,17 @@
 <body>
     <div>
         <div class="caption">
-            hello
+            <label id="label">hello</label>
         </div>
     </div>
     <script>
         const label = document.getElementById('label')
-
+        const {
+            ipcRenderer, remote
+        } = window.require('electron')
+        ipcRenderer.on("fps", (event, fps) => {
+            label.innerText = `fps: ${fps}`
+        })
     </script>
 </body>
 

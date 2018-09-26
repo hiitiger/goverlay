@@ -352,6 +352,16 @@ struct GraphicsWindowDestroyEvent : public GMessage
 
 JSON_AUTO(GraphicsWindowDestroyEvent, type, window)
 
+
+struct GraphicsFps : public GMessage
+{
+    GMESSAGE_AUTO("graphics.fps");
+
+    std::uint32_t fps;
+};
+
+JSON_AUTO(GraphicsFps, type, fps)
+
 struct GameInputIntercept : public GMessage
 {
     GMESSAGE_AUTO("game.input.intercept");

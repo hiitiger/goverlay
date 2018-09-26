@@ -66,6 +66,8 @@ public:
     void sendGraphicsWindowFocusEvent(HWND window, bool focus);
     void sendGraphicsWindowDestroy(HWND window);
 
+    void sendGraphicsFps(std::uint32_t fps);
+
     void sendInputIntercept();
     void sendInputStopIntercept();
 
@@ -115,6 +117,8 @@ protected:
     void _sendGraphicsWindowResizeEvent(HWND window, int width, int height);
     void _sendGraphicsWindowFocusEvent(HWND window, bool focus);
     void _sendGraphicsWindowDestroy(HWND window);
+
+    void _sendGraphicsFps(std::uint32_t fps);
 
     void _sendMessage(overlay::GMessage* message);
 

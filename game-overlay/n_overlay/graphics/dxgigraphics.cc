@@ -5,21 +5,21 @@
 
 bool DxgiGraphics::initGraphics(IDXGISwapChain *swap)
 {
-    bool succcedd = _initGraphicsContext(swap) && _initGraphicsState();
+    bool succeed = _initGraphicsContext(swap) && _initGraphicsState();
 
-    if (succcedd)
+    if (succeed)
     {
         _initSpriteDrawer();
         _createSprites();
         _createWindowSprites();
     }
 
-    if (!succcedd)
+    if (!succeed)
     {
         freeGraphics();
     }
 
-    if (succcedd)
+    if (succeed)
     {
         HookApp::instance()->overlayConnector()->windowEvent().add([this](std::uint32_t windowId) {
             std::lock_guard<std::mutex> lock(synclock_);
@@ -58,7 +58,12 @@ bool DxgiGraphics::initGraphics(IDXGISwapChain *swap)
         }, this);
     }
 
-    return succcedd;
+    if (succeed)
+    {
+        fpsTimer_.reset();
+    }
+
+    return succeed;
 }
 
 void DxgiGraphics::uninitGraphics(IDXGISwapChain *swap)
@@ -96,7 +101,10 @@ void DxgiGraphics::beforePresent(IDXGISwapChain *swap)
         return;
     }
 
-    fpsTimer_.tick();
+    if (fpsTimer_.tick() > 1000.)
+    {
+        HookApp::instance()->overlayConnector()->sendGraphicsFps(fpsTimer_.fps());
+    }
 
     _saveStatus();
     _prepareStatus();

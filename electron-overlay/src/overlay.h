@@ -744,23 +744,25 @@ class OverlayMain : public IIpcHost
         return object;
     }
 
-    void notifyGameProcess(std::string& path)
+    void notifyGameProcess(std::uint32_t pid, std::string& path)
     {
         if (eventCallback_)
         {
             Napi::HandleScope scope(eventCallback_->env);
             Napi::Object object = Napi::Object::New(eventCallback_->env);
+            object.Set("pid", Napi::Value::From(eventCallback_->env, pid));
             object.Set("path", Napi::Value::From(eventCallback_->env, path));
             eventCallback_->callback.MakeCallback(eventCallback_->receiver.Value(), { Napi::Value::From(eventCallback_->env, "game.process"), object });
         }
     }
 
-    void notifyInputEvent(std::uint32_t windowId, std::uint32_t msg, std::uint32_t wparam, std::uint32_t lparam)
+    void notifyInputEvent(std::uint32_t pid, std::uint32_t windowId, std::uint32_t msg, std::uint32_t wparam, std::uint32_t lparam)
     {
         if (eventCallback_)
         {
             Napi::HandleScope scope(eventCallback_->env);
             Napi::Object object = Napi::Object::New(eventCallback_->env);
+            object.Set("pid", Napi::Value::From(eventCallback_->env, pid));
             object.Set("windowId", Napi::Value::From(eventCallback_->env, windowId));
             object.Set("msg", Napi::Value::From(eventCallback_->env, msg));
             object.Set("wparam", Napi::Value::From(eventCallback_->env, wparam));
@@ -769,21 +771,25 @@ class OverlayMain : public IIpcHost
         }
     }
 
-    void notifyInputIntercepEvent(bool intercepting)
-    {
-        if (eventCallback_)
-        {
-            Napi::HandleScope scope(eventCallback_->env);
-            eventCallback_->callback.MakeCallback(eventCallback_->receiver.Value(), { Napi::Value::From(eventCallback_->env, "game.input.intercept"), Napi::Value::From(eventCallback_->env, intercepting) });
-        }
-    }
-
-    void notifyGraphicsWindow(std::uint32_t window, int width, int height, bool focused, bool hooked)
+    void notifyInputIntercepEvent(std::uint32_t pid, bool intercepting)
     {
         if (eventCallback_)
         {
             Napi::HandleScope scope(eventCallback_->env);
             Napi::Object object = Napi::Object::New(eventCallback_->env);
+            object.Set("pid", Napi::Value::From(eventCallback_->env, pid));
+            object.Set("intercepting", Napi::Value::From(eventCallback_->env, intercepting));
+            eventCallback_->callback.MakeCallback(eventCallback_->receiver.Value(), { Napi::Value::From(eventCallback_->env, "game.input.intercept"), Napi::Value::From(eventCallback_->env, object) });
+        }
+    }
+
+    void notifyGraphicsWindow(std::uint32_t pid, std::uint32_t window, int width, int height, bool focused, bool hooked)
+    {
+        if (eventCallback_)
+        {
+            Napi::HandleScope scope(eventCallback_->env);
+            Napi::Object object = Napi::Object::New(eventCallback_->env);
+            object.Set("pid", Napi::Value::From(eventCallback_->env, pid));
             object.Set("nativeHandle", Napi::Value::From(eventCallback_->env, window));
             object.Set("width", Napi::Value::From(eventCallback_->env, width));
             object.Set("height", Napi::Value::From(eventCallback_->env, height));
@@ -793,12 +799,13 @@ class OverlayMain : public IIpcHost
         }
     }
 
-    void notifyGraphicsWindowResize(std::uint32_t window, int width, int height)
+    void notifyGraphicsWindowResize(std::uint32_t pid, std::uint32_t window, int width, int height)
     {
         if (eventCallback_)
         {
             Napi::HandleScope scope(eventCallback_->env);
             Napi::Object object = Napi::Object::New(eventCallback_->env);
+            object.Set("pid", Napi::Value::From(eventCallback_->env, pid));
             object.Set("nativeHandle", Napi::Value::From(eventCallback_->env, window));
             object.Set("width", Napi::Value::From(eventCallback_->env, width));
             object.Set("height", Napi::Value::From(eventCallback_->env, height));
@@ -806,15 +813,28 @@ class OverlayMain : public IIpcHost
         }
     }
 
-    void notifyGraphicsWindowFocus(std::uint32_t window, bool focused)
+    void notifyGraphicsWindowFocus(std::uint32_t pid, std::uint32_t window, bool focused)
     {
         if (eventCallback_)
         {
             Napi::HandleScope scope(eventCallback_->env);
             Napi::Object object = Napi::Object::New(eventCallback_->env);
+            object.Set("pid", Napi::Value::From(eventCallback_->env, pid));
             object.Set("nativeHandle", Napi::Value::From(eventCallback_->env, window));
             object.Set("focused", Napi::Value::From(eventCallback_->env, focused));
             eventCallback_->callback.MakeCallback(eventCallback_->receiver.Value(), { Napi::Value::From(eventCallback_->env, "graphics.window.event.focus"), Napi::Value::From(eventCallback_->env, object) });
+        }
+    }
+
+    void ontifyGrapicsFps(std::uint32_t pid, std::uint32_t fps)
+    {
+        if (eventCallback_)
+        {
+            Napi::HandleScope scope(eventCallback_->env);
+            Napi::Object object = Napi::Object::New(eventCallback_->env);
+            object.Set("pid", Napi::Value::From(eventCallback_->env, pid));
+            object.Set("fps", Napi::Value::From(eventCallback_->env, fps));
+            eventCallback_->callback.MakeCallback(eventCallback_->receiver.Value(), { Napi::Value::From(eventCallback_->env, "graphics.fps"), Napi::Value::From(eventCallback_->env, object) });
         }
     }
 
@@ -881,7 +901,7 @@ class OverlayMain : public IIpcHost
                 overlay::json json = overlay::json::parse(ipcMsg.message);
                 overlayMsg->fromJson(json);
 
-                _onGameProcess(overlayMsg);
+                _onGameProcess(link->remoteIdentity(), overlayMsg);
                 _sendOverlayInit(link);
             }
             else if (ipcMsg.type == "game.input")
@@ -890,7 +910,7 @@ class OverlayMain : public IIpcHost
                 overlay::json json = overlay::json::parse(ipcMsg.message);
                 overlayMsg->fromJson(json);
 
-                _onGameInput(overlayMsg);
+                _onGameInput(link->remoteIdentity(), overlayMsg);
             }
             else if (ipcMsg.type == "game.input.intercept")
             {
@@ -898,7 +918,7 @@ class OverlayMain : public IIpcHost
                 overlay::json json = overlay::json::parse(ipcMsg.message);
                 overlayMsg->fromJson(json);
 
-                _onGameInputIntercept(overlayMsg);
+                _onGameInputIntercept(link->remoteIdentity(), overlayMsg);
             }
             else if (ipcMsg.type == "graphics.window")
             {
@@ -906,7 +926,7 @@ class OverlayMain : public IIpcHost
                 overlay::json json = overlay::json::parse(ipcMsg.message);
                 overlayMsg->fromJson(json);
 
-                _onGraphicsWindow(overlayMsg);
+                _onGraphicsWindow(link->remoteIdentity(), overlayMsg);
             }
             else if (ipcMsg.type == "graphics.window.event.resize")
             {
@@ -914,16 +934,23 @@ class OverlayMain : public IIpcHost
                 overlay::json json = overlay::json::parse(ipcMsg.message);
                 overlayMsg->fromJson(json);
 
-                _onGraphicsWindowRezizeEvent(overlayMsg);
+                _onGraphicsWindowRezizeEvent(link->remoteIdentity(), overlayMsg);
             }
-
             else if (ipcMsg.type == "graphics.window.event.focus")
             {
                 std::shared_ptr<overlay::GraphicsWindowFocusEvent> overlayMsg = std::make_shared<overlay::GraphicsWindowFocusEvent>();
                 overlay::json json = overlay::json::parse(ipcMsg.message);
                 overlayMsg->fromJson(json);
 
-                _onGraphicsWindowFocusEvent(overlayMsg);
+                _onGraphicsWindowFocusEvent(link->remoteIdentity(), overlayMsg);
+            }
+            else if (ipcMsg.type == "graphics.fps")
+            {
+                std::shared_ptr<overlay::GraphicsFps> overlayMsg = std::make_shared<overlay::GraphicsFps>();
+                overlay::json json = overlay::json::parse(ipcMsg.message);
+                overlayMsg->fromJson(json);
+
+                _onGraphcisFps(link->remoteIdentity(), overlayMsg);
             }
         }
     }
@@ -954,45 +981,52 @@ class OverlayMain : public IIpcHost
         return name;
     }
 
-    void _onGameProcess(const std::shared_ptr<overlay::GameProcessInfo>& overlayMsg)
+    void _onGameProcess(std::uint32_t pid, const std::shared_ptr<overlay::GameProcessInfo>& overlayMsg)
     {
-        node_async_call::async_call([this, overlayMsg]() {
-            notifyGameProcess(overlayMsg->path);
+        node_async_call::async_call([this, pid, overlayMsg]() {
+            notifyGameProcess(pid, overlayMsg->path);
         });
     }
 
-    void _onGameInput(const std::shared_ptr<overlay::GameInput>& overlayMsg)
+    void _onGameInput(std::uint32_t pid, const std::shared_ptr<overlay::GameInput>& overlayMsg)
     {
-        node_async_call::async_call([this, overlayMsg]() {
-            notifyInputEvent(overlayMsg->windowId, overlayMsg->msg, overlayMsg->wparam, overlayMsg->lparam);
+        node_async_call::async_call([this, pid, overlayMsg]() {
+            notifyInputEvent(pid, overlayMsg->windowId, overlayMsg->msg, overlayMsg->wparam, overlayMsg->lparam);
         });
     }
 
-    void _onGameInputIntercept(const std::shared_ptr<overlay::GameInputIntercept>& overlayMsg)
+    void _onGameInputIntercept(std::uint32_t pid, const std::shared_ptr<overlay::GameInputIntercept>& overlayMsg)
     {
-        node_async_call::async_call([this, overlayMsg]() {
-            notifyInputIntercepEvent(overlayMsg->intercepting);
+        node_async_call::async_call([this, pid, overlayMsg]() {
+            notifyInputIntercepEvent(pid, overlayMsg->intercepting);
         });
     }
 
-    void _onGraphicsWindow(const std::shared_ptr<overlay::GraphicsWindowSetup>& overlayMsg)
+    void _onGraphicsWindow(std::uint32_t pid, const std::shared_ptr<overlay::GraphicsWindowSetup>& overlayMsg)
     {
-        node_async_call::async_call([this, overlayMsg]() {
-            notifyGraphicsWindow(overlayMsg->window, overlayMsg->width, overlayMsg->height, overlayMsg->focus, overlayMsg->hooked);
+        node_async_call::async_call([this, pid, overlayMsg]() {
+            notifyGraphicsWindow(pid, overlayMsg->window, overlayMsg->width, overlayMsg->height, overlayMsg->focus, overlayMsg->hooked);
         });
     }
 
-    void _onGraphicsWindowRezizeEvent(const std::shared_ptr<overlay::GraphicsWindowRezizeEvent>& overlayMsg)
+    void _onGraphicsWindowRezizeEvent(std::uint32_t pid, const std::shared_ptr<overlay::GraphicsWindowRezizeEvent>& overlayMsg)
     {
-        node_async_call::async_call([this, overlayMsg]() {
-            notifyGraphicsWindowResize(overlayMsg->window, overlayMsg->width, overlayMsg->height);
+        node_async_call::async_call([this, pid, overlayMsg]() {
+            notifyGraphicsWindowResize(pid, overlayMsg->window, overlayMsg->width, overlayMsg->height);
         });
     }
 
-    void _onGraphicsWindowFocusEvent(const std::shared_ptr<overlay::GraphicsWindowFocusEvent>& overlayMsg)
+    void _onGraphicsWindowFocusEvent(std::uint32_t pid, const std::shared_ptr<overlay::GraphicsWindowFocusEvent>& overlayMsg)
     {
-        node_async_call::async_call([this, overlayMsg]() {
-            notifyGraphicsWindowFocus(overlayMsg->window, overlayMsg->focus);
+        node_async_call::async_call([this, pid, overlayMsg]() {
+            notifyGraphicsWindowFocus(pid, overlayMsg->window, overlayMsg->focus);
+        });
+    }
+
+    void _onGraphcisFps(std::uint32_t pid, const std::shared_ptr<overlay::GraphicsFps>& overlayMsg)
+    {
+        node_async_call::async_call([this, pid, overlayMsg]() {
+            ontifyGrapicsFps(pid, overlayMsg->fps);
         });
     }
 };
