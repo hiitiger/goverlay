@@ -29,12 +29,15 @@ use the power of web to inject any web app to overlay in your game
     - [x] electron offscreen window overlay in game
     - [ ] dx12 api support
     - [x] dx11 api support
-    - [ ] dx10 api support
+    - [x] dx10 api support
     - [ ] dx9 api support
     - [x] multi windows support
     - [x] window z-index and focus
     - [x] in game sync drag and resize
-    - [ ] in game async drag and resize
+    - [ ] in game defered drag and resize
     - [x] input intercepting
     - [ ] custom shaped window (alpha test for mouse handling)
     - [ ] detailed injecting configuration 
+
+## todo
+    - [ ] maximize to game window size
