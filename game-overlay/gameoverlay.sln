@@ -8,6 +8,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "n_ovhelper", "n_ovhelper\n_
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "n_overlay", "n_overlay\n_overlay.vcxproj", "{6F43AE9E-02B3-3EC1-B15F-1CF6A5F83CA9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dx10app", "demo\dx10app\dx10app.vcxproj", "{F3D632C8-6F7A-36D2-B2B2-60492E28DAC3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -38,6 +40,14 @@ Global
 		{6F43AE9E-02B3-3EC1-B15F-1CF6A5F83CA9}.Release|Win32.ActiveCfg = Release|Win32
 		{6F43AE9E-02B3-3EC1-B15F-1CF6A5F83CA9}.Release|Win32.Build.0 = Release|Win32
 		{6F43AE9E-02B3-3EC1-B15F-1CF6A5F83CA9}.Release|x64.ActiveCfg = Release|x64
+		{F3D632C8-6F7A-36D2-B2B2-60492E28DAC3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F3D632C8-6F7A-36D2-B2B2-60492E28DAC3}.Debug|Win32.Build.0 = Debug|Win32
+		{F3D632C8-6F7A-36D2-B2B2-60492E28DAC3}.Debug|x64.ActiveCfg = Debug|x64
+		{F3D632C8-6F7A-36D2-B2B2-60492E28DAC3}.Debug|x64.Build.0 = Debug|x64
+		{F3D632C8-6F7A-36D2-B2B2-60492E28DAC3}.Release|Win32.ActiveCfg = Release|Win32
+		{F3D632C8-6F7A-36D2-B2B2-60492E28DAC3}.Release|Win32.Build.0 = Release|Win32
+		{F3D632C8-6F7A-36D2-B2B2-60492E28DAC3}.Release|x64.ActiveCfg = Release|x64
+		{F3D632C8-6F7A-36D2-B2B2-60492E28DAC3}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
