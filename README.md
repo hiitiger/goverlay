@@ -34,7 +34,7 @@ use the power of web to inject any web app to overlay in your game
     - [ ] dx12 api support
     - [x] dx11 api support
     - [x] dx10 api support
-    - [ ] dx9 api support
+    - [x] dx9 api support
     - [x] multi windows support
     - [x] window z-index and focus
     - [x] in game sync drag and resize
@@ -45,6 +45,7 @@ use the power of web to inject any web app to overlay in your game
 
 ## todo
     - [ ] maximize to game window size
+    - [ ] better hotkey
 
 
 
