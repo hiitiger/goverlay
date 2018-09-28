@@ -5,6 +5,10 @@ use the power of web to inject any web app to overlay in your game
 ## screenshot
 ![demo](https://raw.githubusercontent.com/hiitiger/gelectron/master/screenshot/gelectron.gif)
 
+
+## NOTE
+1. If you have compile issues with boost(_MSVC_LANG), make sure you are using vs2017 15.7.x or newer.
+
 ## run demo
 1. git clone https://github.com/hiitiger/gelectron.git
 2. git submodule update --init --recursive
@@ -41,3 +45,6 @@ use the power of web to inject any web app to overlay in your game
 
 ## todo
     - [ ] maximize to game window size
+
+
+
