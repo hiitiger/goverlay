@@ -32,7 +32,7 @@ struct D3d9HookInfo
             {"swapChainPresentHooked", swapChainPresentHooked ? "true" : "false"},
             {"resetHooked", resetHooked ? "true" : "false"},
             {"resetExHooked", resetExHooked ? "true" : "false"},
-            {"d3d9Dll", std::to_string((std::uint32_t)d3d9Dll)},
+            {"d3d9Dll", std::to_string((std::uint64_t)d3d9Dll)},
         };
     }
 };
@@ -52,9 +52,9 @@ struct DxgiHookInfo
     {
         return {
             {"type", "DXGI"},
-            {"dxgiDll", std::to_string((std::uint32_t)dxgiDll)},
-            {"d3d10Dll", std::to_string((std::uint32_t)d3d10Dll)},
-            {"d3d11Dll", std::to_string((std::uint32_t)d3d11Dll)},
+            {"dxgiDll", std::to_string((std::uint64_t)dxgiDll)},
+            {"d3d10Dll", std::to_string((std::uint64_t)d3d10Dll)},
+            {"d3d11Dll", std::to_string((std::uint64_t)d3d11Dll)},
         };
     }
 };
@@ -68,7 +68,7 @@ class InputHook;
 namespace session
 {
 HMODULE loadModuleD3dCompiler47();
-
+HMODULE loadD3dx9();
 
 
 overlay_game::D3d9HookInfo &d3d9HookInfo();

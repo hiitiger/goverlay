@@ -32,6 +32,7 @@ std::atomic<bool> overlayConnected_ = false;
 std::atomic<bool> overlayEnabled_ = true;
 
 HMODULE hModuleD3dCompiler47_ = nullptr;
+HMODULE hModuleD3dx9_ = nullptr;
 
 
 D3d9Hook *d3d9Hook()
@@ -140,11 +141,26 @@ HMODULE loadModuleD3dCompiler47()
         hModuleD3dCompiler47_ = LoadLibraryW(L"d3dcompiler_47.dll");
         if (!hModuleD3dCompiler47_)
         {
-            hModuleD3dCompiler47_ = LoadLibraryW(HookApp::instance()->overlayConnector()->mainProcessDir().c_str());
+            hModuleD3dCompiler47_ = LoadLibraryW(HookApp::instance()->overlayConnector()->d3dcompiler47Path().c_str());
         }
     }
 
     return hModuleD3dCompiler47_;
+}
+
+HMODULE loadD3dx9()
+{
+    CHECK_THREAD(Threads::Graphics);
+    if (!hModuleD3dx9_)
+    {
+        hModuleD3dx9_ = LoadLibraryW(L"d3dx9_43.dll");
+        if (!hModuleD3dx9_)
+        {
+            hModuleD3dx9_ = LoadLibraryW(HookApp::instance()->overlayConnector()->d3dx9Path().c_str());
+        }
+    }
+
+    return hModuleD3dx9_;
 }
 
 overlay_game::D3d9HookInfo &d3d9HookInfo()

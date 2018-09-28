@@ -26,6 +26,7 @@ void D3d11Graphics::freeGraphics()
 
     ZeroMemory(&savedStatus_, sizeof(savedStatus_));
 
+    statusBarSprite_ = nullptr;
     mainSprite_ = nullptr;
     windowSprites_.clear();
 

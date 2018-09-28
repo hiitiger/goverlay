@@ -115,8 +115,6 @@ void OverlayConnector::sendInputHookInfo(bool hooked)
 
 void OverlayConnector::sendGraphicsHookInfo(const overlay_game::D3d9HookInfo &info)
 {
-    CHECK_THREAD(Threads::HookApp);
-
     HookApp::instance()->async([this, info]() {
         _sendGraphicsHookInfo(info);
     });

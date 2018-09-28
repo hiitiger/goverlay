@@ -345,10 +345,14 @@ END:
 
     session::d3d9HookInfo().endSceneHooked = result;
     session::d3d9HookInfo().presentHooked = presentHook->succeed();
-    session::d3d9HookInfo().presentExHooked = presentExHook->succeed();
+    
     session::d3d9HookInfo().swapChainPresentHooked = swapChainPresentHook->succeed();
     session::d3d9HookInfo().resetHooked = resetHook->succeed();
-    session::d3d9HookInfo().resetExHooked = resetExHook->succeed();
+    if (spD3DDevice9Ex)
+    {
+        session::d3d9HookInfo().presentExHooked = presentExHook->succeed();
+        session::d3d9HookInfo().resetExHooked = resetExHook->succeed();
+    }
 
     HookApp::instance()->overlayConnector()->sendGraphicsHookInfo(session::d3d9HookInfo());
     return result;
@@ -417,8 +421,18 @@ bool D3d9Hook::initGraphics(IDirect3DDevice9* device, HWND hDestWindowOverride, 
     HWND graphicsWindow = desc.hDeviceWindow;
     if (graphicsWindow != session::graphicsWindow())
     {
-        return false;
+        if (!session::injectWindow())
+        {
+            session::setGraphicsWindow(graphicsWindow);
+            std::cout << __FUNCTION__ << ", setGraphicsWindow: " << graphicsWindow << std::endl;
+        }
+        else
+        {
+            return false;
+        }
     }
+
+    session::setGraphicsThreadId(GetCurrentThreadId());
 
     graphics_.reset(new D3d9Graphics());
     graphicsInit_ = graphics_->initGraphics(device, hDestWindowOverride, isD9Ex);

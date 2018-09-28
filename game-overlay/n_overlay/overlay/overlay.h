@@ -81,6 +81,8 @@ public:
     Storm::Event<void(std::uint32_t)>& windowFocusEvent() { return windowFocusEvent_; }
 
     std::wstring mainProcessDir() const { return mainProcessDir_; }
+    std::wstring d3dcompiler47Path() const { return L""; }
+    std::wstring d3dx9Path() const { return L""; }
 
     void lockShareMem();
     void unlockShareMem();

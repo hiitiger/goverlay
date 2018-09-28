@@ -26,6 +26,7 @@ void D3d10Graphics::freeGraphics()
 {
     __super::freeGraphics();
 
+    statusBarSprite_ = nullptr;
     mainSprite_ = nullptr;
     windowSprites_.clear();
 
