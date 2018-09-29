@@ -25,6 +25,7 @@ Windows::ComPtr<IDXGISwapChain> D3d10Graphics::swapChain() const
 void D3d10Graphics::freeGraphics()
 {
     __super::freeGraphics();
+    ZeroMemory(&savedStatus_, sizeof(savedStatus_));
 
     statusBarSprite_ = nullptr;
     mainSprite_ = nullptr;
@@ -101,7 +102,7 @@ bool D3d10Graphics::_initGraphicsState()
 
     D3D10_BLEND_DESC transDesc;
     ZeroMemory(&transDesc, sizeof(transDesc));
-    transDesc.AlphaToCoverageEnable = false;
+    transDesc.AlphaToCoverageEnable = FALSE;
     transDesc.BlendEnable[0] = TRUE;
     transDesc.SrcBlend = D3D10_BLEND_SRC_ALPHA;
     transDesc.DestBlend = D3D10_BLEND_INV_SRC_ALPHA;
@@ -206,7 +207,7 @@ Windows::ComPtr<ID3D10Texture2D> D3d10Graphics::_createDynamicTexture(std::uint3
     if (FAILED(hr))
     {
         LOGGER("n_overlay") << L"CreateTexture2D, failed:" << hr;
-        std::cout << "D3d11Graphics::_createDynamicTexture CreateTexture2D, failed:" << hr << std::endl;
+        std::cout << "D3d10Graphics::_createDynamicTexture CreateTexture2D, failed:" << hr << std::endl;
         return nullptr;
     }
 
@@ -579,6 +580,7 @@ void D3d10Graphics::_restoreStatus()
     ReleaseCOM(savedStatus_.blend_state);
     ReleaseCOM(savedStatus_.render_target);
     ReleaseCOM(savedStatus_.depth_stencil);
+    ReleaseCOM(savedStatus_.sampler_states);
 
     ZeroMemory(&savedStatus_, sizeof(savedStatus_));
 }

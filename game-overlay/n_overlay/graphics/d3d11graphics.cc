@@ -102,9 +102,10 @@ bool D3d11Graphics::_initGraphicsState()
     }
 
     D3D11_BLEND_DESC transDesc;
-    transDesc.AlphaToCoverageEnable = false;
-    transDesc.IndependentBlendEnable = false;
-    transDesc.RenderTarget[0].BlendEnable = true;
+    ZeroMemory(&transDesc, sizeof(transDesc));
+    transDesc.AlphaToCoverageEnable = FALSE;
+    transDesc.IndependentBlendEnable = FALSE;
+    transDesc.RenderTarget[0].BlendEnable = FALSE;
     transDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
     transDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
     transDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
@@ -158,7 +159,7 @@ void D3d11Graphics::_createSprites()
 
     if (SUCCEEDED(d3dDevice_->CreateTexture2D(&textureDesc, nullptr, blockSprite_.resetAndGetPointerAddress())))
     {
-        D3D11_MAPPED_SUBRESOURCE ms;
+        D3D11_MAPPED_SUBRESOURCE ms = {};
         d3dContext_->Map(blockSprite_, 0, D3D11_MAP_WRITE_DISCARD, NULL, &ms);
         int* bytePointer = (int*)ms.pData;
         memset(bytePointer, 0xff, ms.RowPitch * textureDesc.Height);
@@ -375,7 +376,7 @@ void D3d11Graphics::_checkAndResyncWindows()
                     auto& windowSprite = *it;
                     windowSprite->rect = rect;
 
-                    D3D11_TEXTURE2D_DESC desc = {0};
+                    D3D11_TEXTURE2D_DESC desc = { 0 };
 
                     if (windowSprite->texture)
                     {
@@ -412,13 +413,13 @@ void D3d11Graphics::_checkAndResyncWindows()
 
         if (pendingFrameBuffers_.size() > 0)
         {
-            for (auto windowId: pendingFrameBuffers_)
+            for (auto windowId : pendingFrameBuffers_)
             {
                 auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [windowId](const auto &window) {
                     return windowId == window->windowId;
                 });
 
-                if ( it != windowSprites_.end())
+                if (it != windowSprites_.end())
                 {
                     _updateSprite(*it);
                 }
