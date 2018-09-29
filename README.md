@@ -8,6 +8,7 @@ use the power of web to inject any web app to overlay in your game
 
 ## NOTE
 1. If you have compile issues with boost(_MSVC_LANG), make sure you are using vs2017 15.7.x or newer.
+2. use 32bit node to install 32bit electron (game overlay support x64 no matter electorn version), if you want to use 64bit electorn, modify compile:electron script in client/package.json.
 
 ## run demo
 1. git clone https://github.com/hiitiger/gelectron.git
