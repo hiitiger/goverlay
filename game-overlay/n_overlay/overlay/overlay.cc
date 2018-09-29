@@ -846,6 +846,8 @@ void OverlayConnector::_onOverlayInit(std::shared_ptr<overlay::OverlayInit>& ove
 
     std::lock_guard<std::mutex> lock(windowsLock_);
     windows_.swap(windows);
+
+    this->hotkeysEvent()(overlayMsg->hotkeys);
 }
 
 void OverlayConnector::_onOverlayEnable(std::shared_ptr<overlay::OverlayEnable>& overlayMsg)

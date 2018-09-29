@@ -97,6 +97,7 @@ class Application {
   public startOverlay() {
     this.Overlay = require("electron-overlay")!
     this.Overlay!.start()
+    this.Overlay!.setHotkeys([{name: "overlay.toggle", keyCode: 113, modifiers: {ctrl: true}}])
 
     this.Overlay!.setEventCallback((event: string, payload: any) => {
       if (event === "game.input") {

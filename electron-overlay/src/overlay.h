@@ -955,11 +955,14 @@ break;
         message.processEnabled = true;
         message.shareMemMutex = shareMemMutex_;
         message.windows = windows_;
+        message.hotkeys = hotkeys_;
 
         overlay::OverlayIpc ipcMsg;
         ipcMsg.type = message.msgType();
 
         overlay::json obj = message.toJson();
+
+        std::cout << __FUNCTION__ <<  obj.dump()  << std::endl;
 
         ipcMsg.message = obj.dump();
         this->ipcHostCenter_->sendMessage(link, 0, 0, &ipcMsg);

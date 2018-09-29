@@ -3,7 +3,6 @@
 #include "overlay.h"
 #include "uiapp.h"
 
-
 struct IGraphicsHook;
 class D3d9Hook;
 class DXGIHook;
@@ -25,7 +24,6 @@ class HookApp
     std::shared_ptr<UiApp> uiapp_;
 
     HANDLE hookloopThread_ = nullptr;
-
 
   public:
     HookApp();

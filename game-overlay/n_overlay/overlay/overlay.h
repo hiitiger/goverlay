@@ -24,6 +24,8 @@ class OverlayConnector : public IIpcClient
     Storm::Event<void(std::uint32_t)> frameBufferUpdateEvent_;
     Storm::Event<void(std::uint32_t)> windowFocusEvent_;
 
+    Storm::Event<void(std::vector<overlay::Hotkey>)> hotkeysEvent_;
+
     std::wstring mainProcessDir_;
 
     std::atomic<std::uint32_t> mousePressWindowId_ = 0;
@@ -79,6 +81,7 @@ public:
     Storm::Event<void(std::uint32_t, overlay::WindowRect)>& windowBoundsEvent() { return windowBoundsEvent_; }
     Storm::Event<void(std::uint32_t)>& frameBufferUpdateEvent() { return frameBufferUpdateEvent_; }
     Storm::Event<void(std::uint32_t)>& windowFocusEvent() { return windowFocusEvent_; }
+    Storm::Event<void(std::vector<overlay::Hotkey>)>& hotkeysEvent() { return hotkeysEvent_;}
 
     std::wstring mainProcessDir() const { return mainProcessDir_; }
     std::wstring d3dcompiler47Path() const { return L""; }

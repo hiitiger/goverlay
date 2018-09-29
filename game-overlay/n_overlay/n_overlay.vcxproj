@@ -311,6 +311,7 @@
     <ClInclude Include="dxgi1_2.h" />
     <ClInclude Include="graphics\dxgigraphics.h" />
     <ClInclude Include="graphics\dxgihook.h" />
+    <ClInclude Include="hotkey\hotkeycheck.h" />
     <ClInclude Include="message\gmessage.hpp" />
     <ClInclude Include="graphics\graphics.h" />
     <ClInclude Include="overlay\hookapp.h" />

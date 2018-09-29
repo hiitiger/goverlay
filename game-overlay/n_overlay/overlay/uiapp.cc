@@ -4,6 +4,7 @@
 #include "uiapp.h"
 #include "hookapp.h"
 #include "hook/inputhook.h"
+#include "hotkey/hotkeycheck.h"
 
 #define  OVERLAY_MAGIC 0x908988
 #define  OVERLAY_TASK 0x908987
@@ -202,7 +203,8 @@ LRESULT UiApp::hookGetMsgProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lP
             MSG* pMsg = (MSG*)lParam;
             if (pMsg->hwnd == graphicsWindow_ && wParam == PM_REMOVE)
             {
-                if (pMsg->message == WM_KEYDOWN || pMsg->message == WM_SYSKEYDOWN)
+                if (pMsg->message == WM_KEYDOWN || pMsg->message == WM_SYSKEYDOWN
+                    || pMsg->message == WM_KEYUP || pMsg->message == WM_SYSKEYUP)
                 {
                     if (checkHotkey())
                     {
@@ -347,6 +349,10 @@ bool UiApp::checkHotkey()
         toggleInputIntercept();
         return true;
     }
+
+#ifndef HOTKEY_THREADED
+    HotkeyCheck::instance()->checkHotkeys();
+#endif // HOTKEY_THREADED
 
     return false;
 }

@@ -4,6 +4,7 @@
 #include "graphics/d3d9hook.h"
 #include "graphics/dxgihook.h"
 #include "hook/inputhook.h"
+#include "hotkey/hotkeycheck.h"
 
 bool g_graphicsOnly = false;
 HANDLE g_hookAppThread = nullptr;
@@ -160,7 +161,11 @@ void HookApp::hookThread()
         this->findGameWindow();
     });
 
+    HotkeyCheck::instance()->start();
+
     runloop_->run();
+
+    HotkeyCheck::instance()->stop();
 
     {
         std::lock_guard<std::mutex> lock(runloopLock_);
@@ -288,6 +293,7 @@ void HookApp::unhookGraphics()
         session::d3d9Hook()->unhook();
         session::clearD3d9Hook();
     }
+
     if (session::dxgiHooked())
     {
         session::dxgiHook()->unhook();

@@ -78,6 +78,7 @@ SOURCES += ./overlay/hookapp.cc
 HEADERS += ./overlay/overlay.h
 SOURCES += ./overlay/overlay.cc
 
+HEADERS += ./hotkey/hotkeycheck.h
 
 HEADERS += ./graphics/graphics.h
 
@@ -99,3 +100,7 @@ HEADERS += ./graphics/d3d11sprite.h
 SOURCES += ./graphics/d3d11sprite.cc
 HEADERS += ./graphics/d3d11graphics.h
 SOURCES += ./graphics/d3d11graphics.cc
+HEADERS += ./graphics/d3d10sprite.h
+SOURCES += ./graphics/d3d10sprite.cc
+HEADERS += ./graphics/d3d10graphics.h
+SOURCES += ./graphics/d3d10graphics.cc
