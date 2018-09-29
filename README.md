@@ -3,7 +3,7 @@
 use the power of web to inject any web app to overlay in your game
 
 ## screenshot
-![demo](https://raw.githubusercontent.com/hiitiger/gelectron/master/screenshot/gelectron.gif)
+![demo](https://raw.githubusercontent.com/hiitiger/gelectron/master/screenshot/gelectron2.gif)
 
 
 ## NOTE
@@ -39,6 +39,7 @@ use the power of web to inject any web app to overlay in your game
     - [x] multi windows support
     - [x] window z-index and focus
     - [x] in game sync drag and resize
+    - [x] window draw policy
     - [ ] in game defered drag and resize
     - [x] input intercepting
     - [ ] custom shaped window (alpha test for mouse handling)
@@ -46,7 +47,7 @@ use the power of web to inject any web app to overlay in your game
 
 ## todo
     - [ ] maximize to game window size
-    - [ ] better hotkey
+    - [x] better hotkey
 
 
 
