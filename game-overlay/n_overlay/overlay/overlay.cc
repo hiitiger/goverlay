@@ -807,6 +807,7 @@ break;
             OVERLAY_DISPATCH("window.close", WindowClose);
             OVERLAY_DISPATCH("window.bounds", WindowBounds);
             OVERLAY_DISPATCH("command.cursor", CursorCommand);
+            OVERLAY_DISPATCH("overlay.hotkey", HotkeyInfo);
         default:
             break;
         }
@@ -1002,4 +1003,9 @@ void OverlayConnector::_onCursorCommand(std::shared_ptr<overlay::CursorCommand>&
         { "IDC_SIZEWE", overlay_game::Cursor::SIZEWE },
     };
     cursorShape_ = cursorMap[overlayMsg->cursor];
+}
+
+void OverlayConnector::_onHotkeyInfo(std::shared_ptr<overlay::HotkeyInfo>& overlayMsg)
+{
+    this->hotkeysEvent()(overlayMsg->hotkeys);
 }

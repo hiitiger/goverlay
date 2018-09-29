@@ -149,4 +149,6 @@ private:
     void _updateFrameBuffer(std::uint32_t windowId, const std::string& bufferName);
 
     void _onCursorCommand(std::shared_ptr<overlay::CursorCommand>& overlayMsg);
+
+    void _onHotkeyInfo(std::shared_ptr<overlay::HotkeyInfo>& overlayMsg);
 };
