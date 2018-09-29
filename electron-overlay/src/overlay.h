@@ -16,6 +16,35 @@
 #include <boost/interprocess/mapped_region.hpp>
 namespace share_mem = boost::interprocess;
 
+namespace stdxx
+{
+    namespace
+    {
+        static constexpr unsigned int Fnv1aBasis = 0x811C9DC5;
+        static constexpr unsigned int Fnv1aPrime = 0x01000193;
+    }
+
+    constexpr unsigned int hash(const char *s, unsigned int h = Fnv1aBasis)
+    {
+        return !*s
+            ? h
+            : hash(
+                s + 1,
+                static_cast<unsigned int>(
+                (h ^ *s) * static_cast<unsigned long long>(Fnv1aPrime)));
+    }
+
+    constexpr unsigned int hash(const wchar_t *s, unsigned int h = Fnv1aBasis)
+    {
+        return !*s
+            ? h
+            : hash(
+                s + 1,
+                static_cast<unsigned int>(
+                (h ^ *s) * static_cast<unsigned long long>(Fnv1aPrime)));
+    }
+}
+
 struct share_memory
 {
     std::string bufferName;
@@ -126,12 +155,12 @@ inline std::string getKeyCode(std::uint32_t key)
         {123 , "F12"},
         {144 , "NumLock"},
         {145 , "ScrollLock" },
-    { 160, "Shift" },
-    { 161, "Shift" },
-    { 162, "Control" },
-    { 163, "Control" },
-    { 164, "Alt" },
-    {165, "Alt"},
+        { 160, "Shift" },
+        { 161, "Shift" },
+        { 162, "Control" },
+        { 163, "Control" },
+        { 164, "Alt" },
+        {165, "Alt"},
         {182 , "My Computer"},
         {183 , "My Calculator"},
         {186 , ";"},
@@ -287,7 +316,7 @@ class OverlayMain : public IIpcHost
     const std::string k_overlayIpcName = "n_overlay_1a1y2o8l0b";
 
     IIpcHostCenter *ipcHostCenter_;
-    std::set<IIpcLink *> ipcClients_;
+    std::map<std::uint32_t, IIpcLink *> ipcClients_;
 
     std::shared_ptr<NodeEventCallback> eventCallback_;
 
@@ -868,7 +897,7 @@ class OverlayMain : public IIpcHost
 
         ipcMsg.message = obj.dump();
 
-        for (auto link : this->ipcClients_)
+        for (auto [id, link] : this->ipcClients_)
         {
             this->ipcHostCenter_->sendMessage(link, 0, 0, &ipcMsg);
         }
@@ -877,13 +906,13 @@ class OverlayMain : public IIpcHost
   private:
     void onClientConnect(IIpcLink *client) override
     {
-        this->ipcClients_.insert(client);
+        this->ipcClients_.insert(std::make_pair(client->remoteIdentity(), client));
 
         std::cout << __FUNCTION__ << "," << client->remoteIdentity() << std::endl;
     }
     void onClientClose(IIpcLink *client) override
     {
-        this->ipcClients_.erase(client);
+        this->ipcClients_.erase(client->remoteIdentity());
         std::cout << __FUNCTION__ << "," << client->remoteIdentity() << std::endl;
     }
     void onMessage(IIpcLink *link, int clientId, int hostPort, const std::string &message) override
@@ -895,62 +924,27 @@ class OverlayMain : public IIpcHost
             overlay::OverlayIpc ipcMsg;
             ipcMsg.upack(message);
 
-            if (ipcMsg.type == "game.process")
-            {
-                std::shared_ptr<overlay::GameProcessInfo> overlayMsg = std::make_shared<overlay::GameProcessInfo>();
-                overlay::json json = overlay::json::parse(ipcMsg.message);
-                overlayMsg->fromJson(json);
+#define OVERLAY_DISPATCH(type, Msg) \
+case stdxx::hash(type):\
+{\
+    std::shared_ptr<overlay::Msg> overlayMsg = std::make_shared<overlay::Msg>(); \
+    overlay::json json = overlay::json::parse(ipcMsg.message); \
+    overlayMsg->fromJson(json); \
+    _on##Msg(link->remoteIdentity(), overlayMsg); \
+}\
+break;
 
-                _onGameProcess(link->remoteIdentity(), overlayMsg);
-                _sendOverlayInit(link);
-            }
-            else if (ipcMsg.type == "game.input")
+            switch (stdxx::hash(ipcMsg.type.c_str()))
             {
-                std::shared_ptr<overlay::GameInput> overlayMsg = std::make_shared<overlay::GameInput>();
-                overlay::json json = overlay::json::parse(ipcMsg.message);
-                overlayMsg->fromJson(json);
-
-                _onGameInput(link->remoteIdentity(), overlayMsg);
-            }
-            else if (ipcMsg.type == "game.input.intercept")
-            {
-                std::shared_ptr<overlay::GameInputIntercept> overlayMsg = std::make_shared<overlay::GameInputIntercept>();
-                overlay::json json = overlay::json::parse(ipcMsg.message);
-                overlayMsg->fromJson(json);
-
-                _onGameInputIntercept(link->remoteIdentity(), overlayMsg);
-            }
-            else if (ipcMsg.type == "graphics.window")
-            {
-                std::shared_ptr<overlay::GraphicsWindowSetup> overlayMsg = std::make_shared<overlay::GraphicsWindowSetup>();
-                overlay::json json = overlay::json::parse(ipcMsg.message);
-                overlayMsg->fromJson(json);
-
-                _onGraphicsWindow(link->remoteIdentity(), overlayMsg);
-            }
-            else if (ipcMsg.type == "graphics.window.event.resize")
-            {
-                std::shared_ptr<overlay::GraphicsWindowRezizeEvent> overlayMsg = std::make_shared<overlay::GraphicsWindowRezizeEvent>();
-                overlay::json json = overlay::json::parse(ipcMsg.message);
-                overlayMsg->fromJson(json);
-
-                _onGraphicsWindowRezizeEvent(link->remoteIdentity(), overlayMsg);
-            }
-            else if (ipcMsg.type == "graphics.window.event.focus")
-            {
-                std::shared_ptr<overlay::GraphicsWindowFocusEvent> overlayMsg = std::make_shared<overlay::GraphicsWindowFocusEvent>();
-                overlay::json json = overlay::json::parse(ipcMsg.message);
-                overlayMsg->fromJson(json);
-
-                _onGraphicsWindowFocusEvent(link->remoteIdentity(), overlayMsg);
-            }
-            else if (ipcMsg.type == "graphics.fps")
-            {
-                std::shared_ptr<overlay::GraphicsFps> overlayMsg = std::make_shared<overlay::GraphicsFps>();
-                overlay::json json = overlay::json::parse(ipcMsg.message);
-                overlayMsg->fromJson(json);
-
-                _onGraphcisFps(link->remoteIdentity(), overlayMsg);
+                OVERLAY_DISPATCH("game.process", GameProcessInfo);
+                OVERLAY_DISPATCH("game.input", GameInput);
+                OVERLAY_DISPATCH("game.input.intercept", GameInputIntercept);
+                OVERLAY_DISPATCH("graphics.window", GraphicsWindowSetup);
+                OVERLAY_DISPATCH("graphics.window.event.resize", GraphicsWindowRezizeEvent);
+                OVERLAY_DISPATCH("graphics.window.event.focus", GraphicsWindowFocusEvent);
+                OVERLAY_DISPATCH("graphics.fps", GraphicsFps);
+            default:
+                break;
             }
         }
     }
@@ -981,11 +975,13 @@ class OverlayMain : public IIpcHost
         return name;
     }
 
-    void _onGameProcess(std::uint32_t pid, const std::shared_ptr<overlay::GameProcessInfo>& overlayMsg)
+    void _onGameProcessInfo(std::uint32_t pid, const std::shared_ptr<overlay::GameProcessInfo>& overlayMsg)
     {
         node_async_call::async_call([this, pid, overlayMsg]() {
             notifyGameProcess(pid, overlayMsg->path);
         });
+
+        _sendOverlayInit(this->ipcClients_.at(pid));
     }
 
     void _onGameInput(std::uint32_t pid, const std::shared_ptr<overlay::GameInput>& overlayMsg)
@@ -1002,7 +998,7 @@ class OverlayMain : public IIpcHost
         });
     }
 
-    void _onGraphicsWindow(std::uint32_t pid, const std::shared_ptr<overlay::GraphicsWindowSetup>& overlayMsg)
+    void _onGraphicsWindowSetup(std::uint32_t pid, const std::shared_ptr<overlay::GraphicsWindowSetup>& overlayMsg)
     {
         node_async_call::async_call([this, pid, overlayMsg]() {
             notifyGraphicsWindow(pid, overlayMsg->window, overlayMsg->width, overlayMsg->height, overlayMsg->focus, overlayMsg->hooked);
@@ -1023,7 +1019,7 @@ class OverlayMain : public IIpcHost
         });
     }
 
-    void _onGraphcisFps(std::uint32_t pid, const std::shared_ptr<overlay::GraphicsFps>& overlayMsg)
+    void _onGraphicsFps(std::uint32_t pid, const std::shared_ptr<overlay::GraphicsFps>& overlayMsg)
     {
         node_async_call::async_call([this, pid, overlayMsg]() {
             ontifyGrapicsFps(pid, overlayMsg->fps);

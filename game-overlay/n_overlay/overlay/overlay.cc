@@ -785,63 +785,30 @@ void OverlayConnector::onMessage(IIpcLink * /*link*/, int /*hostPort*/, const st
         overlay::OverlayIpc ipcMsg;
         ipcMsg.upack(message);
 
+        LOGGER("n_overlay") << ipcMsg.type;
         //std::cout << __FUNCTION__ << "," << ipcMsg.type << std::endl;
 
-        if (ipcMsg.type == "overlay.init")
-        {
-            std::shared_ptr<overlay::OverlayInit> overlayMsg = std::make_shared<overlay::OverlayInit>();
-            overlay::json json = overlay::json::parse(ipcMsg.message);
-            overlayMsg->fromJson(json);
+#define OVERLAY_DISPATCH(type, Msg) \
+case stdxx::hash(type):\
+{\
+    std::shared_ptr<overlay::Msg> overlayMsg = std::make_shared<overlay::Msg>(); \
+    overlay::json json = overlay::json::parse(ipcMsg.message); \
+    overlayMsg->fromJson(json); \
+    _on##Msg(overlayMsg); \
+}\
+break;
 
-            _onOverlayInit(overlayMsg);
-        }
-        else if(ipcMsg.type == "overlay.enable")
+        switch (stdxx::hash(ipcMsg.type.c_str()))
         {
-            std::shared_ptr<overlay::OverlayEnable> overlayMsg = std::make_shared<overlay::OverlayEnable>();
-            overlay::json json = overlay::json::parse(ipcMsg.message);
-            overlayMsg->fromJson(json);
-
-            _onOverlayEnable(overlayMsg);
-        }
-        else if (ipcMsg.type == "window")
-        {
-            std::shared_ptr<overlay::Window> overlayMsg = std::make_shared<overlay::Window>();
-            overlay::json json = overlay::json::parse(ipcMsg.message);
-            overlayMsg->fromJson(json);
-
-            _onWindow(overlayMsg);
-        }
-        else if (ipcMsg.type == "window.framebuffer")
-        {
-            std::shared_ptr<overlay::WindowFrameBuffer> overlayMsg = std::make_shared<overlay::WindowFrameBuffer>();
-            overlay::json json = overlay::json::parse(ipcMsg.message);
-            overlayMsg->fromJson(json);
-
-            _onWindowFrameBuffer(overlayMsg);
-        }
-        else if (ipcMsg.type == "window.close")
-        {
-            std::shared_ptr<overlay::WindowClose> overlayMsg = std::make_shared<overlay::WindowClose>();
-            overlay::json json = overlay::json::parse(ipcMsg.message);
-            overlayMsg->fromJson(json);
-
-            _onWindowClose(overlayMsg);
-        }
-        else if (ipcMsg.type == "window.bounds")
-        {
-            std::shared_ptr<overlay::WindowBounds> overlayMsg = std::make_shared<overlay::WindowBounds>();
-            overlay::json json = overlay::json::parse(ipcMsg.message);
-            overlayMsg->fromJson(json);
-
-            _onWindowBounds(overlayMsg);
-        }
-        else if (ipcMsg.type == "command.cursor")
-        {
-            std::shared_ptr<overlay::CursorCommand> overlayMsg = std::make_shared<overlay::CursorCommand>();
-            overlay::json json = overlay::json::parse(ipcMsg.message);
-            overlayMsg->fromJson(json);
-
-            _onCursorCommand(overlayMsg);
+            OVERLAY_DISPATCH("overlay.init", OverlayInit);
+            OVERLAY_DISPATCH("overlay.enable", OverlayEnable);
+            OVERLAY_DISPATCH("window", Window);
+            OVERLAY_DISPATCH("window.framebuffer", WindowFrameBuffer);
+            OVERLAY_DISPATCH("window.close", WindowClose);
+            OVERLAY_DISPATCH("window.bounds", WindowBounds);
+            OVERLAY_DISPATCH("command.cursor", CursorCommand);
+        default:
+            break;
         }
     }
 }

@@ -347,3 +347,33 @@ inline Cursor hittest2Cursor(int hittest)
 }
 
 } // namespace overlay_game
+
+namespace stdxx
+{
+    namespace
+    {
+        static constexpr unsigned int Fnv1aBasis = 0x811C9DC5;
+        static constexpr unsigned int Fnv1aPrime = 0x01000193;
+    }
+    
+    constexpr unsigned int hash(const char *s, unsigned int h = Fnv1aBasis)
+    {
+        return !*s
+            ? h
+            : hash(
+                s + 1,
+                static_cast<unsigned int>(
+                (h ^ *s) * static_cast<unsigned long long>(Fnv1aPrime)));
+    }
+
+    constexpr unsigned int hash(const wchar_t *s, unsigned int h = Fnv1aBasis)
+    {
+        return !*s
+            ? h
+            : hash(
+                s + 1,
+                static_cast<unsigned int>(
+                (h ^ *s) * static_cast<unsigned long long>(Fnv1aPrime)));
+    }
+}
+
