@@ -23,10 +23,11 @@
 <body>
     <div>
         <div class="caption"></div>
-        <button id='button'>Button</button>
+        <button id="button">Button</button>
+        <button id="doit">doit</button>
         <br /> Hello Electron!
 
-        <label id='label'>Label</label>
+        <label id="label">Label</label>
         <input type="text"><input>
     </div>
     <script>
@@ -37,7 +38,8 @@
         }, 1000)
 
         const {
-            ipcRenderer, remote
+            ipcRenderer,
+            remote
         } = window.require('electron')
 
         const button = document.getElementById('button')
@@ -45,6 +47,11 @@
             remote.getCurrentWindow().setSize(window.innerWidth + 20, window.innerHeight + 20)
             console.log('button click ', (new Date()).toString())
             ipcRenderer.send('osrClick')
+        })
+
+        const doit = document.getElementById("doit")
+        doit.addEventListener("click", () => {
+            ipcRenderer.send("doit")
         })
 
         window.onfocus = function () {

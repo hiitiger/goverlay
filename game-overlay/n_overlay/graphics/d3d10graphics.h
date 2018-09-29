@@ -68,7 +68,7 @@ class D3d10Graphics : public DxgiGraphics
     std::vector<std::shared_ptr<D3d10WindowSprite>> windowSprites_;
     std::shared_ptr<D3d10WindowSprite> mainSprite_;
     std::shared_ptr<D3d10WindowSprite> statusBarSprite_;
-
+    std::shared_ptr<D3d10WindowSprite> overlayTipSprite_;
 public:
     D3d10Graphics();
     ~D3d10Graphics();

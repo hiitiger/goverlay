@@ -392,6 +392,11 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
 
     for (auto & window :boost::adaptors::reverse(windows_))
     {
+        if (window->name == "OverlayTip")
+        {
+            continue;
+        }
+
         if (overlay_game::pointInRect(mousePointInGameClient, window->rect))
         {
             POINT mousePointinWindowClient = { mousePointInGameClient.x, mousePointInGameClient.y };

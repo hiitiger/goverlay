@@ -105,7 +105,7 @@ bool D3d11Graphics::_initGraphicsState()
     ZeroMemory(&transDesc, sizeof(transDesc));
     transDesc.AlphaToCoverageEnable = FALSE;
     transDesc.IndependentBlendEnable = FALSE;
-    transDesc.RenderTarget[0].BlendEnable = FALSE;
+    transDesc.RenderTarget[0].BlendEnable = TRUE;
     transDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
     transDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
     transDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
@@ -182,6 +182,8 @@ void D3d11Graphics::_createWindowSprites()
                 mainSprite_ = windowSprite;
             else if (w->name == "StatusBar")
                 statusBarSprite_ = windowSprite;
+            else if (w->name == "OverlayTip")
+                overlayTipSprite_ = windowSprite;
             windowSprites_.push_back(windowSprite);
         }
     }
@@ -289,6 +291,7 @@ void D3d11Graphics::_updateSprite(std::shared_ptr<D3d11WindowSprite>& windowSpri
             memcpy((bytePointer + xx), line, sizeof(int) * width);
         }
     }
+
     HookApp::instance()->overlayConnector()->unlockShareMem();
 
     d3dContext_->Unmap(windowSprite->texture, 0);
@@ -314,6 +317,12 @@ void D3d11Graphics::_checkAndResyncWindows()
                 {
                     if (auto windowSprite = _createWindowSprite(*it))
                     {
+                        if ((*it)->name == "MainOverlay")
+                            mainSprite_ = windowSprite;
+                        else if ((*it)->name == "StatusBar")
+                            statusBarSprite_ = windowSprite;
+                        else if ((*it)->name == "OverlayTip")
+                            overlayTipSprite_ = windowSprite;
                         windowSprites_.push_back(windowSprite);
                     }
                 }
@@ -356,7 +365,8 @@ void D3d11Graphics::_checkAndResyncWindows()
                         mainSprite_ = nullptr;
                     else if((*it)->name == "StatusBar")
                         statusBarSprite_ = nullptr;
-
+                    else if ((*it)->name == "OverlayTip")
+                        overlayTipSprite_ = nullptr;
                     windowSprites_.erase(it);
                 }
             }
@@ -489,7 +499,12 @@ void D3d11Graphics::_drawStatutBarSprite()
 
 void D3d11Graphics::_drawPopupTipSprite()
 {
-
+    if (overlayTipSprite_)
+    {
+        overlayTipSprite_->rect.x = targetWidth_ - overlayTipSprite_->rect.width - 10;
+        overlayTipSprite_->rect.y = targetHeight_ - overlayTipSprite_->rect.height - 10;
+        _drawWindowSprite(overlayTipSprite_);
+    }
 }
 
 void D3d11Graphics::_drawWindowSprite(std::shared_ptr<D3d11WindowSprite>& windowSprite)

@@ -97,7 +97,9 @@ class Application {
   public startOverlay() {
     this.Overlay = require("electron-overlay")!
     this.Overlay!.start()
-    this.Overlay!.setHotkeys([{name: "overlay.toggle", keyCode: 113, modifiers: {ctrl: true}}])
+    this.Overlay!.setHotkeys([
+      { name: "overlay.toggle", keyCode: 113, modifiers: { ctrl: true } }
+    ])
 
     this.Overlay!.setEventCallback((event: string, payload: any) => {
       if (event === "game.input") {
@@ -119,22 +121,31 @@ class Application {
     })
   }
 
-  public addOverlayWindow(name: string, window: Electron.BrowserWindow,
-                          dragborder: number = 0, captionHeight: number = 0) {
-
-    const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint())
+  public addOverlayWindow(
+    name: string,
+    window: Electron.BrowserWindow,
+    dragborder: number = 0,
+    captionHeight: number = 0
+  ) {
+    const display = screen.getDisplayNearestPoint(
+      screen.getCursorScreenPoint()
+    )
 
     this.Overlay!.addWindow(window.id, {
       name,
       transparent: false,
       resizable: window.isResizable(),
-      maxWidth: window.isResizable ? display.bounds.width : window.getBounds().width,
-      maxHeight: window.isResizable ? display.bounds.height : window.getBounds().height,
-      minWidth : window.isResizable ? 100 : window.getBounds().width,
-      minHeight:  window.isResizable ? 100 : window.getBounds().height,
+      maxWidth: window.isResizable
+        ? display.bounds.width
+        : window.getBounds().width,
+      maxHeight: window.isResizable
+        ? display.bounds.height
+        : window.getBounds().height,
+      minWidth: window.isResizable ? 100 : window.getBounds().width,
+      minHeight: window.isResizable ? 100 : window.getBounds().height,
       nativeHandle: window.getNativeWindowHandle().readUInt32LE(0),
       rect: {
-          ...window.getBounds(),
+        ...window.getBounds()
       },
       caption: {
         left: dragborder,
@@ -151,7 +162,12 @@ class Application {
         if (this.markQuit) {
           return
         }
-        this.Overlay!.sendFrameBuffer(window.id, image.getBitmap(), image.getSize().width, image.getSize().height)
+        this.Overlay!.sendFrameBuffer(
+          window.id,
+          image.getBitmap(),
+          image.getSize().width,
+          image.getSize().height
+        )
       }
     )
 
@@ -160,12 +176,12 @@ class Application {
     })
 
     window.on("resize", () => {
-      this.Overlay!.sendWindowBounds(window.id, {rect: window.getBounds()})
+      this.Overlay!.sendWindowBounds(window.id, { rect: window.getBounds() })
     })
 
     window.on("move", () => {
       console.log("move", window.getBounds())
-      this.Overlay!.sendWindowBounds(window.id, {rect: window.getBounds()})
+      this.Overlay!.sendWindowBounds(window.id, { rect: window.getBounds() })
     })
 
     const windowId = window.id
@@ -214,7 +230,7 @@ class Application {
           break
       }
       if (cursor) {
-        this.Overlay!.sendCommand( { command: "cursor", cursor })
+        this.Overlay!.sendCommand({ command: "cursor", cursor })
       }
     })
   }
@@ -277,7 +293,9 @@ class Application {
     window.webContents.openDevTools({
       mode: "detach"
     })
-    window.loadURL(fileUrl(path.join(global.CONFIG.distDir, "index/statusbar.html")))
+    window.loadURL(
+      fileUrl(path.join(global.CONFIG.distDir, "index/statusbar.html"))
+    )
 
     this.addOverlayWindow(name, window, 0, 0)
     return window
@@ -306,7 +324,9 @@ class Application {
     window.webContents.openDevTools({
       mode: "detach"
     })
-    window.loadURL(fileUrl(path.join(global.CONFIG.distDir, "index/osrtip.html")))
+    window.loadURL(
+      fileUrl(path.join(global.CONFIG.distDir, "index/osrtip.html"))
+    )
 
     this.addOverlayWindow(name, window, 10, 40)
     return window
@@ -319,21 +339,21 @@ class Application {
     }
   }
 
-  public closeWindow(name: AppWindows) {
+  public closeWindow(name: string) {
     const window = this.windows.get(name)
     if (window) {
       window.close()
     }
   }
 
-  public hideWindow(name: AppWindows) {
+  public hideWindow(name: string) {
     const window = this.windows.get(name)
     if (window) {
       window.hide()
     }
   }
 
-  public showAndFocusWindow(name: AppWindows) {
+  public showAndFocusWindow(name: string) {
     const window = this.windows.get(name)
     if (window) {
       window.show()
@@ -437,6 +457,41 @@ class Application {
     ipcMain.on("osrClick", () => {
       this.createOsrTipWindow()
     })
+
+    ipcMain.on("doit", () => {
+      this.doit()
+    })
+  }
+
+  private doit() {
+    const name = "OverlayTip"
+    this.closeWindow(name)
+
+    const display = screen.getDisplayNearestPoint(
+      screen.getCursorScreenPoint()
+    )
+
+    const window = this.createWindow(name, {
+      width: 480,
+      height: 270,
+      frame: false,
+      show: false,
+      transparent: true,
+      resizable: false,
+      x: 0,
+      y: 0,
+      webPreferences: {
+        offscreen: true
+      }
+    })
+
+    this.addOverlayWindow(name, window, 0, 0)
+
+    // window.webContents.openDevTools({mode: "detach"})
+
+    window.loadURL(
+      fileUrl(path.join(global.CONFIG.distDir, "doit/index.html"))
+    )
   }
 }
 

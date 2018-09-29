@@ -179,6 +179,8 @@ void D3d10Graphics::_createWindowSprites()
                 mainSprite_ = windowSprite;
             else if (w->name == "StatusBar")
                 statusBarSprite_ = windowSprite;
+            else if(w->name == "OverlayTip")
+                overlayTipSprite_ = windowSprite;
             windowSprites_.push_back(windowSprite);
         }
     }
@@ -311,6 +313,13 @@ void D3d10Graphics::_checkAndResyncWindows()
                 {
                     if (auto windowSprite = _createWindowSprite(*it))
                     {
+
+                        if ((*it)->name == "MainOverlay")
+                            mainSprite_ = windowSprite;
+                        else if ((*it)->name == "StatusBar")
+                            statusBarSprite_ = windowSprite;
+                        else if ((*it)->name == "OverlayTip")
+                            overlayTipSprite_ = windowSprite;
                         windowSprites_.push_back(windowSprite);
                     }
                 }
@@ -353,7 +362,8 @@ void D3d10Graphics::_checkAndResyncWindows()
                         mainSprite_ = nullptr;
                     else if ((*it)->name == "StatusBar")
                         statusBarSprite_ = nullptr;
-
+                    else if ((*it)->name == "OverlayTip")
+                        overlayTipSprite_ = nullptr;
                     windowSprites_.erase(it);
                 }
             }
@@ -486,7 +496,12 @@ void D3d10Graphics::_drawStatutBarSprite()
 
 void D3d10Graphics::_drawPopupTipSprite()
 {
-
+    if (overlayTipSprite_)
+    {
+        overlayTipSprite_->rect.x = targetWidth_ - overlayTipSprite_->rect.width - 10;
+        overlayTipSprite_->rect.y = targetHeight_ - overlayTipSprite_->rect.height - 10;
+        _drawWindowSprite(overlayTipSprite_);
+    }
 }
 
 void D3d10Graphics::_drawWindowSprite(std::shared_ptr<D3d10WindowSprite>& windowSprite)

@@ -70,6 +70,7 @@ class D3d11Graphics : public DxgiGraphics
     std::vector<std::shared_ptr<D3d11WindowSprite>> windowSprites_;
     std::shared_ptr<D3d11WindowSprite> mainSprite_;
     std::shared_ptr<D3d11WindowSprite> statusBarSprite_;
+    std::shared_ptr<D3d11WindowSprite> overlayTipSprite_;
 
 public:
     D3d11Graphics();

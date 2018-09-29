@@ -41,7 +41,7 @@ class D3d9Graphics : public Storm::Trackable<>
     std::vector<std::shared_ptr<D3d9WindowSprite>> windowSprites_;
     std::shared_ptr<D3d9WindowSprite> mainSprite_;
     std::shared_ptr<D3d9WindowSprite> statusBarSprite_;
-
+    std::shared_ptr<D3d9WindowSprite> overlayTipSprite_;
 public:
     D3d9Graphics();
     ~D3d9Graphics();
