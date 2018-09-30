@@ -39,15 +39,16 @@ use the power of web to inject any web app to overlay in your game
     - [x] multi windows support
     - [x] window z-index and focus
     - [x] in game sync drag and resize
-    - [x] window draw policy
     - [ ] in game defered drag and resize
+    - [x] window draw policy
     - [x] input intercepting
-    - [ ] custom shaped window (alpha test for mouse handling)
+    - [x] custom shaped window (alpha test for mouse handling)
     - [ ] detailed injecting configuration 
 
 ## todo
-    - [ ] maximize to game window size
+    - [ ] brwoser window state manage
     - [x] better hotkey
+    - [x] session reconnect
 
 
 
