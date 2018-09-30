@@ -65,11 +65,12 @@ inline void HotkeyCheck::start()
     HookApp::instance()->overlayConnector()->hotkeysEvent().add([this](std::vector<overlay::Hotkey> hotkeys) {
         std::vector<HotKey> transHotkeys;
         std::transform(hotkeys.begin(), hotkeys.end(), std::back_inserter(transHotkeys), [](const overlay::Hotkey& hotkey) {
-            std::vector<std::pair<std::int16_t, bool>> keys;
-            keys.push_back(std::make_pair(VK_SHIFT, hotkey.shift));
-            keys.push_back(std::make_pair(VK_CONTROL, hotkey.ctrl));
-            keys.push_back(std::make_pair(VK_MENU, hotkey.alt));
-            keys.push_back(std::make_pair(hotkey.keyCode, true));
+            std::vector<std::pair<std::int16_t, bool>> keys = {
+                { VK_SHIFT, hotkey.shift },
+                { VK_CONTROL, hotkey.ctrl },
+                { VK_MENU, hotkey.alt },
+                { hotkey.keyCode, true }
+            };
 
             return HotKey{ hotkey.name, keys };
         });

@@ -125,7 +125,8 @@ class Application {
     name: string,
     window: Electron.BrowserWindow,
     dragborder: number = 0,
-    captionHeight: number = 0
+    captionHeight: number = 0,
+    transparent: boolean = false
   ) {
     const display = screen.getDisplayNearestPoint(
       screen.getCursorScreenPoint()
@@ -133,7 +134,7 @@ class Application {
 
     this.Overlay!.addWindow(window.id, {
       name,
-      transparent: false,
+      transparent,
       resizable: window.isResizable(),
       maxWidth: window.isResizable
         ? display.bounds.width
@@ -242,7 +243,6 @@ class Application {
       frame: false,
       show: false,
       transparent: true,
-      backgroundColor: "#f0ffffff",
       webPreferences: {
         offscreen: true
       }
@@ -305,10 +305,10 @@ class Application {
     const options: Electron.BrowserWindowConstructorOptions = {
       height: 220,
       width: 320,
+      resizable: false,
       frame: false,
       show: false,
       transparent: true,
-      backgroundColor: "#f0ffffff",
       webPreferences: {
         offscreen: true
       }
@@ -328,7 +328,7 @@ class Application {
       fileUrl(path.join(global.CONFIG.distDir, "index/osrtip.html"))
     )
 
-    this.addOverlayWindow(name, window, 10, 40)
+    this.addOverlayWindow(name, window, 30, 40, true)
     return window
   }
 

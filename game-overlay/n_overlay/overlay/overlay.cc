@@ -243,6 +243,40 @@ bool OverlayConnector::processNCHITTEST(UINT /*message*/, WPARAM /*wParam*/, LPA
             mousePointinWindowClient.x -= window->rect.x;
             mousePointinWindowClient.y -= window->rect.y;
 
+            if (window->transparent)
+            {
+                std::lock_guard<std::mutex> lock(framesLock_);
+                auto it = frameBuffers_.find(window->windowId);
+                if (it != frameBuffers_.end())
+                {
+                    auto& image = it->second;
+                    if (mousePointinWindowClient.x >= 0 && mousePointinWindowClient.x < image->width
+                        && mousePointinWindowClient.y >= 0 && mousePointinWindowClient.y < image->height)
+                    {
+                        int pix = image->data[mousePointinWindowClient.y * window->rect.width + mousePointinWindowClient.x];
+                        if (pix >> 24 == 0)
+                        {
+                            continue;
+                        }
+
+                        //go to hitTest
+                    }
+                    else
+                    {
+                        hitTest_ = HTNOWHERE;
+                        continue;
+                    }
+                }
+                else
+                {
+                    DAssert(false);
+                    LOGGER("n_overlay") << "did not found in frame buffer for windowId:" << window->windowId;
+
+                    hitTest_ = HTNOWHERE;
+                    return false;
+                }
+            }
+
             hitTest_ = overlay_game::hitTest(mousePointinWindowClient, window->rect, window->resizable, window->caption.value(), window->dragBorderWidth);
             return false;
         }
@@ -407,6 +441,38 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
             POINT mousePointinWindowClient = { mousePointInGameClient.x, mousePointInGameClient.y };
             mousePointinWindowClient.x -= window->rect.x;
             mousePointinWindowClient.y -= window->rect.y;
+
+            // alpha test
+            if (window->transparent)
+            {
+                std::lock_guard<std::mutex> lock(framesLock_);
+                auto it = frameBuffers_.find(window->windowId);
+                if (it != frameBuffers_.end())
+                {
+                    auto& image = it->second;
+                    if (mousePointinWindowClient.x >= 0 && mousePointinWindowClient.x < image->width
+                        && mousePointinWindowClient.y >= 0 && mousePointinWindowClient.y < image->height)
+                    {
+                        int pix = image->data[mousePointinWindowClient.y * window->rect.width + mousePointinWindowClient.x];
+                        if (pix >> 24 == 0)
+                        {
+                            continue;
+                        }
+                        //goto normal handling
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                else
+                {
+                    DAssert(false);
+                    LOGGER("n_overlay") << "did not found in frame buffer for windowId:" << window->windowId;
+
+                    continue;
+                }
+            }
 
             //even for mousewheel we translate it to local cord
 
@@ -926,6 +992,11 @@ void OverlayConnector::_onWindowClose(std::shared_ptr<overlay::WindowClose>& ove
 
     if (it != windows_.end())
     {
+        if ((*it)->transparent)
+        {
+            std::lock_guard<std::mutex> lock(framesLock_);
+            frameBuffers_.erase((*it)->windowId);
+        }
         windows_.erase(it);
 
         this->windowCloseEvent()(overlayMsg->windowId);
@@ -1002,7 +1073,7 @@ void OverlayConnector::_updateFrameBuffer(std::uint32_t windowId, const std::str
         std::lock_guard<std::mutex> lock(framesLock_);
         frameBuffers_[windowId] = frameBuffer;
 
-        std::cout << __FUNCTION__ << ", width:" << head->width << ", height:" << head->height << std::endl;
+        //std::cout << __FUNCTION__ << ", width:" << head->width << ", height:" << head->height << std::endl;
     }
 }
 
