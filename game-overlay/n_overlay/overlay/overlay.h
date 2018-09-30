@@ -56,6 +56,7 @@ public:
     ~OverlayConnector();
 
     void start();
+    void connect();
     void quit();
 
     void sendInputHookInfo(bool hooked);

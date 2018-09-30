@@ -85,6 +85,11 @@ void OverlayConnector::start()
     ipcName.append(std::to_string(::GetCurrentProcessId()));
     getIpcCenter()->init(ipcName);
 
+    connect();
+}
+
+void OverlayConnector::connect()
+{
     std::string mainIpcName = k_overlayIpcName;
     ipcLink_ = getIpcCenter()->getLink(mainIpcName);
     ipcLink_->addClient(this);
@@ -762,6 +767,13 @@ void OverlayConnector::_onRemoteClose()
 
     session::setOverlayEnabled(false);
     session::setOverlayConnected(false);
+
+    HookApp::instance()->async([this]() {
+        if (!HookApp::instance()->isQuitSet())
+        {
+            connect();
+        }
+    });
 }
 
 void OverlayConnector::onLinkConnect(IIpcLink *)
@@ -776,6 +788,8 @@ void OverlayConnector::onLinkConnect(IIpcLink *)
 void OverlayConnector::onLinkClose(IIpcLink *)
 {
     __trace__;
+
+    LOGGER("n_overlay") << "@trace";
 
     ipcLink_ = nullptr;
 

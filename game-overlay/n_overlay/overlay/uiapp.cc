@@ -100,18 +100,21 @@ void UiApp::startInputIntercept()
 {
     CHECK_THREAD(Threads::Window);
 
-    if (!isIntercepting_)
+    if (session::overlayEnabled())
     {
-        isIntercepting_ = true;
-        session::inputHook()->saveInputState();
-        HookApp::instance()->overlayConnector()->sendInputIntercept();
+        if (!isIntercepting_)
+        {
+            isIntercepting_ = true;
+            session::inputHook()->saveInputState();
+            HookApp::instance()->overlayConnector()->sendInputIntercept();
 
-        POINT pt{};
-        Windows::OrginalApi::GetCursorPos(&pt);
-        LPARAM lParam = 0;
-        lParam = pt.x + (pt.y << 16);
-        HookApp::instance()->overlayConnector()->processNCHITTEST(WM_NCHITTEST, 0, lParam);
-        HookApp::instance()->overlayConnector()->processSetCursor();
+            POINT pt{};
+            Windows::OrginalApi::GetCursorPos(&pt);
+            LPARAM lParam = 0;
+            lParam = pt.x + (pt.y << 16);
+            HookApp::instance()->overlayConnector()->processNCHITTEST(WM_NCHITTEST, 0, lParam);
+            HookApp::instance()->overlayConnector()->processSetCursor();
+        }
     }
 }
 
@@ -119,11 +122,14 @@ void UiApp::stopInputIntercept()
 {
     CHECK_THREAD(Threads::Window);
 
-    if (isIntercepting_)
+    if (session::overlayEnabled())
     {
-        isIntercepting_ = false;
-        session::inputHook()->restoreInputState();
-        HookApp::instance()->overlayConnector()->sendInputStopIntercept();
+        if (isIntercepting_)
+        {
+            isIntercepting_ = false;
+            session::inputHook()->restoreInputState();
+            HookApp::instance()->overlayConnector()->sendInputStopIntercept();
+        }
     }
 }
 
