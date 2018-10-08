@@ -663,6 +663,9 @@ class OverlayMain : public IIpcHost
         std::uint32_t wparam = eventData.Get("wparam").ToNumber();
         std::uint32_t lparam = eventData.Get("lparam").ToNumber();
 
+        static WCHAR utf16Code = 0;
+        assert(!utf16Code || (utf16Code && msg == WM_CHAR));
+
         if ((msg >= WM_KEYFIRST && msg <= WM_KEYLAST)
             || (msg >= WM_SYSKEYDOWN && msg <= WM_SYSDEADCHAR))
         {
@@ -680,8 +683,28 @@ class OverlayMain : public IIpcHost
             {
                 object.Set("type", "char");
                 WCHAR code = wparam;
-                std::wstring keyCode(1, code);
-                object.Set("keyCode", Windows::toUtf8(keyCode));
+
+                if (0xD800 <= code && code <= 0xDBFF)
+                {
+                    utf16Code = code;
+                }
+                else
+                {
+                    std::wstring keyCode;
+                    if (utf16Code && (0xDC00 <= code && code <= 0xDFFF))
+                    {
+                        keyCode = std::wstring(1, utf16Code);
+                        keyCode.append(std::wstring(1, code));
+
+                    }
+                    else
+                    {
+                        keyCode = std::wstring(1, code);
+                    }
+
+                    utf16Code = 0;
+                    object.Set("keyCode", Windows::toUtf8(keyCode));
+                }
             }
 
             auto modifiersVec = getKeyboardModifiers(wparam, lparam);
@@ -770,7 +793,14 @@ class OverlayMain : public IIpcHost
 
         }
 
-        return object;
+        if (utf16Code)
+        {
+            return env.Undefined();
+        }
+        else
+        {
+            return object;
+        }
     }
 
     void notifyGameProcess(std::uint32_t pid, std::string& path)

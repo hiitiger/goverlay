@@ -106,11 +106,14 @@ class Application {
         const window = BrowserWindow.fromId(payload.windowId)
         if (window) {
           const intpuEvent = this.Overlay!.translateInputEvent(payload)
-          if (payload.msg !== 512) {
-            console.log(event, payload)
-            console.log(`translate ${JSON.stringify(intpuEvent)}`)
+          // if (payload.msg !== 512) {
+          //   console.log(event, payload)
+          //   console.log(`translate ${JSON.stringify(intpuEvent)}`)
+          // }
+
+          if (intpuEvent) {
+            window.webContents.sendInputEvent(intpuEvent)
           }
-          window.webContents.sendInputEvent(intpuEvent)
         }
       } else if (event === "graphics.fps") {
         const window = this.getWindow("StatusBar")
@@ -181,7 +184,6 @@ class Application {
     })
 
     window.on("move", () => {
-      console.log("move", window.getBounds())
       this.Overlay!.sendWindowBounds(window.id, { rect: window.getBounds() })
     })
 
