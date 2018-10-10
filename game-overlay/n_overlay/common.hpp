@@ -114,7 +114,7 @@ class ColorARGB
 
     uint32_t value()
     {
-        uint32_t v;
+        uint32_t v = 0;
         v += static_cast<uint8_t>((alpha()) << sc_alphaShitf);
         v += static_cast<uint8_t>((red()) << sc_redShift);
         v += static_cast<uint8_t>((green()) << sc_greenShift);

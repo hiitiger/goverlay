@@ -30,9 +30,9 @@ class D3d9Graphics : public Storm::Trackable<>
 
     Windows::ComPtr<IDirect3DDevice9> device_;
 
-    int targetWidth_;
-    int targetHeight_;
-    D3DFORMAT d3dformat_;
+    int targetWidth_ = 0;
+    int targetHeight_ = 0;
+    D3DFORMAT d3dformat_ = D3DFMT_UNKNOWN;
 
     Windows::ComPtr<IDirect3DTexture9> blockSprite_;
     Windows::ComPtr<ID3DXSprite> spriteDrawer_;

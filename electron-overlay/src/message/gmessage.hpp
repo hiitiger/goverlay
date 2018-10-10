@@ -66,6 +66,19 @@ struct OverlayIpc : public IpcMsg
 
 using json = nlohmann::json;
 
+
+enum class FpsPosition {
+    TopLeft = 1,
+    TopRight = 2,
+    BottomLeft = 3,
+    BottomRight = 4,
+};
+
+enum class DragMode {
+    Sync = 1,
+    Defered = 2,
+};
+
 struct Hotkey
 {
     std::string name;
@@ -176,19 +189,19 @@ struct CursorCommand : public GMessage
 
 JSON_AUTO(CursorCommand, type, cursor)
 
+
 struct FpsCommand : public GMessage
 {
     GMESSAGE_AUTO("command.fps");
 
     bool showfps = false;
-    int position = 1;
+    std::uint32_t position = 1;
 };
 
 JSON_AUTO(FpsCommand, type, showfps, position)
 
 struct OverlayInit : public GMessage
 {
-
     GMESSAGE_AUTO("overlay.init");
 
     bool processEnabled;
@@ -196,9 +209,14 @@ struct OverlayInit : public GMessage
 
     std::vector<Hotkey> hotkeys;
     std::vector<Window> windows;
+
+    bool showfps = false;
+    std::uint32_t fpsPosition = 1;
+
+    std::uint32_t dragMode = 1;
 };
 
-JSON_AUTO(OverlayInit, type, processEnabled, shareMemMutex, hotkeys, windows)
+JSON_AUTO(OverlayInit, type, processEnabled, shareMemMutex, hotkeys, windows, showfps, fpsPosition, dragMode)
 
 struct OverlayEnable : public GMessage
 {
