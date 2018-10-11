@@ -210,13 +210,15 @@ struct OverlayInit : public GMessage
     std::vector<Hotkey> hotkeys;
     std::vector<Window> windows;
 
+    bool directMessageInput = false;
+
     bool showfps = false;
     std::uint32_t fpsPosition = 1;
 
     std::uint32_t dragMode = 1;
 };
 
-JSON_AUTO(OverlayInit, type, processEnabled, shareMemMutex, hotkeys, windows, showfps, fpsPosition, dragMode)
+JSON_AUTO(OverlayInit, type, processEnabled, shareMemMutex, hotkeys, windows, directMessageInput, showfps, fpsPosition, dragMode)
 
 struct OverlayEnable : public GMessage
 {

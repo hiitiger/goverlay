@@ -4,6 +4,8 @@
 
 class OverlayConnector : public IIpcClient
 {
+    std::atomic<bool> directMessageInput_ = false;
+
     int ipcClientId_ = 0;
     IIpcLink *ipcLink_ = nullptr;
 
@@ -13,6 +15,7 @@ class OverlayConnector : public IIpcClient
     std::vector<std::shared_ptr<overlay::Window>> windows_;
     volatile std::uint32_t mainWindowId_ = 0;
     std::atomic<std::uint32_t> focusWindowId_ = 0;
+    std::atomic<std::uint32_t> focusWindow_ = 0;
 
     std::mutex framesLock_;
     std::map<std::uint32_t, std::shared_ptr<overlay_game::FrameBuffer>> frameBuffers_;
