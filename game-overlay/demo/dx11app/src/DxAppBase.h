@@ -16,6 +16,8 @@ public:
     DxAppBase();
     virtual ~DxAppBase();
 
+    HWND window() const { return mWindow; }
+
     bool Init(HINSTANCE instance);
 
     bool InitWindow();

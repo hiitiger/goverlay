@@ -109,6 +109,9 @@ void setGraphicsThreadId(DWORD id);
 void setGraphicsActive(bool active);
 bool graphicsActive();
 
+void setIsWindowed(bool windowed);
+bool isWindowed();
+
 void setOverlayConnected(bool restarted);
 bool overlayConnected();
 

@@ -28,6 +28,8 @@ std::atomic<bool> inputHooked_ = false;
 std::unique_ptr<InputHook> inputHook_;
 
 std::atomic<bool> graphicsActive_ = false;
+std::atomic<bool> windowed_ = false;
+
 std::atomic<bool> overlayConnected_ = false;
 std::atomic<bool> overlayEnabled_ = true;
 
@@ -233,6 +235,16 @@ void setGraphicsActive(bool active)
 bool graphicsActive()
 {
     return graphicsActive_;
+}
+
+void setIsWindowed(bool windowed)
+{
+    windowed_ = windowed;
+}
+
+bool isWindowed()
+{
+    return windowed_;
 }
 
 void setOverlayConnected(bool value)

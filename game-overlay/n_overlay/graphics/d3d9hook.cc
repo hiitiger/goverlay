@@ -443,6 +443,7 @@ bool D3d9Hook::initGraphics(IDirect3DDevice9* device, HWND hDestWindowOverride, 
     }
 
     session::setGraphicsActive(true);
+    session::setIsWindowed(graphics_->isWindowed());
     return true;
 }
 

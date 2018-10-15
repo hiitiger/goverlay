@@ -1,6 +1,7 @@
 #pragma once
 
 #include "winheader.h"
+
 #include "minhook/MinHook.h"
 
 #include <dxgitype.h>

@@ -6,6 +6,11 @@
 #include "hook/inputhook.h"
 #include "hotkey/hotkeycheck.h"
 
+#if ALLOW_ASSOC_SYSIME
+#pragma comment(lib, "imm32.lib")
+#endif
+
+
 #define  OVERLAY_MAGIC 0x908988
 #define  OVERLAY_TASK 0x908987
 
@@ -105,6 +110,18 @@ void UiApp::startInputIntercept()
         if (!isIntercepting_)
         {
             isIntercepting_ = true;
+
+            if (session::isWindowed())
+            {
+#if ALLOW_ASSOC_SYSIME
+                if (!IMC_)
+                {
+                    IMC_ = ImmCreateContext();
+                }
+                originalIMC_ = ImmAssociateContext(graphicsWindow_, IMC_);
+#endif
+            }
+
             session::inputHook()->saveInputState();
             HookApp::instance()->overlayConnector()->sendInputIntercept();
 
@@ -127,6 +144,24 @@ void UiApp::stopInputIntercept()
         if (isIntercepting_)
         {
             isIntercepting_ = false;
+
+#if ALLOW_ASSOC_SYSIME
+            if (!originalIMC_)
+            {
+                ImmAssociateContext(graphicsWindow_, nullptr);
+            }
+            else
+            {
+                ImmAssociateContext(graphicsWindow_, originalIMC_);
+                originalIMC_ = nullptr;
+            }
+            if (IMC_)
+            {
+                ImmReleaseContext(graphicsWindow_, IMC_);
+                IMC_ = nullptr;
+            }
+
+#endif
             session::inputHook()->restoreInputState();
             HookApp::instance()->overlayConnector()->sendInputStopIntercept();
         }

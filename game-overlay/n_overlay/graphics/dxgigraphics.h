@@ -15,8 +15,12 @@ protected:
     std::atomic<bool> needResync_ = false;
     FpsTimer fpsTimer_;
 
+    bool windowed_ = false;
+
 public:
     virtual ~DxgiGraphics() {}
+
+    bool isWindowed() const;
 
     virtual Windows::ComPtr<IDXGISwapChain> swapChain() const = 0;
 

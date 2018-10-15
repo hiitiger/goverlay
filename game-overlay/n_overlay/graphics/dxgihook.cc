@@ -379,6 +379,11 @@ bool DXGIHook::initGraphics(IDXGISwapChain *swap)
     }
 
     session::setGraphicsActive(graphicsInit_);
+
+    if (graphicsInit_)
+    {
+        session::setIsWindowed(dxgiGraphics_->isWindowed());
+    }
     return graphicsInit_;
 }
 

@@ -73,6 +73,7 @@ bool D3d11Graphics::_initGraphicsContext(IDXGISwapChain* swap)
     targetWidth_ = textureDesc.Width;
     targetHeight_ = textureDesc.Height;
     dxgiformat_ = fixCopyTextureFormat(swapChainDesc.BufferDesc.Format);
+    windowed_ = !!swapChainDesc.Windowed;
 
     hr = d3dDevice_->CreateRenderTargetView(backBufferTexture, nullptr, renderTargetView_.resetAndGetPointerAddress());
     if (!renderTargetView_)

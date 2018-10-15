@@ -17,6 +17,9 @@ class UiApp
     std::mutex taskLock_;
     std::deque<std::function<void()>> tasks_;
 
+    HIMC IMC_ = nullptr;
+    HIMC originalIMC_ = nullptr;
+
 public:
     UiApp();
     ~UiApp();

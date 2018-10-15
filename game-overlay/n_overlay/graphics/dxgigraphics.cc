@@ -3,6 +3,11 @@
 #include "overlay/session.h"
 #include "dxgigraphics.h"
 
+bool DxgiGraphics::isWindowed() const
+{
+    return windowed_;
+}
+
 bool DxgiGraphics::initGraphics(IDXGISwapChain *swap)
 {
     bool succeed = _initGraphicsContext(swap) && _initGraphicsState();

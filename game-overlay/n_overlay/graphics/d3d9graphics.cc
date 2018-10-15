@@ -138,6 +138,11 @@ D3d9Graphics::~D3d9Graphics()
     freeGraphics();
 }
 
+bool D3d9Graphics::isWindowed() const
+{
+    return windowed_;
+}
+
 bool D3d9Graphics::initGraphics(IDirect3DDevice9* device, HWND /*hDestWindowOverride*/, bool isD9Ex)
 {
     DAssert(!device_);
@@ -318,7 +323,7 @@ bool D3d9Graphics::_initGraphicsContext(IDirect3DDevice9* device)
     d3dformat_ = desc.BackBufferFormat;
     targetWidth_ = desc.BackBufferWidth;
     targetHeight_ = desc.BackBufferHeight;
-
+    windowed_ = !!desc.Windowed;
     device_ = device;
     return true;
 }

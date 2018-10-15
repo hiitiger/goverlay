@@ -30,6 +30,8 @@ class D3d9Graphics : public Storm::Trackable<>
 
     Windows::ComPtr<IDirect3DDevice9> device_;
 
+    bool windowed_ = false;
+
     int targetWidth_ = 0;
     int targetHeight_ = 0;
     D3DFORMAT d3dformat_ = D3DFMT_UNKNOWN;
@@ -45,6 +47,8 @@ class D3d9Graphics : public Storm::Trackable<>
 public:
     D3d9Graphics();
     ~D3d9Graphics();
+
+    bool isWindowed() const;
 
     bool initGraphics(IDirect3DDevice9* device, HWND hDestWindowOverride, bool isD9Ex);
     void uninitGraphics(IDirect3DDevice9* device);
