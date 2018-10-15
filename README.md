@@ -3,7 +3,7 @@
 use the power of web to inject any web app to overlay in your game
 
 ## screenshot
-![demo](https://raw.githubusercontent.com/hiitiger/gelectron/master/screenshot/gelectron2.gif)
+![demo](https://raw.githubusercontent.com/hiitiger/gelectron/master/screenshot/gelectron3.gif)
 
 
 ## NOTE
