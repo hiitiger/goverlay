@@ -105,8 +105,6 @@ void HookApp::quit()
         std::lock_guard<std::mutex> lock(runloopLock_);
         runloop_->quit();
     });
-
-    hookQuitedEvent_.wait();
 }
 
 void HookApp::startHook()

@@ -286,7 +286,7 @@ bool D3d9Hook::setupHooks(IDirect3DDevice9 *device)
 
     Windows::ComPtr<IDirect3D9Ex> spD3D9Ex;
     Windows::ComPtr<IDirect3DDevice9Ex> spD3DDevice9Ex;
-
+    device->QueryInterface(__uuidof(IDirect3DDevice9Ex), (void**)spD3DDevice9Ex.resetAndGetPointerAddress());
 
     HRESULT hr = device->GetSwapChain(0, spD3DSwapChain9.resetAndGetPointerAddress());
 
