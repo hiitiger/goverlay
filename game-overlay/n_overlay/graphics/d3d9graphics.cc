@@ -194,7 +194,7 @@ bool D3d9Graphics::initGraphics(IDirect3DDevice9* device, HWND /*hDestWindowOver
 
         HookApp::instance()->overlayConnector()->windowBoundsEvent().add([this](std::uint32_t windowId, overlay::WindowRect rect) {
             std::lock_guard<std::mutex> lock(synclock_);
-            pendingBounds_.insert(std::make_pair(windowId, rect));
+            pendingBounds_[windowId] = rect;
             needResync_ = true;
         }, this);
 
