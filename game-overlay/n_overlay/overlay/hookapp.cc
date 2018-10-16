@@ -72,8 +72,6 @@ void HookApp::initialize()
 
 void HookApp::uninitialize()
 {
-    MH_Uninitialize();
-
     if (g_hookAppThread)
     {
         HookApp::instance()->quit();
@@ -83,6 +81,8 @@ void HookApp::uninitialize()
             TerminateThread(g_hookAppThread, 0);
         }
     }
+
+    MH_Uninitialize();
 }
 
 HookApp * HookApp::instance()
@@ -105,6 +105,8 @@ void HookApp::quit()
         std::lock_guard<std::mutex> lock(runloopLock_);
         runloop_->quit();
     });
+
+    hookQuitedEvent_.wait(5000);
 }
 
 void HookApp::startHook()

@@ -97,6 +97,8 @@ public:
     void lockWindows();
     void unlockWindows();
 
+    bool directMessageInput() const;
+
     bool processNCHITTEST(UINT message, WPARAM wParam, LPARAM lParam);
     bool processMouseMessage(UINT message, WPARAM wParam, LPARAM lParam);
     bool processkeyboardMessage(UINT message, WPARAM wParam, LPARAM lParam);

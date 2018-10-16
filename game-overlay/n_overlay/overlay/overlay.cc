@@ -222,6 +222,11 @@ void OverlayConnector::unlockWindows()
     windowsLock_.unlock();
 }
 
+bool OverlayConnector::directMessageInput() const
+{
+    return directMessageInput_;
+}
+
 bool OverlayConnector::processNCHITTEST(UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
 {
     if (dragMoveWindowId_ != 0)
