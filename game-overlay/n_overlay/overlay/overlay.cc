@@ -163,6 +163,15 @@ void OverlayConnector::sendGraphicsWindowFocusEvent(HWND window, bool focus)
     {
         clearMouseDrag();
     }
+
+    if (focus)
+    {
+        translationWindowToGameClient();
+    }
+    else
+    {
+        translationWindowToDesktop();
+    }
 }
 
 void OverlayConnector::sendGraphicsWindowDestroy(HWND window)
@@ -581,9 +590,15 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
     }
     else
     {
-        HookApp::instance()->async([this, windowId = 0, message, wParam, lParam]() {
+        //todo: modify electron browser view focus state
+        if (message == WM_LBUTTONDOWN)
+        {
+
+        }
+
+        /*HookApp::instance()->async([this, windowId = 0, message, wParam, lParam]() {
             _sendGameWindowInput(windowId, message, wParam, lParam);
-        });
+        });*/
     }
 
     if (message == WM_LBUTTONDOWN)
@@ -715,6 +730,40 @@ void OverlayConnector::clearMouseDrag()
     dragMoveWindowHandle_ = 0;
     dragMoveMode_ = HTNOWHERE;
     hitTest_ = HTNOWHERE;
+}
+
+void OverlayConnector::translationWindowToDesktop()
+{
+    translateWindow(true);
+}
+
+void OverlayConnector::translationWindowToGameClient()
+{
+    translateWindow(false);
+}
+
+void OverlayConnector::translateWindow(bool desktop)
+{
+    checkThread(Threads::Window);
+
+    //might not be necessary
+
+    auto screenWidth = GetSystemMetrics(SM_CXSCREEN);
+    auto screenHeight = GetSystemMetrics(SM_CYSCREEN);
+    auto gameWidth = HookApp::instance()->uiapp()->gameWidth();
+    auto gameHeight = HookApp::instance()->uiapp()->gameHeight();
+
+    auto xscale = desktop ? (float)screenWidth / (float)gameWidth : (float)gameWidth / (float)screenWidth;
+    auto yscale = desktop ? (float)screenHeight / (float)gameHeight : (float)gameHeight / (float)screenHeight;
+
+    std::lock_guard<std::mutex> lock(windowsLock_);
+    for (auto& window : windows_)
+    {
+        auto x = window->rect.x;
+        auto y = window->rect.y;
+
+        SetWindowPos((HWND)window->nativeHandle, nullptr, (int)(x * xscale), (int)(y * yscale), 0, 0, SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER);
+    }
 }
 
 void OverlayConnector::_heartbeat()

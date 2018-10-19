@@ -63,6 +63,16 @@ bool UiApp::setup(HWND window)
 
         HookApp::instance()->overlayConnector()->sendGraphicsWindowSetupInfo(window, rect.right - rect.left, rect.bottom - rect.top, focused, true);
 
+        async([this]() {
+            if (this->graphicsWindow_)
+            {
+                if (GetForegroundWindow() == this->graphicsWindow_)
+                {
+                    HookApp::instance()->overlayConnector()->translationWindowToGameClient();
+                }
+            }
+        });
+
         return true;
     }
     else
@@ -160,7 +170,6 @@ void UiApp::stopInputIntercept()
                 ImmReleaseContext(graphicsWindow_, IMC_);
                 IMC_ = nullptr;
             }
-
 #endif
             session::inputHook()->restoreInputState();
             HookApp::instance()->overlayConnector()->sendInputStopIntercept();
@@ -214,6 +223,16 @@ void UiApp::clearWindowState()
 {
     windowClientRect_ = {0};
     windowFocus_ = 0;
+}
+
+std::uint32_t UiApp::gameWidth() const
+{
+    return windowClientRect_.right - windowClientRect_.left;
+}
+
+std::uint32_t UiApp::gameHeight() const
+{
+    return windowClientRect_.bottom - windowClientRect_.top;
 }
 
 LRESULT CALLBACK UiApp::GetMsgProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam)

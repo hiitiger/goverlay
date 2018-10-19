@@ -107,6 +107,10 @@ public:
 
     void clearMouseDrag();
 
+    void translationWindowToDesktop();
+    void translationWindowToGameClient();
+    void translateWindow(bool desktop);
+
 protected:
     void _heartbeat();
 

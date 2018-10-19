@@ -44,6 +44,9 @@ public:
     void updateWindowState(HWND window);
     void clearWindowState();
 
+    std::uint32_t gameWidth() const;
+    std::uint32_t gameHeight() const;
+
 private:
 
     static LRESULT CALLBACK GetMsgProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam);
