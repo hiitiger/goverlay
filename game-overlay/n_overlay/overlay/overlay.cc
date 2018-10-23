@@ -2,7 +2,7 @@
 #include "overlay.h"
 #include "hookapp.h"
 #include "hook/inputhook.h"
-#include <boost/range/adaptor/reversed.hpp>
+
 const char k_overlayIpcName[] = "n_overlay_1a1y2o8l0b";
 
 
@@ -249,8 +249,9 @@ bool OverlayConnector::processNCHITTEST(UINT /*message*/, WPARAM /*wParam*/, LPA
 
     std::lock_guard<std::mutex> lock(windowsLock_);
 
-    for (auto& window :boost::adaptors::reverse(windows_))
+    for (auto it = windows_.rbegin(); it != windows_.rend(); ++it)
     {
+        auto& window = *it;
         if (overlay_game::pointInRect(mousePointInGameClient, window->rect))
         {
             POINT mousePointinWindowClient = { mousePointInGameClient.x, mousePointInGameClient.y };
@@ -464,8 +465,9 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
         return true;
     }
 
-    for (auto & window :boost::adaptors::reverse(windows_))
+    for (auto it = windows_.rbegin(); it != windows_.rend(); ++it)
     {
+        auto& window = *it;
         if (window->name == "OverlayTip")
         {
             continue;
