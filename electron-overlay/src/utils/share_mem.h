@@ -96,7 +96,7 @@ private:
             if (!memory_)
             {
                 DWORD err = GetLastError();
-                std::runtime_error(std::string("system_error:") + std::to_string(err));
+                throw std::runtime_error(std::string("system_error:") + std::to_string(err));
             }
 
             MEMORY_BASIC_INFORMATION info;
@@ -104,7 +104,7 @@ private:
             {
                 // Windows doesn't set an error code on this one,
                 // it should only be a kernel memory error.
-                std::runtime_error(std::string("system_error:VirtualQuery"));
+                throw std::runtime_error(std::string("system_error:VirtualQuery"));
             }
             size_ = info.RegionSize;
         }
@@ -132,11 +132,11 @@ private:
         if (handle && err == ERROR_ALREADY_EXISTS)
         {
             CloseHandle(handle);
-            std::runtime_error(std::string("system_error:") + std::to_string(err));
+            throw std::runtime_error(std::string("system_error:") + std::to_string(err));
         }
         else if (!handle)
         {
-            std::runtime_error(std::string("system_error:") + std::to_string(err));
+            throw std::runtime_error(std::string("system_error:") + std::to_string(err));
         }
         else
         {
@@ -152,7 +152,7 @@ private:
         {
             DWORD err = GetLastError();
 
-            std::runtime_error(std::string("system_error:") + std::to_string(err));
+            throw  std::runtime_error(std::string("system_error:") + std::to_string(err));
         }
     }
 };
