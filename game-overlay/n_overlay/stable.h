@@ -26,10 +26,7 @@ __pragma(warning(pop))
 #include <assert.h>
 #include "utils.hpp"
 
-
-#define BOOST_ALL_NO_LIB
-#include <boost/interprocess/windows_shared_memory.hpp>
-#include <boost/interprocess/mapped_region.hpp>
+#include "share_mem.h"
 
 #include "geometry.h"
 #include "common.hpp"

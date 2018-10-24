@@ -236,8 +236,8 @@ std::shared_ptr<D3d11WindowSprite> D3d11Graphics::_createWindowSprite(const std:
 
     try
     {
-        windowSprite->windowBitmapMem.reset(new boost::interprocess::windows_shared_memory(boost::interprocess::open_only, windowSprite->bufferName.c_str(), boost::interprocess::read_only));
-        windowSprite->fullRegion.reset(new boost::interprocess::mapped_region(*windowSprite->windowBitmapMem, boost::interprocess::read_only));
+        windows_shared_memory share_mem(windows_shared_memory::open_only, windowSprite->bufferName.c_str(), windows_shared_memory::read_only);
+        windowSprite->windowBitmapMem = std::make_unique<windows_shared_memory>(std::move(share_mem));
     }
     catch (...)
     {
@@ -275,7 +275,7 @@ void D3d11Graphics::_updateSprite(std::shared_ptr<D3d11WindowSprite>& windowSpri
     }
 
     HookApp::instance()->overlayConnector()->lockShareMem();
-    char *orgin = static_cast<char*>(windowSprite->fullRegion->get_address());
+    char *orgin = static_cast<char*>(windowSprite->windowBitmapMem->get_address());
     if (orgin)
     {
         overlay::ShareMemFrameBuffer* head = (overlay::ShareMemFrameBuffer*)orgin;
@@ -341,8 +341,8 @@ void D3d11Graphics::_checkAndResyncWindows()
                     auto& windowSprite = *it;
                     try
                     {
-                        windowSprite->windowBitmapMem.reset(new boost::interprocess::windows_shared_memory(boost::interprocess::open_only, windowSprite->bufferName.c_str(), boost::interprocess::read_only));
-                        windowSprite->fullRegion.reset(new boost::interprocess::mapped_region(*windowSprite->windowBitmapMem, boost::interprocess::read_only));
+                        windows_shared_memory share_mem(windows_shared_memory::open_only, windowSprite->bufferName.c_str(), windows_shared_memory::read_only);
+                        windowSprite->windowBitmapMem = std::make_unique<windows_shared_memory>(std::move(share_mem));
                     }
                     catch (...)
                     {

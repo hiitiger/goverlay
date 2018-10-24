@@ -10,11 +10,7 @@
 #include "ipc/tinyipc.h"
 #include "message/gmessage.hpp"
 #include "utils/win-utils.h"
-
-#define BOOST_ALL_NO_LIB
-#include <boost/interprocess/windows_shared_memory.hpp>
-#include <boost/interprocess/mapped_region.hpp>
-namespace share_mem = boost::interprocess;
+#include "utils/share_mem.h"
 
 namespace stdxx
 {
@@ -48,8 +44,7 @@ namespace stdxx
 struct share_memory
 {
     std::string bufferName;
-    std::unique_ptr<share_mem::windows_shared_memory> windowBitmapMem;
-    std::unique_ptr<share_mem::mapped_region> fullRegion;
+    std::unique_ptr<windows_shared_memory> windowBitmapMem;
     int maxWidth;
     int maxHeight;
 };
@@ -377,11 +372,11 @@ class OverlayMain : public IIpcHost
             imageMem->bufferName = bufferName;
             try
             {
-                imageMem->windowBitmapMem.reset(new share_mem::windows_shared_memory(share_mem::create_only, bufferName.c_str(), share_mem::read_write, shareMemSize, perm));
-                imageMem->fullRegion.reset(new share_mem::mapped_region(*(imageMem->windowBitmapMem), share_mem::read_write));
+                windows_shared_memory share_mem(windows_shared_memory::create_only, bufferName.c_str(), shareMemSize, windows_shared_memory::read_write);
 
-                char *orgin = static_cast<char *>(imageMem->fullRegion->get_address());
-                std::memset(imageMem->fullRegion->get_address(), 0, imageMem->fullRegion->get_size());
+                imageMem->windowBitmapMem = std::make_unique<windows_shared_memory>(std::move(share_mem));
+
+                std::memset(imageMem->windowBitmapMem->get_address(), 0, imageMem->windowBitmapMem->get_size());
 
                 imageMem->maxWidth = maxWidth;
                 imageMem->maxHeight = maxHeight;
@@ -625,14 +620,13 @@ class OverlayMain : public IIpcHost
             if (it != shareMemMap_.end())
             {
                 auto &windowBitmapMem = it->second->windowBitmapMem;
-                auto &fullRegion = it->second->fullRegion;
 
-                if (fullRegion)
+                if (windowBitmapMem)
                 {
                     std::lock_guard<Windows::Mutex> lock(mutex_);
 
-                    char *orgin = static_cast<char *>(fullRegion->get_address());
-                    std::memset(fullRegion->get_address(), 0, fullRegion->get_size());
+                    char *orgin = static_cast<char *>(windowBitmapMem->get_address());
+                    std::memset(windowBitmapMem->get_address(), 0, windowBitmapMem->get_size());
 
                     overlay::ShareMemFrameBuffer *head = (overlay::ShareMemFrameBuffer *)orgin;
                     head->width = width;

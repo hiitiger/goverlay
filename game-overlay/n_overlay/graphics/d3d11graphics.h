@@ -9,8 +9,7 @@ struct D3d11WindowSprite
     overlay::WindowRect rect;
     std::string bufferName;
 
-    std::unique_ptr<boost::interprocess::windows_shared_memory> windowBitmapMem;
-    std::unique_ptr<boost::interprocess::mapped_region> fullRegion;
+    std::unique_ptr<windows_shared_memory> windowBitmapMem;
 
     Windows::ComPtr<ID3D11Texture2D> texture;
 };

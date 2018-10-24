@@ -1157,25 +1157,13 @@ void OverlayConnector::_onWindowBounds(std::shared_ptr<overlay::WindowBounds>& o
 
 void OverlayConnector::_updateFrameBuffer(std::uint32_t windowId, const std::string &bufferName)
 {
-    namespace share_mem = boost::interprocess;
-
-    std::shared_ptr<share_mem::windows_shared_memory> windowBitmapMem;
-    std::shared_ptr<share_mem::mapped_region> fullRegion;
-
     try
     {
-        windowBitmapMem.reset(new boost::interprocess::windows_shared_memory(share_mem::open_only, bufferName.c_str(), share_mem::read_only));
-        fullRegion.reset(new share_mem::mapped_region(*windowBitmapMem, share_mem::read_only));
-    }
-    catch (...)
-    {
-    }
+        windows_shared_memory share_mem(windows_shared_memory::open_only, bufferName.c_str(), windows_shared_memory::read_only);
 
-    if (fullRegion)
-    {
         Storm::ScopeLovkV1 lockShareMem(shareMemoryLock_);
 
-        char *orgin = static_cast<char *>(fullRegion->get_address());
+        char *orgin = static_cast<char *>(share_mem.get_address());
         overlay::ShareMemFrameBuffer *head = (overlay::ShareMemFrameBuffer *)orgin;
         int *mem = (int *)(orgin + sizeof(overlay::ShareMemFrameBuffer));
 
@@ -1185,6 +1173,10 @@ void OverlayConnector::_updateFrameBuffer(std::uint32_t windowId, const std::str
         frameBuffers_[windowId] = frameBuffer;
 
         //std::cout << __FUNCTION__ << ", width:" << head->width << ", height:" << head->height << std::endl;
+    }
+    catch (std::exception& e)
+    {
+        std::cout << __FUNCTION__ << ", error:" << e.what();
     }
 }
 
