@@ -1109,6 +1109,13 @@ void OverlayConnector::_onWindowClose(std::shared_ptr<overlay::WindowClose>& ove
         }
         windows_.erase(it);
 
+        if (focusWindowId_ == overlayMsg->windowId)
+        {
+            focusWindowId_ = 0;
+            focusWindow_ = 0;
+            this->windowFocusEvent()(0);
+        }
+
         this->windowCloseEvent()(overlayMsg->windowId);
 
         {
@@ -1117,12 +1124,6 @@ void OverlayConnector::_onWindowClose(std::shared_ptr<overlay::WindowClose>& ove
             {
                 clearMouseDrag();
             }
-        }
-
-        if (focusWindowId_ == overlayMsg->windowId )
-        {
-            focusWindowId_ = 0;
-            focusWindow_ = 0;
         }
     }
 }
