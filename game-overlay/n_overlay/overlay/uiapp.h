@@ -1,7 +1,7 @@
 #pragma once
 
 
-class UiApp 
+class UiApp : public Storm::Trackable<>
 {
     std::uint32_t overlayMagicMsg_ =0;
     std::mutex uilock_;

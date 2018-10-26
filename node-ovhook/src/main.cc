@@ -189,7 +189,7 @@ static bool inject_process(DWORD processId, DWORD threadId)
     dll = dir + L"\\" + k_inject_dll;
   }
 
-  std::wstring args = std::to_wstring(processId) + L" " + std::to_wstring(threadId) + L" \"" + dll;
+  std::wstring args = std::to_wstring(processId) + L" " + std::to_wstring(threadId) + L" \"" + dll + L"\"";
   return win_utils::createProcess(helper, args);
 }
 

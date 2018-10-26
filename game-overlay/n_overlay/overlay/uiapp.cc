@@ -21,6 +21,11 @@ UiApp::UiApp()
     {
         overlayMagicMsg_ = WM_USER + 0x88;
     }
+
+    HookApp::instance()->overlayConnector()->remoteConnectEvent().add([this](){
+        if (this->graphicsWindow_)
+            HookApp::instance()->overlayConnector()->sendGraphicsWindowSetupInfo(graphicsWindow_, windowClientRect_.right - windowClientRect_.left, windowClientRect_.bottom - windowClientRect_.top, windowFocus_, true);
+    }, this);
 }
 
 UiApp::~UiApp()
@@ -41,6 +46,12 @@ bool UiApp::trySetupGraphicsWindow(HWND window)
     if (graphicsWindow_ == window)
     {
         return true;
+    }
+
+    if (graphicsWindow_)
+    {
+        unhookWindow();
+        graphicsWindow_ = nullptr;
     }
 
     return setup(window);

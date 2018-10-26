@@ -362,9 +362,6 @@ class OverlayMain : public IIpcHost
     void createImageMem(std::uint32_t windowId, std::string bufferName, int maxWidth, int maxHeight)
     {
         {
-            share_mem::permissions perm;
-            perm.set_unrestricted();
-
             std::cout << "create share mem:" << maxWidth << "," << maxHeight << std::endl;
 
             auto shareMemSize = maxWidth * maxHeight * sizeof(std::uint32_t) + sizeof(overlay::ShareMemFrameBuffer);

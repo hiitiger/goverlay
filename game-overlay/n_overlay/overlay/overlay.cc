@@ -916,6 +916,8 @@ void OverlayConnector::_onRemoteConnect()
     session::setOverlayConnected(true);
 
     this->_sendGameProcessInfo();
+
+    this->remoteConnectEvent();
 }
 
 void OverlayConnector::_onRemoteClose()

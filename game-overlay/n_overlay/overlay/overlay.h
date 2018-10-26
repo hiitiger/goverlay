@@ -20,6 +20,8 @@ class OverlayConnector : public IIpcClient
     std::mutex framesLock_;
     std::map<std::uint32_t, std::shared_ptr<overlay_game::FrameBuffer>> frameBuffers_;
 
+    Storm::Event<void()> remoteConnectEvent_;
+
     Storm::Event<void(std::uint32_t)> windowEvent_;
     Storm::Event<void(std::uint32_t)> frameBufferEvent_;
     Storm::Event<void(std::uint32_t)> windowCloseEvent_;
@@ -79,6 +81,7 @@ public:
 
     const std::vector<std::shared_ptr<overlay::Window>>& windows();
 
+    Storm::Event<void()>& remoteConnectEvent() { return remoteConnectEvent_; }
     Storm::Event<void(std::uint32_t)>& windowEvent() { return windowEvent_; }
     Storm::Event<void(std::uint32_t)>& frameBufferEvent() { return frameBufferEvent_; }
     Storm::Event<void(std::uint32_t)>& windowCloseEvent() { return windowCloseEvent_; }
