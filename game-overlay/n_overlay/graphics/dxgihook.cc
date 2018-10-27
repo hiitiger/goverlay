@@ -273,10 +273,10 @@ bool DXGIHook::hookSwapChain(Windows::ComPtr<IDXGISwapChain> pSwapChain)
         dxgiSwapChainPresent1Hook_->activeHook();
 
         hooked = dxgiSwapChainPresent1Hook_->succeed();
+        session::dxgiHookInfo().present1Hooked = dxgiSwapChainPresent1Hook_->succeed();
     }
 
     session::dxgiHookInfo().presentHooked = dxgiSwapChainPresentHook_->succeed();
-    session::dxgiHookInfo().present1Hooked = dxgiSwapChainPresent1Hook_->succeed();
     session::dxgiHookInfo().resizeBufferHooked = dxgiSwapChainResizeBuffersHook_->succeed();
     session::dxgiHookInfo().resizeTargetHooked = dxgiSwapChainResizeTargetHook_->succeed();
 

@@ -23,7 +23,7 @@ use the power of web to inject any web app to overlay in your game
         npm run build
         npm run start
     ```
-5. click then start button to start 
+5. click the start button to start 
 6. open gameoverlay.sln and build all 
 7. start dx11app and press ESC to do load inject dll for test
 8. press F1 to swtich input intercepting
