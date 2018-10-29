@@ -95,6 +95,11 @@ bool UiApp::setup(HWND window)
     }
 }
 
+HWND UiApp::window() const
+{
+    return graphicsWindow_.load();
+}
+
 bool UiApp::windowSetted() const
 {
     return !!graphicsWindow_.load();

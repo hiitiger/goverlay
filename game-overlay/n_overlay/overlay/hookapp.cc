@@ -205,6 +205,11 @@ BOOL CALLBACK findGraphicsWindow(HWND hwnd, LPARAM lParam)
         return TRUE;
     }
 
+    if (GetForegroundWindow() != hwnd)
+    {
+        return TRUE;
+    }
+
     DWORD styles = (DWORD)GetWindowLongPtr(hwnd, GWL_STYLE);
     if (styles & WS_CHILD)
     {

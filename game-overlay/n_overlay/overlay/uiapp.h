@@ -28,6 +28,7 @@ public:
 
     bool setup(HWND window);
 
+    HWND window() const;
     bool windowSetted() const;
 
     void async(const std::function<void()>& task);

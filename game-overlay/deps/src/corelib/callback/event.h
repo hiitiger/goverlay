@@ -282,7 +282,7 @@ namespace Storm
             auto it = connections_->begin();
             for (; it != connections_->end();)
             {
-                if ((*it)->getTrackable() == object)
+                if ((*it)->nolockGetTrackable() == object)
                 {
                     auto conn = *it;
                     it = connections_->erase(it);

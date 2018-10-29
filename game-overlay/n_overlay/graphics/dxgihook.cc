@@ -335,17 +335,21 @@ bool DXGIHook::initGraphics(IDXGISwapChain *swap)
         if (!session::injectWindow())
         {
             session::setGraphicsWindow(graphicsWindow);
-
-            HookApp::instance()->async([graphicsWindow]() {
-                HookApp::instance()->uiapp()->trySetupGraphicsWindow(graphicsWindow);
-            });
-
             std::cout << __FUNCTION__ << ", setGraphicsWindow: " << graphicsWindow << std::endl;
         }
         else
         {
             return false;
         }
+    }
+
+    if (HookApp::instance()->uiapp()->window() != graphicsWindow)
+    {
+        HookApp::instance()->async([graphicsWindow]() {
+            HookApp::instance()->uiapp()->trySetupGraphicsWindow(graphicsWindow);
+        });
+
+        return false;
     }
 
     session::setGraphicsThreadId(GetCurrentThreadId());

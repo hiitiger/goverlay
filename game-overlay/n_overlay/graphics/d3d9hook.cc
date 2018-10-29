@@ -432,6 +432,15 @@ bool D3d9Hook::initGraphics(IDirect3DDevice9* device, HWND hDestWindowOverride, 
         }
     }
 
+    if (HookApp::instance()->uiapp()->window() != graphicsWindow)
+    {
+        HookApp::instance()->async([graphicsWindow]() {
+            HookApp::instance()->uiapp()->trySetupGraphicsWindow(graphicsWindow);
+        });
+
+        return false;
+    }
+
     session::setGraphicsThreadId(GetCurrentThreadId());
 
     graphics_.reset(new D3d9Graphics());
