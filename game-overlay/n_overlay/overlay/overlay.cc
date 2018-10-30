@@ -754,6 +754,8 @@ void OverlayConnector::translateWindow(bool desktop)
     auto screenHeight = GetSystemMetrics(SM_CYSCREEN);
     auto gameWidth = HookApp::instance()->uiapp()->gameWidth();
     auto gameHeight = HookApp::instance()->uiapp()->gameHeight();
+    gameWidth = gameWidth ? gameWidth : screenWidth;
+    gameHeight = gameHeight ? gameHeight : screenHeight;
 
     auto xscale = desktop ? (float)screenWidth / (float)gameWidth : (float)gameWidth / (float)screenWidth;
     auto yscale = desktop ? (float)screenHeight / (float)gameHeight : (float)gameHeight / (float)screenHeight;
