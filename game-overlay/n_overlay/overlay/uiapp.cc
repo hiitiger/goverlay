@@ -157,6 +157,11 @@ void UiApp::startInputIntercept()
             lParam = pt.x + (pt.y << 16);
             HookApp::instance()->overlayConnector()->processNCHITTEST(WM_NCHITTEST, 0, lParam);
             HookApp::instance()->overlayConnector()->processSetCursor();
+
+
+#if AUTO_INPUT_INTERCEPT
+            stopAutoIntercept();
+#endif
         }
     }
 }
@@ -189,6 +194,32 @@ void UiApp::stopInputIntercept()
 #endif
             session::inputHook()->restoreInputState();
             HookApp::instance()->overlayConnector()->sendInputStopIntercept();
+
+#if AUTO_INPUT_INTERCEPT
+            HookApp::instance()->overlayConnector()->hitTestResult() != HTNOWHERE ? startAutoIntercept() : stopInputIntercept();
+#endif
+        }
+    }
+}
+
+void UiApp::startAutoIntercept()
+{
+    if (session::overlayEnabled())
+    {
+        if (!isInterceptingMouseAuto_)
+        {
+            isInterceptingMouseAuto_ = true;
+        }
+    }
+}
+
+void UiApp::stopAutoIntercept()
+{
+    if (session::overlayEnabled())
+    {
+        if (isInterceptingMouseAuto_)
+        {
+            isInterceptingMouseAuto_ = false;
         }
     }
 }
@@ -298,7 +329,16 @@ LRESULT UiApp::hookGetMsgProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lP
 
                 if (!isIntercepting_)
                 {
+                    
+#if AUTO_INPUT_INTERCEPT
+                    if (!isInterceptingMouseAuto_)
+                    {
+                        return CallNextHookEx(msgHook_, nCode, wParam, lParam);
+                    }
+                    
+#else
                     return CallNextHookEx(msgHook_, nCode, wParam, lParam);
+#endif
                 }
 
                 if (pMsg->message >= WM_MOUSEFIRST && pMsg->message <= WM_MOUSELAST)
@@ -323,15 +363,18 @@ LRESULT UiApp::hookGetMsgProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lP
                 if ((pMsg->message >= WM_KEYFIRST && pMsg->message <= WM_KEYLAST)
                     || (pMsg->message >= WM_SYSKEYDOWN && pMsg->message <= WM_SYSDEADCHAR))
                 {
-                    HookApp::instance()->overlayConnector()->processkeyboardMessage(pMsg->message, pMsg->wParam, pMsg->lParam);
-                    if (pMsg->message == WM_KEYDOWN)
+                    bool inputHandled = HookApp::instance()->overlayConnector()->processkeyboardMessage(pMsg->message, pMsg->wParam, pMsg->lParam);
+                    if (inputHandled)
                     {
-                        if (!HookApp::instance()->overlayConnector()->directMessageInput())
+                        if (pMsg->message == WM_KEYDOWN)
                         {
-                            TranslateMessage(pMsg);
+                            if (!HookApp::instance()->overlayConnector()->directMessageInput())
+                            {
+                                TranslateMessage(pMsg);
+                            }
                         }
+                        pMsg->message = WM_NULL;
                     }
-                    pMsg->message = WM_NULL;
                     return 0;
                 }
             }
@@ -369,6 +412,9 @@ LRESULT UiApp::hookCallWndProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM l
             {
                 windowFocus_ = false;
                 HookApp::instance()->overlayConnector()->sendGraphicsWindowFocusEvent(graphicsWindow_, windowFocus_);
+#if AUTO_INPUT_INTERCEPT
+                stopAutoIntercept();
+#endif
             }
             else if (cwp->message == WM_SETFOCUS)
             {
@@ -377,12 +423,9 @@ LRESULT UiApp::hookCallWndProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM l
             }
             else if (cwp->message == WM_SETCURSOR && LOWORD(cwp->lParam) == HTCLIENT)
             {
-                if (isIntercepting_ )
+                if (_setCusror())
                 {
-                    if (HookApp::instance()->overlayConnector()->processSetCursor())
-                    {
-                        return 0;
-                    }
+                    return 0;
                 }
             }
             else if (cwp->message == WM_NCHITTEST)
@@ -391,6 +434,12 @@ LRESULT UiApp::hookCallWndProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM l
                 {
                     HookApp::instance()->overlayConnector()->processNCHITTEST(cwp->message, cwp->wParam, cwp->lParam);
                 }
+#if AUTO_INPUT_INTERCEPT
+                else
+                {
+                    HookApp::instance()->overlayConnector()->processNCHITTEST(cwp->message, cwp->wParam, cwp->lParam) ? startAutoIntercept() : stopInputIntercept();
+                }
+#endif
             }
         }
     }
@@ -408,12 +457,9 @@ LRESULT UiApp::hookCallWndRetProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARA
         {
             if (cwp->message == WM_SETCURSOR && LOWORD(cwp->lParam) == HTCLIENT)
             {
-                if (isIntercepting_)
+                if (_setCusror())
                 {
-                    if (HookApp::instance()->overlayConnector()->processSetCursor())
-                    {
-                        return 0;
-                    }
+                    return 0;
                 }
             }
         }
@@ -448,5 +494,28 @@ void UiApp::_runTask()
     {
         task();
     }
+}
+
+bool UiApp::_setCusror()
+{
+    if (isIntercepting_)
+    {
+        if (HookApp::instance()->overlayConnector()->processSetCursor())
+        {
+            return true;
+        }
+    }
+
+#if AUTO_INPUT_INTERCEPT
+    else if (isInterceptingMouseAuto_)
+    {
+        if (HookApp::instance()->overlayConnector()->processSetCursor())
+        {
+            return true;
+        }
+    }
+#endif
+
+    return false;
 }
 

@@ -43,3 +43,5 @@ __pragma(warning(pop))
 
 
 #define __trace__  std::cout << __FUNCTION__ << std::endl;
+
+#define AUTO_INPUT_INTERCEPT 1

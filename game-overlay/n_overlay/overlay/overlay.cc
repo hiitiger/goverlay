@@ -240,7 +240,7 @@ bool OverlayConnector::processNCHITTEST(UINT /*message*/, WPARAM /*wParam*/, LPA
 {
     if (dragMoveWindowId_ != 0)
     {
-        return false;
+        return true;
     }
 
     POINTS screenPoint = MAKEPOINTS(lParam);
@@ -293,7 +293,7 @@ bool OverlayConnector::processNCHITTEST(UINT /*message*/, WPARAM /*wParam*/, LPA
             }
 
             hitTest_ = overlay_game::hitTest(mousePointinWindowClient, window->rect, window->resizable, window->caption.value(), window->dragBorderWidth);
-            return false;
+            return hitTest_ != HTNOWHERE;
         }
     }
 
@@ -626,8 +626,12 @@ bool OverlayConnector::processkeyboardMessage(UINT message, WPARAM wParam, LPARA
                 _sendGameWindowInput(windowId, message, wParam, lParam);
             });
         }
+        return true;
     }
-    return true;
+    else
+    {
+        return false;
+    }
 }
 
 bool OverlayConnector::processSetCursor()

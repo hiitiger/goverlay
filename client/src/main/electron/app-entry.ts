@@ -253,9 +253,9 @@ class Application {
     const window = this.createWindow(AppWindows.osr, options)
 
     window.setPosition(0, 0)
-    window.webContents.openDevTools({
-      mode: "detach"
-    })
+    // window.webContents.openDevTools({
+    //   mode: "detach"
+    // })
     window.loadURL(fileUrl(path.join(global.CONFIG.distDir, "index/osr.html")))
 
     window.webContents.on(
@@ -292,9 +292,9 @@ class Application {
     const window = this.createWindow(name, options)
 
     window.setPosition(100, 0)
-    window.webContents.openDevTools({
-      mode: "detach"
-    })
+    // window.webContents.openDevTools({
+    //   mode: "detach"
+    // })
     window.loadURL(
       fileUrl(path.join(global.CONFIG.distDir, "index/statusbar.html"))
     )
@@ -323,9 +323,9 @@ class Application {
     const window = this.createWindow(name, options)
 
     window.setPosition(0, 0)
-    window.webContents.openDevTools({
-      mode: "detach"
-    })
+    // window.webContents.openDevTools({
+    //   mode: "detach"
+    // })
     window.loadURL(
       fileUrl(path.join(global.CONFIG.distDir, "index/osrtip.html"))
     )

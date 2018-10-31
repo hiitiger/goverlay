@@ -17,8 +17,14 @@ class UiApp : public Storm::Trackable<>
     std::mutex taskLock_;
     std::deque<std::function<void()>> tasks_;
 
+#if ALLOW_ASSOC_SYSIME
     HIMC IMC_ = nullptr;
     HIMC originalIMC_ = nullptr;
+#endif
+
+#if AUTO_INPUT_INTERCEPT
+    bool isInterceptingMouseAuto_ = false;
+#endif
 
 public:
     UiApp();
@@ -36,6 +42,9 @@ public:
     void toggleInputIntercept();
     void startInputIntercept();
     void stopInputIntercept();
+
+    void startAutoIntercept();
+    void stopAutoIntercept();
 
     bool isInterceptingInput();
 
@@ -61,4 +70,6 @@ private:
     bool checkHotkey();
 
     void _runTask();
+
+    bool _setCusror();
 };

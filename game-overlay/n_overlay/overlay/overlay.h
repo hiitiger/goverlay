@@ -94,6 +94,8 @@ public:
     std::wstring d3dcompiler47Path() const { return L""; }
     std::wstring d3dx9Path() const { return L""; }
 
+    std::int32_t hitTestResult()  const { return hitTest_; }
+
     void lockShareMem();
     void unlockShareMem();
 
