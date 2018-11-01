@@ -2,6 +2,9 @@
 #include "./ipc/ipclink.h"
 #include "session.h"
 
+
+bool isAllwaysAcceptInputWindow(const std::string& name);
+
 class OverlayConnector : public IIpcClient
 {
     std::atomic<bool> directMessageInput_ = false;
@@ -95,6 +98,7 @@ public:
     std::wstring d3dx9Path() const { return L""; }
 
     std::int32_t hitTestResult()  const { return hitTest_; }
+    std::uint32_t focusWindowId() const { return focusWindowId_; }
 
     void lockShareMem();
     void unlockShareMem();
@@ -104,8 +108,9 @@ public:
 
     bool directMessageInput() const;
 
-    bool processNCHITTEST(UINT message, WPARAM wParam, LPARAM lParam);
-    bool processMouseMessage(UINT message, WPARAM wParam, LPARAM lParam);
+    bool processNCHITTEST(UINT message, WPARAM wParam, LPARAM lParam, bool isBlockingAll = true);
+    bool processMouseMessage(UINT message, WPARAM wParam, LPARAM lParam, bool isBlockingAll = true);
+
     bool processkeyboardMessage(UINT message, WPARAM wParam, LPARAM lParam);
 
     bool processSetCursor();

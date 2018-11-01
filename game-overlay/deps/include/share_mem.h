@@ -53,14 +53,14 @@ public:
     static const open_only_t open_only;
     static const create_only_t create_only;
 
-    windows_shared_memory(create_only_t c, const std::string& name, std::uint32_t size, access_mode_t access_mode)
+    windows_shared_memory(create_only_t , const std::string& name, std::uint32_t size, access_mode_t access_mode)
         : name_(name)
     {
         this->create_file_mapping(size, access_mode);
         this->map(access_mode);
     }
 
-    windows_shared_memory(open_only_t c, const std::string& name, access_mode_t access_mode)
+    windows_shared_memory(open_only_t , const std::string& name, access_mode_t access_mode)
         : name_(name)
     {
         this->open_file_mapping(access_mode);

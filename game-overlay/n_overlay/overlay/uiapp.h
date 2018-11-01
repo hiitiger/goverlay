@@ -46,7 +46,15 @@ public:
     void startAutoIntercept();
     void stopAutoIntercept();
 
+    bool shouldBlockOrginalMouseInput();
+    bool shouldBlockOrginalKeyInput();
+    bool shouldBlockOrginalCursorViz();
+
     bool isInterceptingInput();
+
+#if AUTO_INPUT_INTERCEPT
+    bool isInterceptingMouseAuto();
+#endif
 
     bool hookWindow(HWND window);
     void unhookWindow();

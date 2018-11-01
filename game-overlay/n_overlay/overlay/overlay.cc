@@ -52,6 +52,17 @@ static auto _syncDragResizeBottom = [&](auto& window, std::int32_t /*xdiff*/, st
     window->rect.height = curHeight;
 };
 
+//todo: temporaly
+bool isAllwaysAcceptInputWindow(const std::string& name)
+{
+    switch (stdxx::hash(name.c_str()))
+    {
+    case stdxx::hash("StatusBar"):
+        return true;
+    default:
+        return false;
+    }
+}
 
 OverlayConnector::OverlayConnector()
 {
@@ -236,7 +247,7 @@ bool OverlayConnector::directMessageInput() const
     return directMessageInput_;
 }
 
-bool OverlayConnector::processNCHITTEST(UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
+bool OverlayConnector::processNCHITTEST(UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam, bool isBlockingAll)
 {
     if (dragMoveWindowId_ != 0)
     {
@@ -252,6 +263,13 @@ bool OverlayConnector::processNCHITTEST(UINT /*message*/, WPARAM /*wParam*/, LPA
     for (auto it = windows_.rbegin(); it != windows_.rend(); ++it)
     {
         auto& window = *it;
+
+        if (!isBlockingAll)
+        {
+            if(!isAllwaysAcceptInputWindow(window->name))
+                continue;
+        }
+
         if (overlay_game::pointInRect(mousePointInGameClient, window->rect))
         {
             POINT mousePointinWindowClient = { mousePointInGameClient.x, mousePointInGameClient.y };
@@ -302,7 +320,7 @@ bool OverlayConnector::processNCHITTEST(UINT /*message*/, WPARAM /*wParam*/, LPA
     return false;
 }
 
-bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM lParam)
+bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM lParam, bool isBlockingAll)
 {
     std::lock_guard<std::mutex> lock(windowsLock_);
     POINT mousePointInGameClient{ LOWORD(lParam), HIWORD(lParam) };
@@ -471,6 +489,12 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
         if (window->name == "OverlayTip")
         {
             continue;
+        }
+
+        if (!isBlockingAll)
+        {
+            if (!isAllwaysAcceptInputWindow(window->name))
+                continue;
         }
 
         if (overlay_game::pointInRect(mousePointInGameClient, window->rect))

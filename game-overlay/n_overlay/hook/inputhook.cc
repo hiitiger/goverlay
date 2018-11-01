@@ -52,7 +52,7 @@ InputStatus g_savedInputStatus;
 
 SHORT WINAPI H_GetAsyncKeyState(__in int vKey)
 {
-    if (HookApp::instance()->uiapp()->isInterceptingInput())
+    if (HookApp::instance()->uiapp()->shouldBlockOrginalKeyInput())
     {
         return 0;
     }
@@ -65,7 +65,7 @@ SHORT WINAPI H_GetAsyncKeyState(__in int vKey)
 
 SHORT WINAPI H_GetKeyState(__in int vKey)
 {
-    if (HookApp::instance()->uiapp()->isInterceptingInput())
+    if (HookApp::instance()->uiapp()->shouldBlockOrginalKeyInput())
     {
         return 0;
     }
@@ -77,7 +77,7 @@ SHORT WINAPI H_GetKeyState(__in int vKey)
 
 BOOL WINAPI H_GetKeyboardState(__out_ecount(256) PBYTE lpKeyState)
 {
-    if (HookApp::instance()->uiapp()->isInterceptingInput())
+    if (HookApp::instance()->uiapp()->shouldBlockOrginalKeyInput())
     {
         memset(lpKeyState, 0, 256);
         return TRUE;
@@ -90,7 +90,7 @@ BOOL WINAPI H_GetKeyboardState(__out_ecount(256) PBYTE lpKeyState)
 
 int WINAPI H_ShowCursor(__in BOOL bShow)
 {
-    if (HookApp::instance()->uiapp()->isInterceptingInput())
+    if (HookApp::instance()->uiapp()->shouldBlockOrginalCursorViz())
     {
         int saveCount = g_savedInputStatus.cursorCount;
         g_savedInputStatus.cursorCount += bShow ? 1 : -1;
@@ -105,7 +105,7 @@ int WINAPI H_ShowCursor(__in BOOL bShow)
 
 BOOL WINAPI H_GetCursorPos(LPPOINT lpPoint)
 {
-    if (HookApp::instance()->uiapp()->isInterceptingInput())
+    if (HookApp::instance()->uiapp()->shouldBlockOrginalMouseInput())
     {
         if (lpPoint)
         {
@@ -121,7 +121,7 @@ BOOL WINAPI H_GetCursorPos(LPPOINT lpPoint)
 
 BOOL WINAPI H_SetCursorPos(int x, int y)
 {
-    if (HookApp::instance()->uiapp()->isInterceptingInput())
+    if (HookApp::instance()->uiapp()->shouldBlockOrginalMouseInput())
     {
         g_savedInputStatus.cursorPos = POINT{x, y};
         return TRUE;
@@ -134,7 +134,7 @@ BOOL WINAPI H_SetCursorPos(int x, int y)
 
 HCURSOR WINAPI H_SetCursor(HCURSOR cursor)
 {
-    if (HookApp::instance()->uiapp()->isInterceptingInput())
+    if (HookApp::instance()->uiapp()->shouldBlockOrginalCursorViz())
     {
         cursor = cursor;
         return NULL;
@@ -147,7 +147,7 @@ HCURSOR WINAPI H_SetCursor(HCURSOR cursor)
 
 HCURSOR WINAPI H_GetCursor()
 {
-    if (HookApp::instance()->uiapp()->isInterceptingInput())
+    if (HookApp::instance()->uiapp()->shouldBlockOrginalCursorViz())
     {
         return g_savedInputStatus.cursor;
     }

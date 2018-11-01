@@ -194,16 +194,13 @@ void UiApp::stopInputIntercept()
 #endif
             session::inputHook()->restoreInputState();
             HookApp::instance()->overlayConnector()->sendInputStopIntercept();
-
-#if AUTO_INPUT_INTERCEPT
-            HookApp::instance()->overlayConnector()->hitTestResult() != HTNOWHERE ? startAutoIntercept() : stopInputIntercept();
-#endif
         }
     }
 }
 
 void UiApp::startAutoIntercept()
 {
+#if AUTO_INPUT_INTERCEPT
     if (session::overlayEnabled())
     {
         if (!isInterceptingMouseAuto_)
@@ -211,10 +208,12 @@ void UiApp::startAutoIntercept()
             isInterceptingMouseAuto_ = true;
         }
     }
+#endif
 }
 
 void UiApp::stopAutoIntercept()
 {
+#if AUTO_INPUT_INTERCEPT
     if (session::overlayEnabled())
     {
         if (isInterceptingMouseAuto_)
@@ -222,11 +221,42 @@ void UiApp::stopAutoIntercept()
             isInterceptingMouseAuto_ = false;
         }
     }
+#endif
+}
+
+bool UiApp::shouldBlockOrginalMouseInput()
+{
+#if AUTO_INPUT_INTERCEPT
+    return isInterceptingMouseAuto_ || isIntercepting_;
+#else
+    return isIntercepting_;
+#endif
+}
+
+bool UiApp::shouldBlockOrginalKeyInput()
+{
+#if AUTO_INPUT_INTERCEPT
+    return (isInterceptingMouseAuto_ && HookApp::instance()->overlayConnector()->focusWindowId() != 0) || isIntercepting_;
+#else
+    return isIntercepting_;
+#endif
+}
+
+bool UiApp::shouldBlockOrginalCursorViz()
+{
+    return isIntercepting_;
 }
 
 bool UiApp::isInterceptingInput()
 {
     return isIntercepting_;
+}
+
+bool UiApp::isInterceptingMouseAuto()
+{
+#if AUTO_INPUT_INTERCEPT
+    return isInterceptingMouseAuto_;
+#endif
 }
 
 bool UiApp::hookWindow(HWND window)
@@ -347,7 +377,12 @@ LRESULT UiApp::hookGetMsgProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lP
 
                     if (overlay_game::pointInRect(pt, windowClientRect_))
                     {
+#if AUTO_INPUT_INTERCEPT
+                        if (!HookApp::instance()->overlayConnector()->processMouseMessage(pMsg->message, pMsg->wParam, pMsg->lParam, isIntercepting_))
+#else
                         if (!HookApp::instance()->overlayConnector()->processMouseMessage(pMsg->message, pMsg->wParam, pMsg->lParam))
+#endif // AUTO_INPUT_INTERCEPT
+
                         {
                             if (pMsg->message == WM_LBUTTONUP
                                 || pMsg->message == WM_MBUTTONUP)
@@ -437,7 +472,7 @@ LRESULT UiApp::hookCallWndProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM l
 #if AUTO_INPUT_INTERCEPT
                 else
                 {
-                    HookApp::instance()->overlayConnector()->processNCHITTEST(cwp->message, cwp->wParam, cwp->lParam) ? startAutoIntercept() : stopInputIntercept();
+                    HookApp::instance()->overlayConnector()->processNCHITTEST(cwp->message, cwp->wParam, cwp->lParam, false) ? startAutoIntercept() : stopAutoIntercept();
                 }
 #endif
             }
