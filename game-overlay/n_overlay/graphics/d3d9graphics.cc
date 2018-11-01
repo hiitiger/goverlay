@@ -262,6 +262,8 @@ void D3d9Graphics::beforePresent(IDirect3DDevice9* device)
         return;
     }
 
+    session::setGraphicsThreadId(GetCurrentThreadId());
+
     if (fpsTimer_.tick() > 1000.)
     {
         HookApp::instance()->overlayConnector()->sendGraphicsFps(fpsTimer_.fps());

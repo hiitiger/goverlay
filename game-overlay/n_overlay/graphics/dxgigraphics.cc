@@ -106,6 +106,8 @@ void DxgiGraphics::beforePresent(IDXGISwapChain *swap)
         return;
     }
 
+    session::setGraphicsThreadId(GetCurrentThreadId());
+
     if (fpsTimer_.tick() > 1000.)
     {
         HookApp::instance()->overlayConnector()->sendGraphicsFps(fpsTimer_.fps());
