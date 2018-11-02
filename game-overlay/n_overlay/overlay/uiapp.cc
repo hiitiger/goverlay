@@ -198,9 +198,9 @@ void UiApp::stopInputIntercept()
     }
 }
 
+#if AUTO_INPUT_INTERCEPT
 void UiApp::startAutoIntercept()
 {
-#if AUTO_INPUT_INTERCEPT
     if (session::overlayEnabled())
     {
         if (!isInterceptingMouseAuto_)
@@ -208,12 +208,12 @@ void UiApp::startAutoIntercept()
             isInterceptingMouseAuto_ = true;
         }
     }
-#endif
 }
+#endif
 
+#if AUTO_INPUT_INTERCEPT
 void UiApp::stopAutoIntercept()
 {
-#if AUTO_INPUT_INTERCEPT
     if (session::overlayEnabled())
     {
         if (isInterceptingMouseAuto_)
@@ -221,13 +221,14 @@ void UiApp::stopAutoIntercept()
             isInterceptingMouseAuto_ = false;
         }
     }
-#endif
 }
+#endif
 
 bool UiApp::shouldBlockOrginalMouseInput()
 {
 #if AUTO_INPUT_INTERCEPT
-    return isInterceptingMouseAuto_ || isIntercepting_;
+    //return isInterceptingMouseAuto_ || isIntercepting_;
+    return isIntercepting_;
 #else
     return isIntercepting_;
 #endif
@@ -252,12 +253,12 @@ bool UiApp::isInterceptingInput()
     return isIntercepting_;
 }
 
+#if AUTO_INPUT_INTERCEPT
 bool UiApp::isInterceptingMouseAuto()
 {
-#if AUTO_INPUT_INTERCEPT
     return isInterceptingMouseAuto_;
-#endif
 }
+#endif
 
 bool UiApp::hookWindow(HWND window)
 {

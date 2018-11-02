@@ -136,7 +136,7 @@ HCURSOR WINAPI H_SetCursor(HCURSOR cursor)
 {
     if (HookApp::instance()->uiapp()->shouldBlockOrginalCursorViz())
     {
-        cursor = cursor;
+        g_savedInputStatus.cursor = cursor;
         return NULL;
     }
     else

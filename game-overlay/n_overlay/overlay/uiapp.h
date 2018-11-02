@@ -43,8 +43,6 @@ public:
     void startInputIntercept();
     void stopInputIntercept();
 
-    void startAutoIntercept();
-    void stopAutoIntercept();
 
     bool shouldBlockOrginalMouseInput();
     bool shouldBlockOrginalKeyInput();
@@ -54,6 +52,9 @@ public:
 
 #if AUTO_INPUT_INTERCEPT
     bool isInterceptingMouseAuto();
+    void startAutoIntercept();
+    void stopAutoIntercept();
+
 #endif
 
     bool hookWindow(HWND window);
