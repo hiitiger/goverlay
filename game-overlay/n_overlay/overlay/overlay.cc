@@ -1031,6 +1031,7 @@ break;
             OVERLAY_DISPATCH("window.bounds", WindowBounds);
             OVERLAY_DISPATCH("command.cursor", CursorCommand);
             OVERLAY_DISPATCH("overlay.hotkey", HotkeyInfo);
+            OVERLAY_DISPATCH("command.input.intercept", InputInterceptCommand);
         default:
             break;
         }
@@ -1209,7 +1210,7 @@ void OverlayConnector::_updateFrameBuffer(std::uint32_t windowId, const std::str
     }
     catch (std::exception& e)
     {
-        std::cout << __FUNCTION__ << ", error:" << e.what();
+        __trace__ << ", error:" << e.what();
     }
 }
 
@@ -1234,4 +1235,14 @@ void OverlayConnector::_onCursorCommand(std::shared_ptr<overlay::CursorCommand>&
 void OverlayConnector::_onHotkeyInfo(std::shared_ptr<overlay::HotkeyInfo>& overlayMsg)
 {
     this->hotkeysEvent()(overlayMsg->hotkeys);
+}
+
+
+void OverlayConnector::_onInputInterceptCommand(std::shared_ptr<overlay::InputInterceptCommand>& overlayMsg)
+{
+    __trace__ << overlayMsg->intercept;
+
+    HookApp::instance()->uiapp()->async([intercept = overlayMsg->intercept]() {
+        intercept ? HookApp::instance()->uiapp()->startInputIntercept() : HookApp::instance()->uiapp()->stopInputIntercept();
+    });
 }

@@ -30,15 +30,21 @@
 <body>
     <div class="content">
         <div class="caption"></div>
-        <button id='button'>Button</button>
+        <button id='button'>intercept</button>
         <br /> offscreen window!
 
         <input type="text"><input>
 
     </div>
     <script>
+         const {
+            ipcRenderer, remote
+        } = window.require('electron')
         const label = document.getElementById('label')
-
+        const button = document.getElementById('button')
+        button.addEventListener('click', () => {
+            ipcRenderer.send('stopIntercept')
+        })
     </script>
 </body>
 

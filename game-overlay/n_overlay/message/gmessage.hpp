@@ -199,6 +199,14 @@ struct FpsCommand : public GMessage
 
 JSON_AUTO(FpsCommand, type, showfps, position)
 
+struct InputInterceptCommand: public GMessage
+{
+    GMESSAGE_AUTO("command.input.intercept");
+    bool intercept = false;
+};
+
+JSON_AUTO(InputInterceptCommand, type, intercept)
+
 struct OverlayInit : public GMessage
 {
     GMESSAGE_AUTO("overlay.init");

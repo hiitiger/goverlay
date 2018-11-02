@@ -276,8 +276,8 @@ class Application {
 
   public createOsrStatusbarWindow() {
     const options: Electron.BrowserWindowConstructorOptions = {
-      height: 40,
-      width: 100,
+      height: 50,
+      width: 200,
       frame: false,
       show: false,
       transparent: true,
@@ -462,6 +462,14 @@ class Application {
 
     ipcMain.on("doit", () => {
       this.doit()
+    })
+
+    ipcMain.on("startIntercept", () => {
+      this.Overlay!.sendCommand({command: "input.intercept", intercept: true})
+    })
+
+    ipcMain.on("stopIntercept", () => {
+      this.Overlay!.sendCommand({command: "input.intercept", intercept: false})
     })
   }
 

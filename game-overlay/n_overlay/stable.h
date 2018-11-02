@@ -42,6 +42,10 @@ __pragma(warning(pop))
 #endif	
 
 
-#define __trace__  std::cout << __FUNCTION__ << std::endl;
+#ifdef _DEBUG
+#define __trace__ std::cout << std::endl << __FUNCTION__ 
+#else
+#define __trace__ LOGGER("n_overlay") 
+#endif
 
 #define AUTO_INPUT_INTERCEPT 1

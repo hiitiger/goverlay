@@ -171,4 +171,6 @@ private:
     void _onCursorCommand(std::shared_ptr<overlay::CursorCommand>& overlayMsg);
 
     void _onHotkeyInfo(std::shared_ptr<overlay::HotkeyInfo>& overlayMsg);
+
+    void _onInputInterceptCommand(std::shared_ptr<overlay::InputInterceptCommand>& overlayMsg);
 };

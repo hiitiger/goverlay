@@ -467,6 +467,14 @@ class OverlayMain : public IIpcHost
 
             this->_sendMessage(&message);
         }
+        else if (command == "input.intercept")
+        {
+            std::cout << __FUNCTIONW__ << "input.intercept";
+            overlay::InputInterceptCommand message;
+            message.intercept = commandInfo.Get("intercept").ToBoolean();
+
+            this->_sendMessage(&message);
+        }
 
         return env.Undefined();
     }

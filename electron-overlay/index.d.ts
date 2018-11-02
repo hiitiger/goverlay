@@ -51,6 +51,7 @@ declare module "electron-overlay" {
     export function setHotkeys(hotkeys: IHotkey[]): void;
     export function sendCommand(arg: {command: "cursor", cursor: string}): void;
     export function sendCommand(arg: {command: "fps", showfps: boolean, position: FpsPosition}): void;
+    export function sendCommand(arg: {command: "input.intercept", intercept: boolean}): void;
     export function addWindow(windowId: number, details: IOverlayWindowDetails): void;
     export function closeWindow(windowId: number): void;
     export function sendWindowBounds(windowId: number, details: {rect: IRectangle}): void;
