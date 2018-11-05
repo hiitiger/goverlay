@@ -172,6 +172,7 @@ UINT WINAPI H_GetRawInputData(HRAWINPUT hRawInput, UINT uiCommand, LPVOID pData,
             {
                 LPBYTE lpb = new BYTE[*pcbSize];
                 Windows::OrginalApi::GetRawInputData(hRawInput, uiCommand, lpb, pcbSize, cbSizeHeader);
+
                 delete[] lpb;
                 *pcbSize = 0;
             }
@@ -242,6 +243,7 @@ struct InputHooks
 
 };
 
+HMODULE g_hUser32 = nullptr;
 static InputHooks g_inputHooks;
 
 
@@ -250,23 +252,24 @@ T_##Function = (pfn##Function)GetProcAddress(hModule, #Function);\
 g_inputHooks.m_##Function##Hook.reset(new ApiHook<pfn##Function>(L#Function, (DWORD_PTR*)T_##Function, (DWORD_PTR*)H_##Function));\
 result &= g_inputHooks.m_##Function##Hook->activeHook();\
 
+
 bool InputHook::hook()
 {
     bool result = true;
-    HMODULE hUser32 = LoadLibraryA("user32.dll");
+    g_hUser32 = LoadLibraryA("user32.dll");
 
-    DoInputHook(hUser32, GetAsyncKeyState);
-    DoInputHook(hUser32, GetKeyState);
-    DoInputHook(hUser32, GetKeyboardState);
+    DoInputHook(g_hUser32, GetAsyncKeyState);
+    DoInputHook(g_hUser32, GetKeyState);
+    DoInputHook(g_hUser32, GetKeyboardState);
 
-    DoInputHook(hUser32, ShowCursor);
-    DoInputHook(hUser32, GetCursorPos);
-    DoInputHook(hUser32, SetCursorPos);
-    DoInputHook(hUser32, SetCursor);
-    DoInputHook(hUser32, GetCursor);
+    DoInputHook(g_hUser32, ShowCursor);
+    DoInputHook(g_hUser32, GetCursorPos);
+    DoInputHook(g_hUser32, SetCursorPos);
+    DoInputHook(g_hUser32, SetCursor);
+    DoInputHook(g_hUser32, GetCursor);
 
-    DoInputHook(hUser32, GetRawInputData);
-    DoInputHook(hUser32, GetRawInputBuffer);
+    DoInputHook(g_hUser32, GetRawInputData);
+    DoInputHook(g_hUser32, GetRawInputBuffer);
 
     HookApp::instance()->overlayConnector()->sendInputHookInfo(result);
 
@@ -306,7 +309,9 @@ void InputHook::saveInputState()
 
             if (nextCounter == showCursorCounter)
             {
-                LOGGER("n_overlay") << "oops!";
+                __trace__ << "oops!";
+
+                break;
             }
 
             showCursorCounter = nextCounter;
@@ -341,7 +346,9 @@ void InputHook::restoreInputState()
 
                 if (nextCounter == showCursorCounter)
                 {
-                    LOGGER("n_overlay") << "oops!";
+                    __trace__ << "oops!" ;
+
+                    break;
                 }
 
                 showCursorCounter = nextCounter;
@@ -395,11 +402,11 @@ BOOL Windows::OrginalApi::GetKeyboardState(__out_ecount(256) PBYTE lpKeyState)
     }
 }
 
-int Windows::OrginalApi::ShowCursor(__in BOOL bShow)
+INT Windows::OrginalApi::ShowCursor(__in BOOL bShow)
 {
     if (g_inputHooks.m_ShowCursorHook)
     {
-        return g_inputHooks.m_ShowCursorHook->callOrginal<int>(bShow);
+        return g_inputHooks.m_ShowCursorHook->callOrginal<INT>(bShow);
     }
     else
     {

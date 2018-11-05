@@ -36,6 +36,7 @@ std::atomic<bool> overlayEnabled_ = true;
 HMODULE hModuleD3dCompiler47_ = nullptr;
 HMODULE hModuleD3dx9_ = nullptr;
 
+std::atomic<bool> hasIGO_ = false;
 
 D3d9Hook *d3d9Hook()
 {
@@ -266,4 +267,19 @@ bool overlayEnabled()
 {
     return overlayEnabled_;
 }
+
+bool hasIGO()
+{
+    return hasIGO_;
+}
+
+void checkIGO()
+{
+#if _WIN64
+    hasIGO_ = GetModuleHandleW(L"igo64.dll") != NULL;
+#else
+    hasIGO_ = GetModuleHandleW(L"igo32.dll") != NULL;
+#endif // #if _WIN64
+}
+
 } // namespace session

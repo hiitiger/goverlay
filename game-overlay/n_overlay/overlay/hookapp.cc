@@ -268,6 +268,8 @@ void HookApp::hook()
         return;
     }
 
+    session::checkIGO();
+
     if (!g_graphicsOnly)
     {
         if (!hookInput())
@@ -321,6 +323,11 @@ void HookApp::hookGraphics()
 
 bool HookApp::hookInput()
 {
+    if (session::hasIGO())
+    {
+        return true;
+    }
+
     if (!session::inputHooked())
     {
         session::tryInputHook();

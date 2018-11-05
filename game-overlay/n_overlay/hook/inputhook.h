@@ -26,7 +26,7 @@ namespace Windows
         SHORT GetKeyState(_In_ int vKey);
         BOOL GetKeyboardState(__out_ecount(256) PBYTE lpKeyState);
 
-        int  ShowCursor(__in BOOL bShow);
+        INT  ShowCursor(__in BOOL bShow);
         BOOL  GetCursorPos(LPPOINT lpPoint);
         BOOL  SetCursorPos(int X, int Y);
 

@@ -118,4 +118,7 @@ bool overlayConnected();
 void setOverlayEnabled(bool v);
 bool overlayEnabled();
 
+bool hasIGO();
+void checkIGO();
+
 } // namespace session
