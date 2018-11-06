@@ -125,6 +125,17 @@ class Application {
         if (payload.name === "app.doit") {
           this.doit()
         }
+      } else if (event === "game.window.focused") {
+        console.log("focusWindowId", payload.focusWindowId)
+
+        BrowserWindow.getAllWindows().forEach((window) => {
+          window.blurWebView()
+        })
+
+        const focusWin = BrowserWindow.fromId(payload.focusWindowId)
+        if (focusWin) {
+          focusWin.focusOnWebView()
+        }
       }
     })
   }
@@ -470,11 +481,17 @@ class Application {
     })
 
     ipcMain.on("startIntercept", () => {
-      this.Overlay!.sendCommand({command: "input.intercept", intercept: true})
+      this.Overlay!.sendCommand({
+        command: "input.intercept",
+        intercept: true
+      })
     })
 
     ipcMain.on("stopIntercept", () => {
-      this.Overlay!.sendCommand({command: "input.intercept", intercept: false})
+      this.Overlay!.sendCommand({
+        command: "input.intercept",
+        intercept: false
+      })
     })
   }
 

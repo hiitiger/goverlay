@@ -125,6 +125,7 @@ public:
     void translateWindow(bool desktop);
 
 protected:
+    void _syncFocusWindowChanged();
     void _ensureTopWindows();
 
     void _heartbeat();
@@ -151,6 +152,8 @@ protected:
     void _sendGraphicsFps(std::uint32_t fps);
 
     void _sendInGameHotkeyDown(const std::string& name);
+
+    void _sendInGameWindowFocused(std::uint32_t windowId);
 
     void _sendMessage(overlay::GMessage* message);
 

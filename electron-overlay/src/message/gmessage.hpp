@@ -420,4 +420,15 @@ struct InGameHotkeyDown : public GMessage
 };
 
 JSON_AUTO(InGameHotkeyDown, type, name)
+
+
+struct InGameWindowFocused : public GMessage
+{
+    GMESSAGE_AUTO("game.window.focused");
+
+    std::uint32_t focusWindowId;
+};
+
+JSON_AUTO(InGameWindowFocused, type, focusWindowId)
+
 } // namespace overlay

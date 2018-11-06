@@ -77,7 +77,7 @@ OverlayConnector::OverlayConnector()
     sizeNSCusor_ = (HCURSOR)::LoadImageW(NULL, IDC_SIZENS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
     sizeWECusor_ = (HCURSOR)::LoadImageW(NULL, IDC_SIZEWE, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
 
-    topWindows_ = { "MainOverlay", "StatusBar" };
+    topWindows_ = { "MainOverlay", "StatusBar", "OverlayTip" };
 }
 
 OverlayConnector::~OverlayConnector()
@@ -560,6 +560,8 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
                 focusWindowId_ = window->windowId;
                 focusWindow_ = window->nativeHandle;
 
+                _syncFocusWindowChanged();
+
                 if (hitTest_ == HTCAPTION)
                 {
                     std::lock_guard<std::recursive_mutex> lock(mouseDragLock_);
@@ -648,6 +650,8 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
     {
         focusWindowId_ = 0;
         focusWindow_ = 0;
+
+        _syncFocusWindowChanged();
     }
 
     return false;
@@ -815,6 +819,13 @@ void OverlayConnector::translateWindow(bool desktop)
     }
 }
 
+void OverlayConnector::_syncFocusWindowChanged()
+{
+    HookApp::instance()->async([this]() {
+        _sendInGameWindowFocused(focusWindowId_);
+    });
+}
+
 void OverlayConnector::_ensureTopWindows()
 {
     //in lock
@@ -960,6 +971,14 @@ void OverlayConnector::_sendInGameHotkeyDown(const std::string& name)
 {
     overlay::InGameHotkeyDown message;
     message.name = name;
+
+    _sendMessage(&message);
+}
+
+void OverlayConnector::_sendInGameWindowFocused(std::uint32_t windowId)
+{
+    overlay::InGameWindowFocused message;
+    message.focusWindowId = windowId;
 
     _sendMessage(&message);
 }
@@ -1135,10 +1154,15 @@ void OverlayConnector::_onWindow(std::shared_ptr<overlay::Window>& overlayMsg)
             mainWindowId_ = overlayMsg->windowId;
         }
 
-        focusWindowId_ = overlayMsg->windowId;
-        focusWindow_ = overlayMsg->nativeHandle;
+        if (overlayMsg->name != "OverlayTip")
+        {
+            focusWindowId_ = overlayMsg->windowId;
+            focusWindow_ = overlayMsg->nativeHandle;
 
-        _ensureTopWindows();
+            _syncFocusWindowChanged();
+
+            _ensureTopWindows();
+        }
     }
 
     if (overlayMsg->transparent)
@@ -1148,7 +1172,7 @@ void OverlayConnector::_onWindow(std::shared_ptr<overlay::Window>& overlayMsg)
 
     this->windowEvent()(overlayMsg->windowId);
 
-    this->windowFocusEvent()(overlayMsg->windowId);
+    this->windowFocusEvent()(focusWindowId_);
 }
 
 void OverlayConnector::_onWindowFrameBuffer(std::shared_ptr<overlay::WindowFrameBuffer>& overlayMsg)
@@ -1192,6 +1216,8 @@ void OverlayConnector::_onWindowClose(std::shared_ptr<overlay::WindowClose>& ove
             focusWindowId_ = 0;
             focusWindow_ = 0;
             this->windowFocusEvent()(0);
+
+            _syncFocusWindowChanged();
         }
 
         this->windowCloseEvent()(overlayMsg->windowId);
