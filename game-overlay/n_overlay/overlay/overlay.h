@@ -3,7 +3,6 @@
 #include "session.h"
 
 
-bool isAllwaysAcceptInputWindow(const std::string& name);
 
 class OverlayConnector : public IIpcClient
 {
