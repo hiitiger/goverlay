@@ -77,6 +77,8 @@ OverlayConnector::OverlayConnector()
     sizeNESWCusor_ = (HCURSOR)::LoadImageW(NULL, IDC_SIZENESW, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
     sizeNSCusor_ = (HCURSOR)::LoadImageW(NULL, IDC_SIZENS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
     sizeWECusor_ = (HCURSOR)::LoadImageW(NULL, IDC_SIZEWE, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+
+    topWindows_ = { "MainOverlay", "StatusBar" };
 }
 
 OverlayConnector::~OverlayConnector()
@@ -601,8 +603,11 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
                     windows_.erase(it);
                     windows_.push_back(focusWindow);
 
+                    _ensureTopWindows();
+
                     this->windowFocusEvent()(focusWindowId_);
                 }
+
             }
 
             return true;
@@ -796,6 +801,23 @@ void OverlayConnector::translateWindow(bool desktop)
 
         SetWindowPos((HWND)window->nativeHandle, nullptr, (int)(x * xscale), (int)(y * yscale), 0, 0, SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER);
     }
+}
+
+void OverlayConnector::_ensureTopWindows()
+{
+    //in lock
+
+    std::for_each(topWindows_.begin(), topWindows_.end(), [this](const std::string& name) {
+        auto it = std::find_if(windows_.begin(), windows_.end(), [&](const auto &window) {
+            return name == window->name;
+        });
+        if (it != windows_.end())
+        {
+            auto window = *it;
+            windows_.erase(it);
+            windows_.push_back(window);
+        }
+    });
 }
 
 void OverlayConnector::_heartbeat()
@@ -1092,16 +1114,19 @@ void OverlayConnector::_onWindow(std::shared_ptr<overlay::Window>& overlayMsg)
         {
             mainWindowId_ = overlayMsg->windowId;
         }
+
+        focusWindowId_ = overlayMsg->windowId;
+        focusWindow_ = overlayMsg->nativeHandle;
+
+        _ensureTopWindows();
     }
+
     if (overlayMsg->transparent)
     {
         _updateFrameBuffer(overlayMsg->windowId, overlayMsg->bufferName);
     }
 
     this->windowEvent()(overlayMsg->windowId);
-
-    focusWindowId_ = overlayMsg->windowId;
-    focusWindow_ = overlayMsg->nativeHandle;
 
     this->windowFocusEvent()(overlayMsg->windowId);
 }

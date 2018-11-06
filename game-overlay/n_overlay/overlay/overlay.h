@@ -59,6 +59,8 @@ class OverlayConnector : public IIpcClient
     HCURSOR sizeNSCusor_ = nullptr;
     HCURSOR sizeWECusor_ = nullptr;
 
+    std::vector<std::string> topWindows_;
+
 public:
     OverlayConnector();
     ~OverlayConnector();
@@ -122,6 +124,8 @@ public:
     void translateWindow(bool desktop);
 
 protected:
+    void _ensureTopWindows();
+
     void _heartbeat();
 
     void _sendGameExit();
