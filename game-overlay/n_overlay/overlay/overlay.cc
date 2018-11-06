@@ -218,6 +218,13 @@ void OverlayConnector::sendInputStopIntercept()
     });
 }
 
+void OverlayConnector::sendInGameHotkeyDown(const std::string& name)
+{
+    HookApp::instance()->async([this, name]() {
+        _sendInGameHotkeyDown(name);
+    });
+}
+
 const std::vector<std::shared_ptr<overlay::Window>>& OverlayConnector::windows()
 {
     return windows_;
@@ -945,6 +952,14 @@ void OverlayConnector::_sendGraphicsFps(std::uint32_t fps)
 {
     overlay::GraphicsFps message;
     message.fps = fps;
+
+    _sendMessage(&message);
+}
+
+void OverlayConnector::_sendInGameHotkeyDown(const std::string& name)
+{
+    overlay::InGameHotkeyDown message;
+    message.name = name;
 
     _sendMessage(&message);
 }

@@ -181,6 +181,8 @@ inline void HotkeyCheck::_onHotkeyDown(const std::string& name)
         {
             HookApp::instance()->uiapp()->toggleInputIntercept();
         }
+
+        HookApp::instance()->overlayConnector()->sendInGameHotkeyDown(name);
     }
 }
 

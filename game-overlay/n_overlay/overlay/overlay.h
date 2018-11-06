@@ -83,6 +83,8 @@ public:
     void sendInputIntercept();
     void sendInputStopIntercept();
 
+    void sendInGameHotkeyDown(const std::string& name);
+
     const std::vector<std::shared_ptr<overlay::Window>>& windows();
 
     Storm::Event<void()>& remoteConnectEvent() { return remoteConnectEvent_; }
@@ -147,6 +149,8 @@ protected:
     void _sendGraphicsWindowDestroy(HWND window);
 
     void _sendGraphicsFps(std::uint32_t fps);
+
+    void _sendInGameHotkeyDown(const std::string& name);
 
     void _sendMessage(overlay::GMessage* message);
 

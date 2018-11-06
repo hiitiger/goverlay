@@ -896,6 +896,18 @@ class OverlayMain : public IIpcHost
         }
     }
 
+    void notifyInGameHotkeyDown(std::uint32_t pid, const std::string& name)
+    {
+         if (eventCallback_)
+        {
+            Napi::HandleScope scope(eventCallback_->env);
+            Napi::Object object = Napi::Object::New(eventCallback_->env);
+            object.Set("pid", Napi::Value::From(eventCallback_->env, pid));
+            object.Set("name", Napi::Value::From(eventCallback_->env, name));
+            eventCallback_->callback.MakeCallback(eventCallback_->receiver.Value(), { Napi::Value::From(eventCallback_->env, "game.hotkey.down"), Napi::Value::From(eventCallback_->env, object) });
+        }
+    }
+
   private:
     void _makeCallback()
     {
@@ -972,6 +984,7 @@ break;
                 OVERLAY_DISPATCH("graphics.window.event.resize", GraphicsWindowRezizeEvent);
                 OVERLAY_DISPATCH("graphics.window.event.focus", GraphicsWindowFocusEvent);
                 OVERLAY_DISPATCH("graphics.fps", GraphicsFps);
+                OVERLAY_DISPATCH("game.hotkey.down", InGameHotkeyDown);
             default:
                 break;
             }
@@ -1055,6 +1068,13 @@ break;
     {
         node_async_call::async_call([this, pid, overlayMsg]() {
             ontifyGrapicsFps(pid, overlayMsg->fps);
+        });
+    }
+
+    void _onInGameHotkeyDown(std::uint32_t pid, const std::shared_ptr<overlay::InGameHotkeyDown>& overlayMsg)
+    {
+        node_async_call::async_call([this, pid, overlayMsg]() {
+            notifyInGameHotkeyDown(pid, overlayMsg->name);
         });
     }
 };

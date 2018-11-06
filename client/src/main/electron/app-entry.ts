@@ -98,7 +98,8 @@ class Application {
     this.Overlay = require("electron-overlay")!
     this.Overlay!.start()
     this.Overlay!.setHotkeys([
-      { name: "overlay.toggle", keyCode: 113, modifiers: { ctrl: true } }
+      { name: "overlay.toggle", keyCode: 113, modifiers: { ctrl: true } },
+      { name: "app.doit", keyCode: 114, modifiers: { ctrl: true } }
     ])
 
     this.Overlay!.setEventCallback((event: string, payload: any) => {
@@ -119,6 +120,10 @@ class Application {
         const window = this.getWindow("StatusBar")
         if (window) {
           window.webContents.send("fps", payload.fps)
+        }
+      } else if (event === "game.hotkey.down") {
+        if (payload.name === "app.doit") {
+          this.doit()
         }
       }
     })

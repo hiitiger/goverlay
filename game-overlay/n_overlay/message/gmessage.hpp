@@ -411,4 +411,14 @@ struct GameInput : public GMessage
 
 JSON_AUTO(GameInput, type, windowId, msg, wparam, lparam)
 
+struct InGameHotkeyDown : public GMessage
+{
+    GMESSAGE_AUTO("game.hotkey.down");
+
+    std::string name;
+};
+
+JSON_AUTO(InGameHotkeyDown, type, name)
+
+
 } // namespace overlay
