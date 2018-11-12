@@ -42,7 +42,7 @@ use the power of web to inject any web app to overlay in your game
     - [x] input intercepting by manually control
     - [x] custom shaped window (alpha test for mouse handling)
     - [ ] detailed injecting configuration 
-    - [ ] input intercepting by auto mouse check
+    - [x] input intercepting by auto mouse check
 
 ## todo
     - [ ] brwoser window state manage
