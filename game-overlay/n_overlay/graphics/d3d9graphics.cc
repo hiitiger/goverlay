@@ -176,37 +176,37 @@ bool D3d9Graphics::initGraphics(IDirect3DDevice9* device, HWND /*hDestWindowOver
     {
         HookApp::instance()->overlayConnector()->windowEvent().add([this](std::uint32_t windowId) {
             std::lock_guard<std::mutex> lock(synclock_);
-            pendingWindows_.insert(windowId);
+            syncState_.pendingWindows_.insert(windowId);
             needResync_ = true;
         }, this);
 
         HookApp::instance()->overlayConnector()->frameBufferEvent().add([this](std::uint32_t windowId) {
             std::lock_guard<std::mutex> lock(synclock_);
-            pendingFrameBuffers_.insert(windowId);
+            syncState_.pendingFrameBuffers_.insert(windowId);
             needResync_ = true;
         }, this);
 
         HookApp::instance()->overlayConnector()->windowCloseEvent().add([this](std::uint32_t windowId) {
             std::lock_guard<std::mutex> lock(synclock_);
-            pendingClosed_.insert(windowId);
+            syncState_.pendingClosed_.insert(windowId);
             needResync_ = true;
         }, this);
 
         HookApp::instance()->overlayConnector()->windowBoundsEvent().add([this](std::uint32_t windowId, overlay::WindowRect rect) {
             std::lock_guard<std::mutex> lock(synclock_);
-            pendingBounds_[windowId] = rect;
+            syncState_.pendingBounds_[windowId] = rect;
             needResync_ = true;
         }, this);
 
         HookApp::instance()->overlayConnector()->frameBufferUpdateEvent().add([this](std::uint32_t windowId) {
             std::lock_guard<std::mutex> lock(synclock_);
-            pendingFrameBufferUpdates_.insert(windowId);
+            syncState_.pendingFrameBufferUpdates_.insert(windowId);
             needResync_ = true;
         }, this);
 
         HookApp::instance()->overlayConnector()->windowFocusEvent().add([this](std::uint32_t windowId) {
             std::lock_guard<std::mutex> lock(synclock_);
-            focusWindowId_ = windowId;
+            syncState_.focusWindowId_ = windowId;
             needResync_ = true;
         }, this);
     }
@@ -239,11 +239,12 @@ void D3d9Graphics::freeGraphics()
     HookApp::instance()->overlayConnector()->windowFocusEvent().remove(this);
 
     std::lock_guard<std::mutex> lock(synclock_);
-    pendingWindows_.clear();
-    pendingFrameBuffers_.clear();
-    pendingClosed_.clear();
-    pendingBounds_.clear();
-    pendingFrameBufferUpdates_.clear();
+    syncState_.pendingWindows_.clear();
+    syncState_.pendingFrameBuffers_.clear();
+    syncState_.pendingClosed_.clear();
+    syncState_.pendingBounds_.clear();
+    syncState_.pendingFrameBufferUpdates_.clear();
+    syncState_.focusWindowId_ = 0;
     needResync_ = false;
 
     statusBarSprite_ = nullptr;
@@ -482,14 +483,23 @@ void D3d9Graphics::_checkAndResyncWindows()
 {
     if (needResync_)
     {
-        std::lock_guard<std::mutex> lock(synclock_);
-        if (pendingWindows_.size() > 0 || pendingFrameBufferUpdates_.size() > 0)
+        SyncState syncState;
+        {
+            std::lock_guard<std::mutex> lock(synclock_);
+            syncState.pendingWindows_.swap(syncState_.pendingWindows_);
+            syncState.pendingFrameBuffers_.swap(syncState_.pendingFrameBuffers_);
+            syncState.pendingClosed_.swap(syncState_.pendingClosed_);
+            syncState.pendingBounds_.swap(syncState_.pendingBounds_);
+            syncState.pendingFrameBufferUpdates_.swap(syncState_.pendingFrameBufferUpdates_);
+            syncState.focusWindowId_ = syncState_.focusWindowId_;
+        }
+        if (syncState.pendingWindows_.size() > 0 || syncState.pendingFrameBufferUpdates_.size() > 0)
         {
             HookApp::instance()->overlayConnector()->lockWindows();
 
             auto windows = HookApp::instance()->overlayConnector()->windows();
 
-            for (auto windowId : pendingWindows_)
+            for (auto windowId : syncState.pendingWindows_)
             {
                 auto it = std::find_if(windows.begin(), windows.end(), [windowId](const auto &window) {
                     return windowId == window->windowId;
@@ -509,9 +519,7 @@ void D3d9Graphics::_checkAndResyncWindows()
                 }
             }
 
-            pendingWindows_.clear();
-
-            for (auto windowId : pendingFrameBufferUpdates_)
+            for (auto windowId : syncState.pendingFrameBufferUpdates_)
             {
                 auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [windowId](const auto &window) {
                     return windowId == window->windowId;
@@ -533,9 +541,9 @@ void D3d9Graphics::_checkAndResyncWindows()
             HookApp::instance()->overlayConnector()->unlockWindows();
         }
 
-        if (pendingClosed_.size() > 0)
+        if (syncState.pendingClosed_.size() > 0)
         {
-            for (auto windowId : pendingClosed_)
+            for (auto windowId : syncState.pendingClosed_)
             {
                 auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [windowId](const auto &window) {
                     return windowId == window->windowId;
@@ -551,13 +559,11 @@ void D3d9Graphics::_checkAndResyncWindows()
                     windowSprites_.erase(it);
                 }
             }
-
-            pendingClosed_.clear();
         }
 
-        if (pendingBounds_.size() > 0)
+        if (syncState.pendingBounds_.size() > 0)
         {
-            for (const auto&[windowId, rect] : pendingBounds_)
+            for (const auto&[windowId, rect] : syncState.pendingBounds_)
             {
                 auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [windowId](const auto &window) {
                     return windowId == window->windowId;
@@ -599,12 +605,11 @@ void D3d9Graphics::_checkAndResyncWindows()
                     }
                 }
             }
-            pendingBounds_.clear();
         }
 
-        if (pendingFrameBuffers_.size() > 0)
+        if (syncState.pendingFrameBuffers_.size() > 0)
         {
-            for (auto windowId : pendingFrameBuffers_)
+            for (auto windowId : syncState.pendingFrameBuffers_)
             {
                 auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [windowId](const auto &window) {
                     return windowId == window->windowId;
@@ -615,16 +620,14 @@ void D3d9Graphics::_checkAndResyncWindows()
                     _updateSprite(*it);
                 }
             }
-
-            pendingFrameBuffers_.clear();
         }
 
-        if (focusWindowId_)
+        if (syncState.focusWindowId_)
         {
-            if (windowSprites_.at(windowSprites_.size() - 1)->windowId != focusWindowId_)
+            if (windowSprites_.at(windowSprites_.size() - 1)->windowId != syncState.focusWindowId_)
             {
                 auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [&](const auto& w) {
-                    return w->windowId == focusWindowId_;
+                    return w->windowId == syncState.focusWindowId_;
                 });
                 if (it != windowSprites_.end())
                 {

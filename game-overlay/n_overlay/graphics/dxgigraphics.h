@@ -5,12 +5,15 @@ class DxgiGraphics : public Storm::Trackable<>
 {
 protected:
     std::mutex synclock_;
-    std::set<std::uint32_t> pendingWindows_;
-    std::set<std::uint32_t> pendingFrameBuffers_;
-    std::set<std::uint32_t> pendingClosed_;
-    std::map<std::uint32_t, overlay::WindowRect> pendingBounds_;
-    std::set<std::uint32_t> pendingFrameBufferUpdates_;
-    std::uint32_t focusWindowId_ = 0;
+    struct SyncState
+    {
+        std::set<std::uint32_t> pendingWindows_;
+        std::set<std::uint32_t> pendingFrameBuffers_;
+        std::set<std::uint32_t> pendingClosed_;
+        std::map<std::uint32_t, overlay::WindowRect> pendingBounds_;
+        std::set<std::uint32_t> pendingFrameBufferUpdates_;
+        std::uint32_t focusWindowId_ = 0;
+    } syncState_;
 
     std::atomic<bool> needResync_ = false;
     FpsTimer fpsTimer_;
