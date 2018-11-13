@@ -1,5 +1,7 @@
 # game-overlay in electron ⚡
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/eba619d62d1e4b539150417ccb679ae9)](https://app.codacy.com/app/hiitiger/gelectron?utm_source=github.com&utm_medium=referral&utm_content=hiitiger/gelectron&utm_campaign=Badge_Grade_Dashboard)
+
 use the power of web to inject any web app to overlay in your game
 
 ## screenshot
