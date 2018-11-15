@@ -362,7 +362,7 @@ LRESULT UiApp::hookGetMsgProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lP
                 {
                     
 #if AUTO_INPUT_INTERCEPT
-                    if (!isInterceptingMouseAuto_)
+                    if (!isInterceptingMouseAuto_ && !HookApp::instance()->overlayConnector()->isMousePressingOnOverlayWindow())
                     {
                         return CallNextHookEx(msgHook_, nCode, wParam, lParam);
                     }

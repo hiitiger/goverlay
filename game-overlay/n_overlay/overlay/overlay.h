@@ -102,6 +102,7 @@ public:
 
     std::int32_t hitTestResult()  const { return hitTest_; }
     std::uint32_t focusWindowId() const { return focusWindowId_; }
+    bool isMousePressingOnOverlayWindow() const { return mousePressWindowId_ != 0; }
 
     void lockShareMem();
     void unlockShareMem();
