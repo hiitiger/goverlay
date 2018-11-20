@@ -2,6 +2,8 @@
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/0f6b8ec919b243a7a926fcf674b2cab7)](https://www.codacy.com/app/hiitiger/gelectron?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=hiitiger/gelectron&amp;utm_campaign=Badge_Grade)
 
+[![Build status](https://ci.appveyor.com/api/projects/status/sgi7go37f72f52a5?svg=true)](https://ci.appveyor.com/project/hiitiger/gelectron)
+
 use the power of web to inject any web app to overlay in your game
 
 ## screenshot
