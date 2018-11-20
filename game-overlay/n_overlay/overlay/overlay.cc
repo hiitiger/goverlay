@@ -52,7 +52,6 @@ static auto _syncDragResizeBottom = [&](auto& window, std::int32_t /*xdiff*/, st
     window->rect.height = curHeight;
 };
 
-//todo: temporaly
 bool isAlwaysInputAwareWindow(const std::string& name)
 {
     return name == "StatusBar";
@@ -1026,7 +1025,6 @@ void OverlayConnector::_onRemoteClose()
 
     clearMouseDrag();
 
-    mainWindowId_ = 0;
     focusWindowId_ = 0;
     focusWindow_ = 0;
 
@@ -1125,11 +1123,6 @@ void OverlayConnector::_onOverlayInit(std::shared_ptr<overlay::OverlayInit>& ove
         {
             _updateFrameBuffer(window.windowId, window.bufferName);
         }
-
-        if (window.name == "MainOverlay")
-        {
-            mainWindowId_ = window.windowId;
-        }
     }
 
     std::lock_guard<std::mutex> lock(windowsLock_);
@@ -1148,11 +1141,6 @@ void OverlayConnector::_onWindow(std::shared_ptr<overlay::Window>& overlayMsg)
     {
         std::lock_guard<std::mutex> lock(windowsLock_);
         windows_.push_back(overlayMsg);
-
-        if (overlayMsg->name == "MainOverlay")
-        {
-            mainWindowId_ = overlayMsg->windowId;
-        }
 
         if (overlayMsg->name != "OverlayTip")
         {

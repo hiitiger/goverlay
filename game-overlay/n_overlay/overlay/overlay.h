@@ -15,7 +15,6 @@ class OverlayConnector : public IIpcClient
 
     std::mutex windowsLock_;
     std::vector<std::shared_ptr<overlay::Window>> windows_;
-    volatile std::uint32_t mainWindowId_ = 0;
     std::atomic<std::uint32_t> focusWindowId_ = 0;
     std::atomic<std::uint32_t> focusWindow_ = 0;
 
