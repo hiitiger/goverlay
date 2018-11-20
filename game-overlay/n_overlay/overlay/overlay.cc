@@ -177,11 +177,11 @@ void OverlayConnector::sendGraphicsWindowFocusEvent(HWND window, bool focus)
 
     if (focus)
     {
-        translationWindowToGameClient();
+        translateWindowsToGameClient();
     }
     else
     {
-        translationWindowToDesktop();
+        translateWindowsToDesktop();
     }
 }
 
@@ -782,14 +782,32 @@ void OverlayConnector::clearMouseDrag()
     hitTest_ = HTNOWHERE;
 }
 
-void OverlayConnector::translationWindowToDesktop()
+void OverlayConnector::translateWindowsToDesktop()
 {
     translateWindow(true);
 }
 
-void OverlayConnector::translationWindowToGameClient()
+void OverlayConnector::translateWindowsToGameClient()
 {
     translateWindow(false);
+}
+
+void OverlayConnector::translateWindowsToGameClient(const std::shared_ptr<overlay::Window>& window)
+{
+    auto screenWidth = GetSystemMetrics(SM_CXSCREEN);
+    auto screenHeight = GetSystemMetrics(SM_CYSCREEN);
+    auto gameWidth = HookApp::instance()->uiapp()->gameWidth();
+    auto gameHeight = HookApp::instance()->uiapp()->gameHeight();
+    gameWidth = gameWidth ? gameWidth : screenWidth;
+    gameHeight = gameHeight ? gameHeight : screenHeight;
+
+    auto xscale = (float)gameWidth / (float)screenWidth;
+    auto yscale = (float)gameHeight / (float)screenHeight;
+
+    auto x = window->rect.x;
+    auto y = window->rect.y;
+
+    SetWindowPos((HWND)window->nativeHandle, nullptr, (int)(x * xscale), (int)(y * yscale), 0, 0, SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
 void OverlayConnector::translateWindow(bool desktop)
@@ -991,10 +1009,6 @@ void OverlayConnector::_sendMessage(overlay::GMessage *message)
     ipcMsg.type = message->msgType();
     ipcMsg.message = obj.dump();
 
-
-    //std::cout << __FUNCTION__ << ", " << ipcMsg.type << std::endl;
-    //std::cout << __FUNCTION__ << ", " << ipcMsg.message << std::endl;
-
     if (ipcLink_)
     {
         getIpcCenter()->sendMessage(ipcLink_, ipcClientId_, 0, &ipcMsg);
@@ -1043,16 +1057,12 @@ void OverlayConnector::onLinkConnect(IIpcLink *)
 {
     __trace__;
 
-    LOGGER("n_overlay") << "@trace";
-
     _onRemoteConnect();
 }
 
 void OverlayConnector::onLinkClose(IIpcLink *)
 {
     __trace__;
-
-    LOGGER("n_overlay") << "@trace";
 
     ipcLink_ = nullptr;
 
@@ -1125,8 +1135,10 @@ void OverlayConnector::_onOverlayInit(std::shared_ptr<overlay::OverlayInit>& ove
         }
     }
 
-    std::lock_guard<std::mutex> lock(windowsLock_);
-    windows_.swap(windows);
+    {
+        std::lock_guard<std::mutex> lock(windowsLock_);
+        windows_.swap(windows);
+    }
 
     this->hotkeysEvent()(overlayMsg->hotkeys);
 }
@@ -1141,6 +1153,11 @@ void OverlayConnector::_onWindow(std::shared_ptr<overlay::Window>& overlayMsg)
     {
         std::lock_guard<std::mutex> lock(windowsLock_);
         windows_.push_back(overlayMsg);
+
+        if (HookApp::instance()->uiapp()->windowFocused())
+        {
+            translateWindowsToGameClient(overlayMsg);
+        }
 
         if (overlayMsg->name != "OverlayTip")
         {
@@ -1265,7 +1282,7 @@ void OverlayConnector::_updateFrameBuffer(std::uint32_t windowId, const std::str
         std::lock_guard<std::mutex> lock(framesLock_);
         frameBuffers_[windowId] = frameBuffer;
 
-        //std::cout << __FUNCTION__ << ", width:" << head->width << ", height:" << head->height << std::endl;
+        __trace__ << "window: " << windowId << ", width:" << head->width << ", height:" << head->height << std::endl;
     }
     catch (std::exception& e)
     {

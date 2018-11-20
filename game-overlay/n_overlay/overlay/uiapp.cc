@@ -79,7 +79,7 @@ bool UiApp::setup(HWND window)
             {
                 if (GetForegroundWindow() == this->graphicsWindow_)
                 {
-                    HookApp::instance()->overlayConnector()->translationWindowToGameClient();
+                    HookApp::instance()->overlayConnector()->translateWindowsToGameClient();
                 }
             }
         });
@@ -103,6 +103,11 @@ HWND UiApp::window() const
 bool UiApp::windowSetted() const
 {
     return !!graphicsWindow_.load();
+}
+
+bool UiApp::windowFocused() const
+{
+    return windowFocus_;
 }
 
 void UiApp::async(const std::function<void()>& task)
@@ -451,6 +456,8 @@ LRESULT UiApp::hookCallWndProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM l
 #if AUTO_INPUT_INTERCEPT
                 stopAutoIntercept();
 #endif
+                stopInputIntercept();
+
             }
             else if (cwp->message == WM_SETFOCUS)
             {

@@ -36,6 +36,7 @@ public:
 
     HWND window() const;
     bool windowSetted() const;
+    bool windowFocused() const;
 
     void async(const std::function<void()>& task);
 
