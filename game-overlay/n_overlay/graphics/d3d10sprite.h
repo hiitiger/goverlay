@@ -8,7 +8,7 @@ public:
     D3d10SpriteDrawer(Windows::ComPtr<ID3D10Device> device);
     ~D3d10SpriteDrawer();
 
-    void init(HMODULE hModuleD3dCompiler47, int swapChainWidth, int swapChainHeight);
+    void init(HMODULE hModuleD3dCompiler47, int swapChainWidth, int swapChainHeight, bool gammaFix);
 
     void drawUnscaleSprite(Windows::ComPtr<ID3D10Texture2D> texture, RECT& rc, D3DCOLOR color = 0xffffffff);
 
@@ -40,7 +40,7 @@ inline D3d10SpriteDrawer::~D3d10SpriteDrawer()
 
 }
 
-inline void D3d10SpriteDrawer::init(HMODULE hModuleD3dCompiler47, int swapChainWidth, int swapChainHeight)
+inline void D3d10SpriteDrawer::init(HMODULE hModuleD3dCompiler47, int swapChainWidth, int swapChainHeight, bool gammaFix)
 {
     m_targetWidth = (float)swapChainWidth;
     m_targetHeight = (float)swapChainHeight;
@@ -59,7 +59,7 @@ inline void D3d10SpriteDrawer::init(HMODULE hModuleD3dCompiler47, int swapChainW
             error = std::string((char*)errorBlob->GetBufferPointer());
             return;
         }
-        fn(shaderCodeD10.c_str(), shaderCodeD10.size(), nullptr, nullptr, nullptr, "PShader", "ps_4_0", 0, 0, PS.resetAndGetPointerAddress(), errorBlob.resetAndGetPointerAddress());
+        fn(shaderCodeD10.c_str(), shaderCodeD10.size(), nullptr, nullptr, nullptr, gammaFix ? "PShaderG" : "PShader", "ps_4_0", 0, 0, PS.resetAndGetPointerAddress(), errorBlob.resetAndGetPointerAddress());
         if (errorBlob) {
             error = std::string((char*)errorBlob->GetBufferPointer());
             return;

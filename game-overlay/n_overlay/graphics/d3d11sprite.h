@@ -8,7 +8,7 @@ public:
     D3d11SpriteDrawer(Windows::ComPtr<ID3D11Device> device, Windows::ComPtr<ID3D11DeviceContext> context);
     ~D3d11SpriteDrawer();
 
-    void init(HMODULE hModuleD3dCompiler47, int swapChainWidth, int swapChainHeight);
+    void init(HMODULE hModuleD3dCompiler47, int swapChainWidth, int swapChainHeight, bool gammaFix);
 
     void drawUnscaleSprite(Windows::ComPtr<ID3D11Texture2D> texture, RECT& rc, D3DCOLOR color = 0xffffffff);
 
@@ -44,7 +44,7 @@ inline D3d11SpriteDrawer::~D3d11SpriteDrawer()
 
 }
 
-inline void D3d11SpriteDrawer::init(HMODULE hModuleD3dCompiler47, int swapChainWidth, int swapChainHeight)
+inline void D3d11SpriteDrawer::init(HMODULE hModuleD3dCompiler47, int swapChainWidth, int swapChainHeight, bool gammaFix)
 {
     m_targetWidth = (float)swapChainWidth;
     m_targetHeight = (float)swapChainHeight;
@@ -71,7 +71,7 @@ inline void D3d11SpriteDrawer::init(HMODULE hModuleD3dCompiler47, int swapChainW
         }
 
 
-        hr = fn(shaderCode.c_str(), shaderCode.size(), nullptr, nullptr, nullptr, "PShader", "ps_4_0", 0, 0, PS.resetAndGetPointerAddress(), errorBlob.resetAndGetPointerAddress());
+        hr = fn(shaderCode.c_str(), shaderCode.size(), nullptr, nullptr, nullptr, gammaFix ? "PShaderG" : "PShader", "ps_4_0", 0, 0, PS.resetAndGetPointerAddress(), errorBlob.resetAndGetPointerAddress());
         if (FAILED(hr))
         {
             LOGGER("n_overlay") << L"compile PShader hr:" << hr;

@@ -31,6 +31,7 @@ class D3d11Graphics : public DxgiGraphics
     std::uint32_t targetWidth_ = 0;
     std::uint32_t targetHeight_ = 0;
     DXGI_FORMAT dxgiformat_ = DXGI_FORMAT_UNKNOWN;
+    bool isSRGB_ = false;
 
     Windows::ComPtr<ID3D11DepthStencilState> depthStencilState_;
     Windows::ComPtr<ID3D11BlendState> transparentBlendState_;

@@ -30,6 +30,12 @@ float4 PShader(VertexOut pin) : SV_Target{\
     float4 rgba = pin.Color*SpriteTex.Sample(samLinear, pin.Tex);\
     return float4(rgba.b, rgba.g, rgba.r, rgba.a);\
 };\
+float4 PShaderG(VertexOut pin) : SV_Target{\
+    float4 rgba = pin.Color*SpriteTex.Sample(samLinear, pin.Tex);\
+    float4 c = float4(rgba.b, rgba.g, rgba.r, rgba.a);\
+    c.xyz = pow(abs(c.xyz), 2.2f);\
+    return c;\
+};\
 ";
 
 
@@ -57,6 +63,11 @@ VertexOut VShader(VertexIn vin) {\
 };\
 float4 PShader(VertexOut pin) : SV_Target{\
     return pin.Color*SpriteTex.Sample(samLinear, pin.Tex);\
+};\
+float4 PShaderG(VertexOut pin) : SV_Target{\
+    float4 c = pin.Color*SpriteTex.Sample(samLinear, pin.Tex);\
+    c.xyz = pow(abs(c.xyz), 2.2f);\
+    return c;\
 };\
 ";
 

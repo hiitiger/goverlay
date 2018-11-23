@@ -58,3 +58,10 @@ inline DXGI_FORMAT fixCopyTextureFormat(DXGI_FORMAT format)
 
     return format;
 }
+
+
+inline bool isSRGBFormat(DXGI_FORMAT format)
+{
+    return format == DXGI_FORMAT_B8G8R8A8_UNORM_SRGB ||
+        format == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+}

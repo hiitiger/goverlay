@@ -29,6 +29,7 @@ class D3d10Graphics : public DxgiGraphics
     std::uint32_t targetWidth_ = 0;
     std::uint32_t targetHeight_ = 0;
     DXGI_FORMAT dxgiformat_ = DXGI_FORMAT_UNKNOWN;
+    bool isSRGB_ = false;
 
     Windows::ComPtr<ID3D10DepthStencilState> depthStencilState_;
     Windows::ComPtr<ID3D10BlendState> transparentBlendState_;

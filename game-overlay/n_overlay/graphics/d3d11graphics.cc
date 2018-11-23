@@ -73,6 +73,7 @@ bool D3d11Graphics::_initGraphicsContext(IDXGISwapChain* swap)
     targetWidth_ = textureDesc.Width;
     targetHeight_ = textureDesc.Height;
     dxgiformat_ = fixCopyTextureFormat(swapChainDesc.BufferDesc.Format);
+    isSRGB_ = isSRGBFormat(swapChainDesc.BufferDesc.Format);
     windowed_ = !!swapChainDesc.Windowed;
 
     hr = d3dDevice_->CreateRenderTargetView(backBufferTexture, nullptr, renderTargetView_.resetAndGetPointerAddress());
@@ -139,7 +140,7 @@ bool D3d11Graphics::_initGraphicsState()
 void D3d11Graphics::_initSpriteDrawer()
 {
     sprite_.reset(new D3d11SpriteDrawer(d3dDevice_, d3dContext_));
-    sprite_->init(session::loadModuleD3dCompiler47(), targetWidth_, targetHeight_);
+    sprite_->init(session::loadModuleD3dCompiler47(), targetWidth_, targetHeight_, isSRGB_);
 }
 
 void D3d11Graphics::_createSprites()
