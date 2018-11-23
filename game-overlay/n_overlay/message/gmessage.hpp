@@ -124,8 +124,7 @@ JSON_AUTO(GMessage, type)
 
 struct HeartBeat : public GMessage
 {
-    std::string type = "heartbeat";
-    virtual std::string msgType() const { return type; }
+    GMESSAGE_AUTO("heartbeat");
 };
 
 JSON_AUTO(HeartBeat, type)
