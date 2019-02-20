@@ -314,13 +314,13 @@ void D3d11Graphics::_checkAndResyncWindows()
             syncState.focusWindowId_ = syncState_.focusWindowId_;
         }
 
-        if (syncState_.pendingWindows_.size() > 0 || syncState_.pendingFrameBufferUpdates_.size() > 0)
+        if (syncState.pendingWindows_.size() > 0 || syncState.pendingFrameBufferUpdates_.size() > 0)
         {
             HookApp::instance()->overlayConnector()->lockWindows();
 
             auto windows = HookApp::instance()->overlayConnector()->windows();
             
-            for (auto windowId : syncState_.pendingWindows_)
+            for (auto windowId : syncState.pendingWindows_)
             {
                 auto it = std::find_if(windows.begin(), windows.end(), [windowId](const auto &window) {
                     return windowId == window->windowId;
@@ -340,7 +340,7 @@ void D3d11Graphics::_checkAndResyncWindows()
                 }
             }
 
-            for (auto windowId: syncState_.pendingFrameBufferUpdates_)
+            for (auto windowId: syncState.pendingFrameBufferUpdates_)
             {
                 auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [windowId](const auto &window) {
                     return windowId == window->windowId;
@@ -362,9 +362,9 @@ void D3d11Graphics::_checkAndResyncWindows()
             HookApp::instance()->overlayConnector()->unlockWindows();
         }
 
-        if (syncState_.pendingClosed_.size() > 0)
+        if (syncState.pendingClosed_.size() > 0)
         {
-            for (auto windowId : syncState_.pendingClosed_)
+            for (auto windowId : syncState.pendingClosed_)
             {
                 auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [windowId](const auto &window) {
                     return windowId == window->windowId;
@@ -382,9 +382,9 @@ void D3d11Graphics::_checkAndResyncWindows()
             }
         }
 
-        if (syncState_.pendingBounds_.size() > 0)
+        if (syncState.pendingBounds_.size() > 0)
         {
-            for (const auto& [windowId, rect] : syncState_.pendingBounds_)
+            for (const auto& [windowId, rect] : syncState.pendingBounds_)
             {
                 auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [windowId](const auto &window) {
                     return windowId == window->windowId;
@@ -428,9 +428,9 @@ void D3d11Graphics::_checkAndResyncWindows()
             }
         }
 
-        if (syncState_.pendingFrameBuffers_.size() > 0)
+        if (syncState.pendingFrameBuffers_.size() > 0)
         {
-            for (auto windowId : syncState_.pendingFrameBuffers_)
+            for (auto windowId : syncState.pendingFrameBuffers_)
             {
                 auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [windowId](const auto &window) {
                     return windowId == window->windowId;
@@ -443,12 +443,12 @@ void D3d11Graphics::_checkAndResyncWindows()
             }
         }
 
-        if (syncState_.focusWindowId_)
+        if (syncState.focusWindowId_)
         {
-            if (windowSprites_.at(windowSprites_.size() - 1)->windowId != syncState_.focusWindowId_)
+            if (windowSprites_.at(windowSprites_.size() - 1)->windowId != syncState.focusWindowId_)
             {
                 auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [&](const auto& w) {
-                    return w->windowId == syncState_.focusWindowId_;
+                    return w->windowId == syncState.focusWindowId_;
                 });
                 if (it != windowSprites_.end())
                 {
