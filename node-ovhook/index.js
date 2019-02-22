@@ -1,3 +1,2 @@
-var addon = require('./build/Release/electron_overlay');
-
-console.log(addon.hello()); // 'world'
+var ovhook = require('./build/Release/node_ovhook');
+module.exports = ovhook;
