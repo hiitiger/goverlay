@@ -14,13 +14,15 @@ use the power of web to inject any web app to overlay in your game
 1. need Visual Sudio 2017 to build native C++ project.
 2. ~~use 32bit node to install 32bit electron (game overlay support x64 no matter electron version), if you want to use 64bit electron, modify compile:electron script in client/package.json.~~
 3. we can assocciate a new IME conext if game disabled it, but in fullscreen it will cause window to lose focus.
+4. node-gyp need python2 installed on system and make sure it's added to PATH
 
 ## run demo
 1. git clone https://github.com/hiitiger/gelectron.git
 2. ~~git submodule update --init --recursive~~
 3. ~~cd to boost and do boost bootstrap~~
-4. cd to demo client 
+4. run demo client 
     ```
+        cd client
         npm link ../electron-overlay
         npm i
         npm run compile:electron
