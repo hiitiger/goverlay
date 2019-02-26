@@ -16,6 +16,9 @@ use the power of web to inject any web app to overlay in your game
 3. we can assocciate a new IME conext if game disabled it, but in fullscreen it will cause window to lose focus.
 4. node-gyp need python2 installed on system and make sure it's added to PATH
 
+## document
+1. checkout [document](https://github.com/hiitiger/gelectron/blob/master/doc/doc.md) about how to use it in your own project
+
 ## run demo
 1. git clone https://github.com/hiitiger/gelectron.git
 2. ~~git submodule update --init --recursive~~
