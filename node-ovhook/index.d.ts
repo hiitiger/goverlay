@@ -6,11 +6,17 @@ declare module "node-ovhook" {
         threadId: number;
     }
 
-   export interface IWindow extends IProcessThread {
+    export interface IWindow extends IProcessThread {
         windowId: number;
         title: string;
     }
 
+    export interface IInjectResult {
+        injectHelper: string;
+        injectDll: string;
+        injectSucceed: boolean;
+    }
+
     export function getTopWindows(): IWindow[];
-    export function injectProcess(process: IProcessThread): any;
+    export function injectProcess(process: IProcessThread): IInjectResult;
 }

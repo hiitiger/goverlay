@@ -56,6 +56,13 @@ struct window_hook_info
   DWORD threadId;
 };
 
+static inline bool file_exists(const std::wstring& file)
+{
+    WIN32_FILE_ATTRIBUTE_DATA findData;
+    return 0 != ::GetFileAttributesEx(file.c_str(), GetFileExInfoStandard, &findData);
+}
+
+
 static bool check_window_valid(HWND window, enum window_search_mode mode)
 {
   DWORD styles, ex_styles;
@@ -164,6 +171,51 @@ static inline bool is_64bit_process(HANDLE process)
   return !x86;
 }
 
+static bool is_64bit_process(DWORD processId)
+{
+  win_scope_handle process = OpenProcess(
+      PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
+      false, processId);
+  if (!process)
+  {
+    return false;
+  }
+  return is_64bit_process(process.handle);
+}
+
+static std::wstring get_inject_helper_path(bool x64)
+{
+
+  std::wstring dir = win_utils::moduleDirPath();
+
+  std::wstring helper;
+  if (x64)
+  {
+    helper = dir + L"\\" + k_inject_helper_x64;
+  }
+  else
+  {
+    helper = dir + L"\\" + k_inject_helper;
+  }
+
+  return helper;
+}
+
+static std::wstring get_inject_dll_path(bool x64)
+{
+  std::wstring dir = win_utils::moduleDirPath();
+  std::wstring dll;
+  if (x64)
+  {
+    dll = dir + L"\\" + k_inject_dll_x64;
+  }
+  else
+  {
+    dll = dir + L"\\" + k_inject_dll;
+  }
+  return dll;
+}
+
 static bool inject_process(DWORD processId, DWORD threadId)
 {
   win_scope_handle process = OpenProcess(
@@ -247,8 +299,19 @@ Napi::Value injectProcess(const Napi::CallbackInfo &info)
   const std::uint32_t processId = object.Get("processId").ToNumber().Uint32Value();
   const std::uint32_t threadId = object.Get("threadId").ToNumber().Uint32Value();
 
-  const bool r = inject_process(processId, threadId);
-  return Napi::Value::From(env, r);
+  const bool x64 = is_64bit_process(processId);
+  std::wstring helper_path = get_inject_helper_path(x64);
+  std::wstring dll_path = get_inject_dll_path(x64);
+  const bool inject_helper_exist = file_exists(helper_path);
+  const bool inject_dll_exist = file_exists(dll_path);
+  const bool injected = inject_process(processId, threadId);
+
+  auto result = Napi::Object::New(env);
+
+  result.Set("injectHelper", Napi::Value::From(env, win_utils::toUtf8(helper_path)));
+  result.Set("injectDll", Napi::Value::From(env, win_utils::toUtf8(dll_path)));
+  result.Set("injectSucceed", Napi::Value::From(env, injected));
+  return Napi::Value::From(env, result);
 }
 
 Napi::Object Init(Napi::Env env, Napi::Object exports)
