@@ -63,7 +63,7 @@ static inline bool file_exists(const std::wstring& file)
 }
 
 
-static bool check_window_valid(HWND window, enum window_search_mode mode)
+static bool check_window_valid(HWND window, window_search_mode mode)
 {
   DWORD styles, ex_styles;
   RECT rect;
@@ -85,7 +85,7 @@ static bool check_window_valid(HWND window, enum window_search_mode mode)
   return true;
 }
 
-static inline HWND next_window(HWND window, enum window_search_mode mode)
+static inline HWND next_window(HWND window, window_search_mode mode)
 {
   while (true)
   {
@@ -97,7 +97,7 @@ static inline HWND next_window(HWND window, enum window_search_mode mode)
   return window;
 }
 
-static inline HWND first_window(enum window_search_mode mode)
+static inline HWND first_window(window_search_mode mode)
 {
   HWND window = GetWindow(GetDesktopWindow(), GW_CHILD);
   if (!check_window_valid(window, mode))
@@ -274,7 +274,7 @@ Napi::Value getTopWindows(const Napi::CallbackInfo &info)
     const auto &info = windows[i];
     auto infoObject = Napi::Object::New(env);
 
-    infoObject.Set("windowId", Napi::Value::From(env, (std::uint32_t)info.hwnd));
+    infoObject.Set("windowId", Napi::Value::From(env, (std::uint32_t)(std::uint64_t)info.hwnd));
     infoObject.Set("processId", Napi::Value::From(env, (std::uint32_t)info.processId));
     infoObject.Set("threadId", Napi::Value::From(env, (std::uint32_t)info.threadId));
     infoObject.Set("title", Napi::Value::From(env, win_utils::toUtf8(info.title)));
