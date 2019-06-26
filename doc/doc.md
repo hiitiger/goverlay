@@ -22,7 +22,10 @@ This is also a helper nodule, it's the node addon used it our electron app which
 
 so with the modules, basicly what we need to do is 
 
-0. make sure your compile x86 and x64 version for the game you want to inejct
+0. make sure your compile x86 and x64 version native modules for the game you want to inejct
+   1. build `game-overlay.sln` with Release config for x86 or x64 version, you'll get `n_ovhelper.exe` and `n_overlay.dll` for x86 version  (or `n_ovhelper.x64.exe` and `n_overlay.x64.dll` for the x64 version)
+   2. add `node-ovhook` and `electron-overlay` addons to your electron ap's dependency, nodejs should  automatically build them, if not cd to their directory and build them manually.
+   3.  copy  `n_ovhelper.exe` and `n_overlay.dll` to `node_modules/node-ovhook/build/Release` so node-ovhook can find them.
 1. prepare a game
 2. the electron app
     1. Create an electorn app

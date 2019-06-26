@@ -16,8 +16,6 @@ use the power of web to inject any web app to overlay in your game
 3. we can assocciate a new IME conext if game disabled it, but in fullscreen it will cause window to lose focus.
 4. node-gyp need python2 installed on system and make sure it's added to PATH
 
-## document
-1. checkout [document](https://github.com/hiitiger/gelectron/blob/master/doc/doc.md) about how to use it in your own project
 
 ## run demo
 1. git clone https://github.com/hiitiger/gelectron.git
@@ -37,26 +35,30 @@ use the power of web to inject any web app to overlay in your game
 7. start dx11app and press ESC to do load inject dll for test
 8. press F1 to swtich input intercepting
 
+## use in your own project
+1. checkout [document](https://github.com/hiitiger/gelectron/blob/master/doc/doc.md) about how to use it in your own project
+
+
 ## feature
-    - [x] electron offscreen window overlay in game
-    - [ ] dx12 api support
-    - [x] dx11 api support
-    - [x] dx10 api support
-    - [x] dx9 api support
-    - [x] multi windows support
-    - [x] window z-index and focus
-    - [x] in game sync drag and resize
-    - [ ] in game defered drag and resize
-    - [x] window draw policy
-    - [x] input intercepting by manually control
-    - [x] custom shaped window (alpha test for mouse handling)
-    - [ ] detailed injecting configuration 
-    - [x] input intercepting by auto mouse check
+- [x] electron offscreen window overlay in game
+- [ ] dx12 api support
+- [x] dx11 api support
+- [x] dx10 api support
+- [x] dx9 api support
+- [x] multi windows support
+- [x] window z-index and focus
+- [x] in game sync drag and resize
+- [ ] in game defered drag and resize
+- [x] window draw policy
+- [x] input intercepting by manually control
+- [x] custom shaped window (alpha test for mouse handling)
+- [ ] detailed injecting configuration 
+- [x] input intercepting by auto mouse check
 
 ## todo
-    - [ ] brwoser window state manage
-    - [x] better hotkey
-    - [x] session reconnect
+- [ ] brwoser window state manage
+- [x] better hotkey
+- [x] session reconnect
 
 
 
