@@ -46,7 +46,7 @@
                                 "msvs_settings": {
                                     "VCCLCompilerTool": {
                                         "ExceptionHandling": 1,
-                                        "AdditionalOptions": ["/std:c++latest"]
+                                        "AdditionalOptions": ["/std:c++latest", "/Zc:__cplusplus"]
                                     }
                                 }
                             },
@@ -54,7 +54,7 @@
                                 "msvs_settings": {
                                     "VCCLCompilerTool": {
                                         "ExceptionHandling": 1,
-                                        "AdditionalOptions": ["/std:c++latest"]
+                                        "AdditionalOptions": ["/std:c++latest", "/Zc:__cplusplus"]
                                     }
                                 }
                             }
