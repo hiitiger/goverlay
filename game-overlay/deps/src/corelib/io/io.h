@@ -20,7 +20,7 @@ namespace Storm
         };
 
 
-    class IOReqeust : public RefCounted
+    class IOReqeust : public std::enable_shared_from_this<IOReqeust>
     {
         STORM_NONCOPYABLE(IOReqeust);
 
@@ -50,13 +50,13 @@ namespace Storm
 
     static void stopIO();
 
-    typedef std::function<void(RefPtr<IOReqeust>)> IOCallback;
+    typedef std::function<void(std::shared_ptr<IOReqeust>)> IOCallback;
  
-    static void postIORequest(RefPtr<IOReqeust>& req, const IOCallback& cb);
+    static void postIORequest(std::shared_ptr<IOReqeust>& req, const IOCallback& cb);
 
-    static RefPtr<IOReqeust> asyncRead(const std::wstring& file, const IOCallback& cb);
+    static std::shared_ptr<IOReqeust> asyncRead(const std::wstring& file, const IOCallback& cb);
 
-    static RefPtr<IOReqeust> asyncWrite(const std::wstring& file, const Buffer& data, const IOCallback& cb);
+    static std::shared_ptr<IOReqeust> asyncWrite(const std::wstring& file, const Buffer& data, const IOCallback& cb);
 
     };
 

@@ -31,6 +31,7 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <optional>
 
 #include <assert.h>
 #include <experimental/filesystem>

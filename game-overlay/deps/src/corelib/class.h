@@ -22,7 +22,7 @@ namespace Storm {
     class Lockable;
     class DummyLock;
     class CSLock;
-    class ScopeLovkV1;
+    class ScopedLock;
     class RWLock;
     class ScopedReadLock;
     class ScopedWriteLock;

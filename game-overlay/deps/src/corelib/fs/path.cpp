@@ -11,11 +11,11 @@ namespace Storm
         std::vector<wchar_t> buffer;
         buffer.resize(MAX_PATH);
         wchar_t *fileName = 0;
-        DWORD retLen = GetFullPathNameW((wchar_t*)path.c_str(), buffer.size(), buffer.data(), &fileName);
+        DWORD retLen = GetFullPathNameW((wchar_t*)path.c_str(), (DWORD)buffer.size(), buffer.data(), &fileName);
         if (retLen > (DWORD)MAX_PATH)
         {
             buffer.resize(retLen);
-            retLen = GetFullPathNameW((wchar_t*)path.c_str(), buffer.size(), buffer.data(), &fileName);
+            retLen = GetFullPathNameW((wchar_t*)path.c_str(), (DWORD)buffer.size(), buffer.data(), &fileName);
         }
         if (retLen != 0)
             fullPath.assign(buffer.data(), retLen);

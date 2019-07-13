@@ -44,9 +44,11 @@ public:
     }
 
     template<class T>
-    DebugCout& operator<< (T && a)
+    DebugCout& operator<< (const T & a)
     {
-        std::cout << std::forward<T>(a);
+        std::stringstream ss;
+        ss << a;
+        std::cout << ss.str();
         return *this;
     }
 };

@@ -1,6 +1,18 @@
 #pragma once
 
+#if __cplusplus >= 201703L
 #include <optional>
+#else
+#include "nonstd/optional.hpp"
+
+namespace std
+{
+    template<class T>
+    using optional = nonstd::optional<T>;
+}
+
+#endif
+
 #include "nlohmann/json.hpp"
 using namespace nlohmann;
 

@@ -57,8 +57,6 @@ namespace Storm
         typedef void (*invoker_fun_type)();
 
         invoker_fun_type invoker_fun_ = nullptr;
-
-        virtual bool isSameCallee(BinderBase* other) = 0;
     };
 
     template <bool is_mem_fun, class Fn, class ...LeftArgs>
@@ -77,29 +75,10 @@ namespace Storm
         {
             invoker_fun_ = invoker;
         }
-
-        bool isSameCallee(BinderBase* other) override
-        {
-            if (Binder* otherOne = dynamic_cast<Binder*>(other))
-            {
-                return helper::IsSame<Fn, helper::CHECK::EqualExists<Fn>::value>::check(function_, otherOne->function_);
-            }
-            return false;
-        }
     };
 
     template <class, class>
     struct MethodInvokerTraits;
-
-    /* template<class C, class R>
-     struct MethodInvokerTraits<C, R>
-     {
-         template<class MFn,  class ...A>
-         R invoke(C&& object, MFn&& function, A&&... args)
-         {
-             return ((&object)->*function)(std::forward<A>(args)...);
-         }
-     };*/
 
     template <class C, class R>
     struct MethodInvokerTraits<C*, R>
@@ -115,7 +94,7 @@ namespace Storm
     struct MethodInvokerTraits<std::shared_ptr<C>, R>
     {
         template <class MFn, class ...A>
-        static R invoke(std::shared_ptr<C>& object, MFn&& function, A&&... args)
+        static R invoke(const std::shared_ptr<C>& object, MFn&& function, A&&... args)
         {
             return ((object.get()) ->* function)(std::forward<A>(args)...);
         }
@@ -125,7 +104,7 @@ namespace Storm
     struct MethodInvokerTraits<std::weak_ptr<C>, R>
     {
         template <class MFn, class ...A>
-        static void invoke(std::weak_ptr<C>& object, MFn&& function, A&&... args)
+        static void invoke(const std::weak_ptr<C>& object, MFn&& function, A&&... args)
         {
             if (auto obj_share_ptr = object.lock())
             {
@@ -135,28 +114,17 @@ namespace Storm
     };
 
     template <class C, class R>
-    struct MethodInvokerTraits<RefPtr<C>, R>
+    struct MethodInvokerTraits<WeakObjectPtr<C>, R>
     {
         template <class MFn, class ...A>
-        static R invoke(RefPtr<C>& object, MFn&& function, A&&... args)
+        static void invoke(const WeakObjectPtr<C>& object, MFn&& function, A&&... args)
         {
-            return ((object.get()) ->* function)(std::forward<A>(args)...);
-        }
-    };
-
-    template <class C, class R>
-    struct MethodInvokerTraits<WeakRefPtr<C>, R>
-    {
-        template <class MFn, class ...A>
-        static void invoke(WeakRefPtr<C>& object, MFn&& function, A&&... args)
-        {
-            if (auto obj_share_ptr = object.lock())
+            if (object)
             {
-                return ((obj_share_ptr.get()) ->* function)(std::forward<A>(args)...);
+                return ((object.get())->*function)(std::forward<A>(args)...);
             }
         }
     };
-
 
     template<class T, size_t sz>
     struct BinderObjectCheck
@@ -191,20 +159,6 @@ namespace Storm
         {
             invoker_fun_ = invoker;
         }
-
-        bool isSameCallee(BinderBase* other) override
-        {
-            if (Binder* otherOne = dynamic_cast<Binder*>(other))
-            {
-                static constexpr size_t num_bound_args = std::tuple_size<decltype(left_args_)>::value;
-
-                return helper::IsSame<MFn, helper::CHECK::EqualExists<MFn>::value>::check(
-                    function_, otherOne->function_)
-                    && BinderObjectCheck<std::tuple<LeftArgs...>, num_bound_args>::check(left_args_, otherOne->left_args_);
-            }
-            return false;
-        }
-
     };
 
     template <bool is_mem_fun, class B, class Fn>
@@ -254,7 +208,7 @@ namespace Storm
         template<class MFn, class C, class ...Args>
         static R apply_(MFn&& function, C&& object, Args&&... args)
         {
-            return MethodInvokerTraits<std::remove_reference_t<C>, R>::invoke(object, std::forward<MFn>(function), std::forward<Args>(args)...);
+            return MethodInvokerTraits<std::remove_reference_t<C>, R>::invoke(std::forward<C>(object), std::forward<MFn>(function), std::forward<Args>(args)...);
         }
     };
 
@@ -350,13 +304,9 @@ namespace Storm
             return binder_.get() == nullptr;
         }
 
-        bool isSameCallee(const Callback& other) const
+        std::function<R(A ...)> to_std_function() const
         {
-            if (binder_)
-            {
-                return binder_->isSameCallee(other.binder_.get());
-            }
-            return false;
+            return *this;
         }
     };
 

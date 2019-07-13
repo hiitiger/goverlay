@@ -29,12 +29,14 @@ __pragma(warning(pop))
 #include "share_mem.h"
 
 #include "geometry.h"
-#include "common.hpp"
 #include "message/gmessage.hpp"
+
+#include "common.hpp"
 
 #include "hook/apihook.hpp"
 #include "graphics/graphics.h"
 #include "graphics/fpstimer.h"
+
 
 
 #ifndef ReleaseCOM

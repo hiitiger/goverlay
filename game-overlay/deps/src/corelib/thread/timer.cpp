@@ -40,6 +40,11 @@ Timer::~Timer()
     stop();
 }
 
+int Timer::interval() const 
+{
+    return  intervalMilliSeconds_;
+}
+
 void Timer::setInterval(int milliSeconds)
 {
     if (intervalMilliSeconds_ != milliSeconds)

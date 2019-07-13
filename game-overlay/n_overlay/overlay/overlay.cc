@@ -1271,7 +1271,7 @@ void OverlayConnector::_updateFrameBuffer(std::uint32_t windowId, const std::str
     {
         windows_shared_memory share_mem(windows_shared_memory::open_only, bufferName.c_str(), windows_shared_memory::read_only);
 
-        Storm::ScopeLovkV1 lockShareMem(shareMemoryLock_);
+        Storm::ScopedLock lockShareMem(shareMemoryLock_);
 
         char *orgin = static_cast<char *>(share_mem.get_address());
         overlay::ShareMemFrameBuffer *head = (overlay::ShareMemFrameBuffer *)orgin;

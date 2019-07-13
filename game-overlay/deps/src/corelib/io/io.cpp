@@ -17,7 +17,7 @@ namespace Storm
         ioPool()->stop();
     }
 
-    void IO::postIORequest(RefPtr<IOReqeust>& req, const IOCallback& cb)
+    void IO::postIORequest(std::shared_ptr<IOReqeust>& req, const IOCallback& cb)
     {
         ThreadDispatcherPtr dispatcher = ThreadDispatcher::current();
         IO::ioPool()->add([=]() {
@@ -61,17 +61,17 @@ namespace Storm
         });
     }
 
-    Storm::RefPtr<IO::IOReqeust> IO::asyncRead(const std::wstring& file, const IOCallback& cb )
+    std::shared_ptr<IO::IOReqeust> IO::asyncRead(const std::wstring& file, const IOCallback& cb )
     {
-        RefPtr<IO::IOReqeust> req = new IO::IOReqeust(IO_Read);
+        std::shared_ptr<IO::IOReqeust> req = std::make_shared<IO::IOReqeust>(IO_Read);
         req->file_ = file;
         postIORequest(req, cb);
         return req;
     }
 
-    Storm::RefPtr<IO::IOReqeust> IO::asyncWrite(const std::wstring& file, const Buffer& data, const IOCallback& cb )
+    std::shared_ptr<IO::IOReqeust> IO::asyncWrite(const std::wstring& file, const Buffer& data, const IOCallback& cb )
     {
-        RefPtr<IO::IOReqeust> req = new IO::IOReqeust(IO_Write);
+        std::shared_ptr<IO::IOReqeust> req = std::make_shared<IO::IOReqeust>(IO_Write);
         req->file_ = file;
         req->data_ = data;
         postIORequest(req, cb);

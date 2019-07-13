@@ -128,7 +128,7 @@ namespace Storm
             return *(static_cast<T*>(obj_));
         }
 
-        T* data() const
+        T* get() const
         {
             return static_cast<T*>(obj_);
         }

@@ -16,6 +16,10 @@ namespace Storm
         {
             pThis->runTaskQueue();
         }
+        else if (uMsg == WM_TIMER)
+        {
+            pThis->onSystemTimer();
+        }
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
 
@@ -85,7 +89,7 @@ void CoreRunloop::quit()
     if (running_)
     {
         running_ = false;
-        wakeup();
+        schedule();
     }
 }
 
@@ -103,6 +107,11 @@ void CoreRunloop::postQuit()
 void CoreRunloop::run()
 {
     DAssert(this == current());
+    runLoop();
+}
+
+void CoreRunloop::runLoop()
+{
     while (running_)
     {
         runOnce();
@@ -152,13 +161,10 @@ void CoreRunloop::tryIdleWait(unsigned int milliSeconds)
 void CoreRunloop::idleWait(unsigned int milliSeconds)
 {
     DAssert(this == current());
-    // HANDLE handle = wakeupEvent_.handle();
-   // ::MsgWaitForMultipleObjectsEx(1, &handle, milliSeconds, QS_ALLINPUT, MWMO_INPUTAVAILABLE);
-
     ::MsgWaitForMultipleObjectsEx(0, nullptr, milliSeconds, QS_ALLINPUT, MWMO_INPUTAVAILABLE);
 }
 
-void CoreRunloop::wakeupWork()
+void CoreRunloop::scheduleWork()
 {
     if (hasWork_)
     {
@@ -166,15 +172,11 @@ void CoreRunloop::wakeupWork()
     }
     hasWork_ = true;
     PostMessageW(msgWindow_, k_MsgLoopWorkMsg, 0, 0);
-
-   // wakeupEvent_.set();
 }
 
-void CoreRunloop::wakeup()
+void CoreRunloop::schedule()
 {
     PostMessageW(msgWindow_, k_MsgLoopWakeupMsg, 0, 0);
-
-//    wakeupEvent_.set();
 }
 
 std::thread::id CoreRunloop::threadId()
@@ -217,6 +219,11 @@ void CoreRunloop::runTaskQueue()
     }
 
     hasWork_ = taskQueue_->size() != 0;
+
+    if (!delayQueue_.empty())
+    {
+        scheduleDelayed(delayQueue_.top().run);
+    }
 }
 
 void CoreRunloop::runDelayQueue()
@@ -231,7 +238,7 @@ void CoreRunloop::runDelayQueue()
         auto task = std::move(const_cast<priv::WrapTask&>(delayQueue_.top()));
         delayQueue_.pop();
         task.invoke();
-        now =TimeTick::now();
+        now = TimeTick::now();
     }
 
     if (delayQueue_.empty())
@@ -244,6 +251,42 @@ void CoreRunloop::runDelayQueue()
     }
 }
 
+void CoreRunloop::scheduleDelayed(TimeTick runTime)
+{
+    if (scheduledTimerTime_ && scheduledTimerTime_.value() == runTime)
+    {
+        return;
+    }
+
+    auto msecs = (runTime - TimeTick::now()).milliSecs();
+
+    if (msecs <= 0)
+    {
+        runDelayQueue();
+        if (!nextDelay_.isNull())
+        {
+            runTime = nextDelay_;
+            scheduleDelayed(runTime);
+        }
+    }
+    else
+    {
+        ::SetTimer(msgWindow_, reinterpret_cast<UINT_PTR>(this), (UINT)msecs, nullptr);
+        scheduledTimerTime_ = runTime;
+    }
+}
+
+void CoreRunloop::onSystemTimer()
+{
+    ::KillTimer(msgWindow_, reinterpret_cast<UINT_PTR>(this));
+    scheduledTimerTime_.reset();
+
+    if (delayQueue_.empty())
+        return;
+
+    runDelayQueue();
+}
+
 void CoreRunloop::processSystemMessage()
 {
     MSG msg = { 0 };
@@ -252,12 +295,18 @@ void CoreRunloop::processSystemMessage()
         if (msg.message == WM_QUIT)
         {
             this->sysQuitRecivedEvent()(this);
-            //running_ = false;
-            //break;
+            PostQuitMessage((int)msg.wParam);
+            running_ = false;
+            break;
         }
 
         TranslateMessage(&msg);
         DispatchMessage(&msg);
+
+        if (!running_)
+        {
+            break;
+        }
     }
 }
 }

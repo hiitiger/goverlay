@@ -57,7 +57,7 @@ public:
 
 };
 
-// #define Q_ENABLE_LEAK_DETECT
+//#define Q_ENABLE_LEAK_DETECT
 
 #ifdef Q_ENABLE_LEAK_DETECT
     #define Q_LEAK_DETECTOR(OwnerClass) \

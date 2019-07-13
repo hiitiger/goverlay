@@ -12,7 +12,6 @@ namespace Storm
         std::atomic<std::thread::id> createThreadId_;
         std::atomic<bool> running_ = true;
         std::atomic<bool> hasWork_ = false;
-        WaitableEvent wakeupEvent_;
         HWND msgWindow_ = nullptr;
 
         CoreRunloopSafePtr runloopSafe_;
@@ -21,7 +20,7 @@ namespace Storm
 
         TimeTick nextDelay_;
         Event<void(CoreRunloop*)> sysQuitRecivedEvent_;
-
+        std::optional<TimeTick> scheduledTimerTime_;
     public:
         static CoreRunloop* current();
 
@@ -41,13 +40,14 @@ namespace Storm
         void quit();
         void postQuit();
 
-        virtual void run();
+        void run();
+        virtual void runLoop();
         virtual void runOnce();
         virtual void tryIdleWait(unsigned int milliSeconds = std::numeric_limits<uint32_t>::max());
         virtual void idleWait(unsigned int milliSeconds);
 
-        void wakeupWork();
-        void wakeup();
+        void scheduleWork();
+        void schedule();
 
         std::thread::id threadId();
 
@@ -57,6 +57,9 @@ namespace Storm
         void runTaskQueue();
 
         void runDelayQueue();
+
+        void scheduleDelayed(TimeTick runTime);
+        void onSystemTimer();
 
         virtual void processSystemMessage();
  

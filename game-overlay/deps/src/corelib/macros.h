@@ -3,7 +3,8 @@
 #define  MOD_CORELIB "Corelib"
 
 
-#define  STRING(x) #x
+#define  STRINGINFY_(x) #x
+#define  STRINGINFY(x) STRINGINFY_(x)
 
 #define STORM_NONCOPYABLE(classname)\
     classname(const classname &) = delete; \

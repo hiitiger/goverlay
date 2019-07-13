@@ -198,18 +198,18 @@ namespace Storm
         }
     };
 
-    class ScopeLovkV1
+    class ScopedLock
     {
-        STORM_NONCOPYABLE(ScopeLovkV1)
+        STORM_NONCOPYABLE(ScopedLock)
 
     public:
-        ScopeLovkV1(Lockable& lock)
+        ScopedLock(Lockable& lock)
             : lockable_(lock)
         {
             lockable_.lock();
         }
 
-        ~ScopeLovkV1()
+        ~ScopedLock()
         {
             lockable_.unlock();
         }

@@ -12,6 +12,8 @@ namespace Storm
 
         ~Timer();
 
+        int interval() const;
+
         void setInterval(int milliSeconds);
  
         void setRepeat(bool);

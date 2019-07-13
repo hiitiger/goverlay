@@ -15,7 +15,7 @@ void priv::RunloopTaskQueue::add(WrapTask&& task)
         task.seq_ = taskSeq_;
 
         taskQueue_.push_back(std::move(task));
-        runloop_->wakeupWork();
+        runloop_->scheduleWork();
     }
 }
 

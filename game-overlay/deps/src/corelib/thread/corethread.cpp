@@ -38,7 +38,7 @@ CoreThread::CoreThread()
     : createThreadId_(std::this_thread::get_id())
 {
     std::lock_guard<std::mutex> lock(g_coreThreadsLock);
-    this->threadUId_ = g_coreThreads.size();
+    this->threadUId_ = static_cast<std::uint32_t>(g_coreThreads.size());
     g_coreThreads.push_back(this);
 }
 

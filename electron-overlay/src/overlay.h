@@ -950,9 +950,9 @@ class OverlayMain : public IIpcHost
 
         ipcMsg.message = obj.dump();
 
-        for (auto [id, link] : this->ipcClients_)
+        for (const auto& it : this->ipcClients_)
         {
-            this->ipcHostCenter_->sendMessage(link, 0, 0, &ipcMsg);
+            this->ipcHostCenter_->sendMessage(it.second, 0, 0, &ipcMsg);
         }
     }
 
