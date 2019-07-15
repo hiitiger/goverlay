@@ -10,6 +10,8 @@ It can work together with Steam overlay, but unfortunately did not work with Ori
 
 #### Games that I played and tested
 
+Some of the games can use multiple versions of graphics API, make sure set graphics api to one of dx9, dx10, dx11
+
 -   [x] League of Legends
 -   [x] Dota 2
 -   [x] CS:GO
@@ -23,8 +25,16 @@ It can work together with Steam overlay, but unfortunately did not work with Ori
 -   [x] PlayerUnknown's Battlegrounds
 -   [x] Life is Strange Before the Storm
 -   [x] Child of Light
+-   [x] Borderlands 2
+-   [x] Cuphead
+-   [x] Witcher 3
+-   [x] WORLD OF FINAL FANTASY®
+-   [x] Left 4 Dead 2
+-   [x] Tom Clancy's The Division
+-   [x] Tom Clancy's Rainbow Six Siege
+-   [x] Half-Life 2
 
 #### games that have issues for now
 
 -   [ ] Battlefield 1
--   [ ] Star Wars battlefront
+-   [ ] Star Wars battlefront 2
