@@ -7,7 +7,6 @@
         // "jsx": "preserve",
         "sourceMap": true,
         "outDir": "./dist/main",
-        "strict": true,
         "moduleResolution": "node",
         "esModuleInterop": true,
         "experimentalDecorators": true,

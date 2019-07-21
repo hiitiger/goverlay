@@ -7,6 +7,8 @@ import { fileUrl } from "../utils/utils"
 
 import * as IOverlay from "electron-overlay"
 
+import * as IOVhook from "node-ovhook"
+
 enum AppWindows {
   main = "main",
   osr = "osr",
@@ -18,7 +20,8 @@ class Application {
   private tray: Electron.Tray | null
   private markQuit = false
 
-  private Overlay?: typeof IOverlay
+  private Overlay: typeof IOverlay
+  private OvHook: typeof IOVhook
 
   constructor() {
     this.windows = new Map()
@@ -95,7 +98,7 @@ class Application {
   }
 
   public startOverlay() {
-    this.Overlay = require("electron-overlay")!
+    this.Overlay = require("electron-overlay")
     this.Overlay!.start()
     this.Overlay!.setHotkeys([
       { name: "overlay.toggle", keyCode: 113, modifiers: { ctrl: true } },
@@ -413,8 +416,6 @@ class Application {
     this.setupSystemTray()
 
     this.setupIpc()
-
-    this.startOverlay()
   }
 
   public activate() {
@@ -467,9 +468,26 @@ class Application {
   }
 
   private setupIpc() {
-    ipcMain.once("click", () => {
-      this.createOsrWindow()
-      this.createOsrStatusbarWindow()
+    ipcMain.once("start", () => {
+      if (!this.Overlay) {
+        this.startOverlay()
+
+        this.createOsrWindow()
+        this.createOsrStatusbarWindow()
+      }
+
+      if (!this.OvHook) {
+        this.OvHook = require("node-ovhook")
+      }
+    })
+
+    ipcMain.on("inject", (event, arg) => {
+      console.log(`--------------------\n try inject ${arg}`)
+      for (const window of this.OvHook.getTopWindows()) {
+        if (window.title.indexOf(arg) !== -1) {
+          this.OvHook.injectProcess(window)
+        }
+      }
     })
 
     ipcMain.on("osrClick", () => {

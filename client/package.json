@@ -22,6 +22,7 @@
     },
     "dependencies": {
         "electron": "2.0.8",
-        "electron-overlay": "file:../electron-overlay"
+        "electron-overlay": "file:../electron-overlay",
+        "node-ovhook": "file:../node-ovhook"
     }
 }

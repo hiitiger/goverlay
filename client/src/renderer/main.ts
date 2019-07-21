@@ -1,8 +1,15 @@
 import { ipcRenderer } from "electron"
 
-const button = document.getElementById("button") as HTMLButtonElement
-button.addEventListener("click", () => {
-  ipcRenderer.send("click")
+const startButton = document.getElementById("start") as HTMLButtonElement
+startButton.addEventListener("click", () => {
+  ipcRenderer.send("start")
+})
+
+const injectButton = document.getElementById("inject") as HTMLButtonElement
+const titleInput = document.getElementById("title") as HTMLInputElement
+injectButton.addEventListener("click", () => {
+  const title = titleInput.value
+  ipcRenderer.send("inject", title)
 })
 
 // const canvas = document.getElementById("canvas") as HTMLCanvasElement
@@ -29,5 +36,9 @@ ipcRenderer.on("osrImage", (event: string, arg: { image: string }) => {
   imageElem.src = image
 })
 
-window.onfocus = function() { console.log("focus") }
-window.onblur = function() { console.log("blur") }
+window.onfocus = function() {
+  console.log("focus")
+}
+window.onblur = function() {
+  console.log("blur")
+}

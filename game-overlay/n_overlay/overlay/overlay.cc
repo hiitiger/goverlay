@@ -1282,7 +1282,7 @@ void OverlayConnector::_updateFrameBuffer(std::uint32_t windowId, const std::str
         std::lock_guard<std::mutex> lock(framesLock_);
         frameBuffers_[windowId] = frameBuffer;
 
-        __trace__ << "window: " << windowId << ", width:" << head->width << ", height:" << head->height << std::endl;
+        __trace__ << "window: " << windowId << ", width:" << head->width << ", height:" << head->height;
     }
     catch (std::exception& e)
     {
