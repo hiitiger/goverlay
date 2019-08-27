@@ -186,7 +186,7 @@ namespace stdxx
 
             str.replace(index, substr.size(), replace);
 
-            index += substr.size();
+            index += replace.size();
         }
 
         return str;
