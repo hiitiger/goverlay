@@ -7,15 +7,20 @@
         "build:renderer": "webpack --config webpack.config.renderer.js",
         "build:main": "tsc",
         "build": "npm run build:main && npm run build:renderer",
-        "lint": "tslint -c tslint.json -p tsconfig.json",
+        "lint": "eslint src/**/*.ts",
         "start": "electron . --enable-logging",
         "compile:electron": "electron-rebuild -v 2.0.8"
     },
     "devDependencies": {
         "@types/node": "^13.13.2",
+        "@typescript-eslint/eslint-plugin": "^2.29.0",
+        "@typescript-eslint/parser": "^2.29.0",
         "awesome-typescript-loader": "^5.2.1",
         "electron-rebuild": "^1.10.1",
-        "tslint": "^6.1.1",
+        "eslint": "^6.8.0",
+        "eslint-config-airbnb-base": "^14.1.0",
+        "eslint-plugin-import": "^2.20.2",
+        "node-gyp": "^6.1.0",
         "typescript": "^3.1.0",
         "webpack": "^4.43.0",
         "webpack-cli": "^3.3.11"
