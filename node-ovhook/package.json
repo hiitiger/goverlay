@@ -14,7 +14,7 @@
     "license": "ISC",
     "devDependencies": {
         "electron-rebuild": "^1.8.2",
-        "node-addon-api": "^1.4.0",
+        "node-addon-api": "^2.0.0",
         "node-gyp": "^3.8.0"
     }
 }
