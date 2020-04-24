@@ -101,7 +101,7 @@ class Application {
     this.Overlay = require("electron-overlay")
     this.Overlay!.start()
     this.Overlay!.setHotkeys([
-      { name: "overlay.toggle", keyCode: 113, modifiers: { ctrl: true } },
+      { name: "overlay.toggle", keyCode: 9, modifiers: { ctrl: true } },
       { name: "app.doit", keyCode: 114, modifiers: { ctrl: true } }
     ])
 
