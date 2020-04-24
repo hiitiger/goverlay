@@ -1,0 +1,13 @@
+version: 1
+update_configs:
+  # Keep package.json (& lockfiles) up to date as soon as
+  # new versions are published to the npm registry
+  - package_manager: "javascript"
+    directory: "/client/"
+    update_schedule: "live"
+  - package_manager: "javascript"
+    directory: "/electron-overlay/"
+    update_schedule: "live"
+  - package_manager: "javascript"
+    directory: "/node-ovhook/"
+    update_schedule: "live"
