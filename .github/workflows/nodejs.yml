@@ -31,8 +31,6 @@ jobs:
       working-directory: ${{env.working-directory}}
     - run: npm link ../node-ovhook
       working-directory: ${{env.working-directory}}
-    - run: npm ci
-      working-directory: ${{env.working-directory}}
     - run: npm i
       working-directory: ${{env.working-directory}}
     - run: npm run compile:electron
