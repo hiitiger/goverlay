@@ -18,7 +18,7 @@
         "tslint": "^5.10.0",
         "typescript": "^3.1.0",
         "webpack": "^4.43.0",
-        "webpack-cli": "^3.1.0"
+        "webpack-cli": "^3.3.11"
     },
     "dependencies": {
         "electron": "2.0.18",
