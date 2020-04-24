@@ -12,7 +12,7 @@
         "compile:electron": "electron-rebuild -v 2.0.8"
     },
     "devDependencies": {
-        "@types/node": "^10.9.2",
+        "@types/node": "^13.13.2",
         "awesome-typescript-loader": "^5.2.1",
         "electron-rebuild": "^1.10.1",
         "tslint": "^5.10.0",
