@@ -17,6 +17,6 @@
     },
     "devDependencies": {
         "@types/node": "^10.10.1",
-        "electron-rebuild": "^1.8.2"
+        "electron-rebuild": "^1.10.1"
     }
 }
