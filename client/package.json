@@ -14,7 +14,7 @@
     "devDependencies": {
         "@types/node": "^10.9.2",
         "awesome-typescript-loader": "^5.2.0",
-        "electron-rebuild": "^1.8.2",
+        "electron-rebuild": "^1.10.1",
         "tslint": "^5.10.0",
         "typescript": "^3.1.0",
         "webpack": "^4.16.5",
