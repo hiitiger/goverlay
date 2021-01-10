@@ -485,7 +485,12 @@ class Application {
       console.log(`--------------------\n try inject ${arg}`)
       for (const window of this.OvHook.getTopWindows()) {
         if (window.title.indexOf(arg) !== -1) {
-          this.OvHook.injectProcess(window)
+          this.OvHook.injectProcess(window, {
+            dllPath: path.join(global.CONFIG.distDir, "overlay/n_overlay.dll"),
+            dllPath64: path.join(global.CONFIG.distDir, "overlay/n_overlay.x64.dll"),
+            helper: path.join(global.CONFIG.distDir, "overlay/n_ovhelper.exe"),
+            helper64: path.join(global.CONFIG.distDir, "overlay/n_ovhelper.x64.exe")
+          })
         }
       }
     })

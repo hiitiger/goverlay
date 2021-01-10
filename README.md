@@ -1,8 +1,6 @@
 # game overlay solution for any desktop GUI like Electron, Qt and CEF⚡
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/0f6b8ec919b243a7a926fcf674b2cab7)](https://www.codacy.com/app/hiitiger/gelectron?utm_source=github.com&utm_medium=referral&utm_content=hiitiger/gelectron&utm_campaign=Badge_Grade)
-
-[![Build status](https://ci.appveyor.com/api/projects/status/sgi7go37f72f52a5?svg=true)](https://ci.appveyor.com/project/hiitiger/gelectron)
+fork of https://github.com/hiitiger/gelectron
 
 ## game overlay for Electron
 
@@ -36,19 +34,16 @@ use the power of web to inject any web app to overlay in your game
         npm run start
     ```
 5. click the start button to start overlay
-6. open gameoverlay.sln and build all (Release/Win32 + Release/x64) or just run `build.bat` in game-overlay directory
-7. start dx11app and press ESC to do load inject dll for test
-8. press F1 to swtich input intercepting
+4. start the game you want to inject to and wait for it game window to show
+5. input the window title(or part of the title) of the game, and click the inject button
+8. press ctrl+tab to open overlay
 
-## inject a specific game
+## compiling overlay and ovhelper on you own
 
-After you have the demo runs right
+In default they are precompiled under `client/dist/overlay` but if you are making changes you might want to compile on your own
 
-1.  copy files [`n_overlay.dll`, `n_overlay.x64.dll`, `n_ovhelper.exe`, `n_ovhelper.x64.exe`] from directory `game-overlay\bin\Release` to directory `node-ovhook\build\Release`
-2.  run demo client
-3.  click start button to start overlay
-4.  start the game you want to inject to and wait for it game window to show
-5.  input the window title(or part of the title) of the game, and click the inject button
+1. open gameoverlay.sln and build all (Release/Win32 + Release/x64) or just run `build.bat` in game-overlay directory
+2.  copy files [`n_overlay.dll`, `n_overlay.x64.dll`, `n_ovhelper.exe`, `n_ovhelper.x64.exe`] from directory `game-overlay\bin\Release` to directory `client/dist/overlay`
 
 ## use in your own project
 

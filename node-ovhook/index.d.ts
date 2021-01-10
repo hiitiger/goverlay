@@ -17,6 +17,13 @@ declare module "node-ovhook" {
         injectSucceed: boolean;
     }
 
+    export interface IInjectConfig {
+        dllPath: string,
+        dllPath64: string, 
+        helper: string, 
+        helper64: string
+    }
+
     export function getTopWindows(): IWindow[];
-    export function injectProcess(process: IProcessThread): IInjectResult;
+    export function injectProcess(process: IProcessThread, config: IInjectConfig): IInjectResult;
 }
