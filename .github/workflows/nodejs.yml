@@ -27,6 +27,8 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
+    - run: msbuild game-overlay/gameoverlay.sln
+      working-directory: ./
     - run: npm link ../electron-overlay
       working-directory: ${{env.working-directory}}
     - run: npm link ../node-ovhook
