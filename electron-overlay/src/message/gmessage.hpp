@@ -16,7 +16,7 @@ virtual bool fromJson(const json &obj)\
     return true;\
 }\
 \
-virtual json toJson(bool *ok = false) const\
+virtual json toJson(bool *ok = (bool*)false) const\
 {\
     json result = *this;\
     if (ok)\
@@ -46,7 +46,6 @@ struct OverlayIpc : public IpcMsg
     {
         msgId = MsgId;
     }
-
     virtual void pack(std::string &data) const
     {
         MsgPacker packer(data);

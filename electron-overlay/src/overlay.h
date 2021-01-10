@@ -469,7 +469,8 @@ class OverlayMain : public IIpcHost
         }
         else if (command == "input.intercept")
         {
-            std::cout << __FUNCTIONW__ << "input.intercept";
+            printf("%s input.intercept", __FUNCTIONW__);
+            //std::cout << __FUNCTIONW__ << "input.intercept";
             overlay::InputInterceptCommand message;
             message.intercept = commandInfo.Get("intercept").ToBoolean();
 
@@ -481,7 +482,8 @@ class OverlayMain : public IIpcHost
 
     Napi::Value addWindow(const Napi::CallbackInfo &info)
     {
-        std::cout << __FUNCTION__ <<std::endl;
+        printf("%s input.intercept", __FUNCTIONW__);
+        //std::cout << __FUNCTION__ <<std::endl;
         Napi::Env env = info.Env();
 
         overlay::Window message;
