@@ -279,14 +279,14 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="graphics\d3d10sprite.cc" />
-    <ClCompile Include="graphics\d3d11sprite.cc" />
-    <ClCompile Include="graphics\d3d10graphics.cc" />
-    <ClCompile Include="graphics\d3d11graphics.cc" />
-    <ClCompile Include="graphics\d3d9graphics.cc" />
-    <ClCompile Include="graphics\d3d9hook.cc" />
-    <ClCompile Include="graphics\dxgigraphics.cc" />
-    <ClCompile Include="graphics\dxgihook.cc" />
+    <ClCompile Include="graphics\D3D10\d3d10sprite.cc" />
+    <ClCompile Include="graphics\D3D11\d3d11sprite.cc" />
+    <ClCompile Include="graphics\D3D10\d3d10graphics.cc" />
+    <ClCompile Include="graphics\D3D11\d3d11graphics.cc" />
+    <ClCompile Include="graphics\D3D9\d3d9graphics.cc" />
+    <ClCompile Include="graphics\D3D9\d3d9hook.cc" />
+    <ClCompile Include="graphics\DXGI\dxgigraphics.cc" />
+    <ClCompile Include="graphics\DXGI\dxgihook.cc" />
     <ClCompile Include="graphics\sprites.shader.h" />
     <ClCompile Include="overlay\hookapp.cc" />
     <ClCompile Include="hook\inputhook.cc" />
@@ -298,19 +298,19 @@
     <ClCompile Include="overlay\uiapp.cc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="graphics\d3d10sprite.h" />
-    <ClInclude Include="graphics\d3d11sprite.h" />
+    <ClInclude Include="graphics\D3D10\d3d10sprite.h" />
+    <ClInclude Include="graphics\D3D11\d3d11sprite.h" />
     <ClInclude Include="geometry.h" />
     <ClInclude Include="graphics\fpstimer.h" />
     <ClInclude Include="hook\apihook.hpp" />
     <ClInclude Include="common.hpp" />
-    <ClInclude Include="graphics\d3d10graphics.h" />
-    <ClInclude Include="graphics\d3d11graphics.h" />
-    <ClInclude Include="graphics\d3d9graphics.h" />
-    <ClInclude Include="graphics\d3d9hook.h" />
+    <ClInclude Include="graphics\D3D10\d3d10graphics.h" />
+    <ClInclude Include="graphics\D3D11\d3d11graphics.h" />
+    <ClInclude Include="graphics\D3D9\d3d9graphics.h" />
+    <ClInclude Include="graphics\D3D9\d3d9hook.h" />
     <ClInclude Include="dxgi1_2.h" />
-    <ClInclude Include="graphics\dxgigraphics.h" />
-    <ClInclude Include="graphics\dxgihook.h" />
+    <ClInclude Include="graphics\DXGI\dxgigraphics.h" />
+    <ClInclude Include="graphics\DXGI\dxgihook.h" />
     <ClInclude Include="hotkey\hotkeycheck.h" />
     <ClInclude Include="message\gmessage.hpp" />
     <ClInclude Include="graphics\graphics.h" />

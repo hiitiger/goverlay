@@ -1,8 +1,8 @@
 #include "stable.h"
 #include "session.h"
 #include "hookapp.h"
-#include "graphics/d3d9hook.h"
-#include "graphics/dxgihook.h"
+#include "graphics/D3D9/d3d9hook.h"
+#include "graphics/DXGI/dxgihook.h"
 #include "hook/inputhook.h"
 #include "hotkey/hotkeycheck.h"
 
