@@ -13,7 +13,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "node-addon-api": "^2.0.0",
+        "node-addon-api": "^3.1.0",
         "node-gyp": "^7.1.2"
     },
     "devDependencies": {
