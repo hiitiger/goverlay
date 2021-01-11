@@ -13,7 +13,7 @@
     },
     "devDependencies": {
         "@types/node": "^13.13.2",
-        "@typescript-eslint/eslint-plugin": "^2.29.0",
+        "@typescript-eslint/eslint-plugin": "^2.34.0",
         "@typescript-eslint/parser": "^2.29.0",
         "awesome-typescript-loader": "^5.2.1",
         "electron-rebuild": "^1.10.1",
