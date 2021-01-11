@@ -148,7 +148,9 @@ class Application {
     window: Electron.BrowserWindow,
     dragborder: number = 0,
     captionHeight: number = 0,
-    transparent: boolean = false
+    transparent: boolean = false,
+    alwaysOnTop: boolean = false,
+    alwaysIgnoreInput: boolean = false
   ) {
     const display = screen.getDisplayNearestPoint(
       screen.getCursorScreenPoint()
@@ -176,7 +178,9 @@ class Application {
         top: dragborder,
         height: captionHeight
       },
-      dragBorderWidth: dragborder
+      dragBorderWidth: dragborder,
+      alwaysIgnoreInput: alwaysIgnoreInput,
+      alwaysOnTop: alwaysOnTop,
     })
 
     window.webContents.on(
@@ -318,7 +322,7 @@ class Application {
       fileUrl(path.join(global.CONFIG.distDir, "index/statusbar.html"))
     )
 
-    this.addOverlayWindow(name, window, 0, 0)
+    this.addOverlayWindow(name, window, 0, 0, undefined, true)
     return window
   }
 
@@ -540,7 +544,7 @@ class Application {
       }
     })
 
-    this.addOverlayWindow(name, window, 0, 0)
+    this.addOverlayWindow(name, window, 0, 0, undefined, true, true)
 
     // window.webContents.openDevTools({mode: "detach"})
 

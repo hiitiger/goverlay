@@ -9,6 +9,7 @@ struct D3d10WindowSprite
     std::string name;
     overlay::WindowRect rect;
     std::string bufferName;
+    bool alwaysOnTop;
 
     std::unique_ptr<windows_shared_memory> windowBitmapMem;
 
@@ -66,9 +67,6 @@ class D3d10Graphics : public DxgiGraphics
     Status savedStatus_ = {0};
 
     std::vector<std::shared_ptr<D3d10WindowSprite>> windowSprites_;
-    std::shared_ptr<D3d10WindowSprite> mainSprite_;
-    std::shared_ptr<D3d10WindowSprite> statusBarSprite_;
-    std::shared_ptr<D3d10WindowSprite> overlayTipSprite_;
 public:
     D3d10Graphics();
     ~D3d10Graphics();
@@ -91,11 +89,6 @@ public:
 
     void _drawBlockSprite() override;
     void _drawWindowSprites() override;
-
-    void _drawMainSprite() override;
-    void _drawStatutBarSprite() override;
-    void _drawPopupTipSprite() override;
-
     void _drawWindowSprite(std::shared_ptr<D3d10WindowSprite>&);
 
     void _saveStatus() override;

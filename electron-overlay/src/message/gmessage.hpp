@@ -144,13 +144,15 @@ struct Window : public GMessage
     std::uint32_t minWidth = 0;
     std::uint32_t minHeight = 0;
     std::uint32_t dragBorderWidth = 0;
+    bool alwaysIgnoreInput = false;
+    bool alwaysOnTop = false;
 
     std::string bufferName;
     WindowRect rect;
     std::optional<WindowCaptionMargin> caption;
 };
 
-JSON_AUTO(Window, type, windowId, nativeHandle, name, transparent, resizable, maxWidth, maxHeight, minWidth, minHeight, dragBorderWidth, bufferName, rect, caption)
+JSON_AUTO(Window, type, windowId, nativeHandle, name, transparent, resizable, maxWidth, maxHeight, minWidth, minHeight, dragBorderWidth, alwaysIgnoreInput, alwaysOnTop, bufferName, rect, caption)
 
 struct WindowClose : public GMessage
 {

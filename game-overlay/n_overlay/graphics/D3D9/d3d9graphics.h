@@ -8,6 +8,7 @@ struct D3d9WindowSprite {
     std::string name;
     overlay::WindowRect rect;
     std::string bufferName;
+    bool alwaysOnTop;
 
     std::unique_ptr<windows_shared_memory> windowBitmapMem;
     Windows::ComPtr<IDirect3DTexture9> texture;
@@ -45,9 +46,6 @@ class D3d9Graphics : public Storm::Trackable<>
 
 
     std::vector<std::shared_ptr<D3d9WindowSprite>> windowSprites_;
-    std::shared_ptr<D3d9WindowSprite> mainSprite_;
-    std::shared_ptr<D3d9WindowSprite> statusBarSprite_;
-    std::shared_ptr<D3d9WindowSprite> overlayTipSprite_;
 public:
     D3d9Graphics();
     ~D3d9Graphics();
@@ -78,9 +76,5 @@ public:
 
     void _drawBlockSprite() ;
     void _drawWindowSprites() ;
-    void _drawMainSprite() ;
-    void _drawStatutBarSprite() ;
-    void _drawPopupTipSprite() ;
-
     void _drawWindowSprite(std::shared_ptr<D3d9WindowSprite>&);
 };

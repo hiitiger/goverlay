@@ -507,6 +507,10 @@ class OverlayMain : public IIpcHost
             message.dragBorderWidth = windowDetails.Get("dragBorderWidth").ToNumber();
         }
 
+        message.alwaysIgnoreInput = windowDetails.Get("alwaysIgnoreInput").ToBoolean();
+        message.alwaysOnTop = windowDetails.Get("alwaysOnTop").ToBoolean();
+        
+
         Napi::Object rect = windowDetails.Get("rect").ToObject();
         message.rect.x = rect.Get("x").ToNumber();
         message.rect.y = rect.Get("y").ToNumber();

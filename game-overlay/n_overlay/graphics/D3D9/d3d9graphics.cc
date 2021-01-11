@@ -246,9 +246,6 @@ void D3d9Graphics::freeGraphics()
     syncState_.pendingFrameBufferUpdates_.clear();
     syncState_.focusWindowId_ = 0;
     needResync_ = false;
-
-    statusBarSprite_ = nullptr;
-    mainSprite_ = nullptr;
     windowSprites_.clear();
 
     blockSprite_ = nullptr;
@@ -283,16 +280,8 @@ void D3d9Graphics::beforePresent(IDirect3DDevice9* device)
     {
         _drawBlockSprite();
 
-        _drawWindowSprites();
     }
-
-#if 0
-    _drawMainSprite();
-#endif
-
-    _drawPopupTipSprite();
-    _drawStatutBarSprite();
-
+    _drawWindowSprites();
     spriteDrawer_->End();
     device_->EndScene();
 }
@@ -375,12 +364,6 @@ void D3d9Graphics::_createWindowSprites()
         auto windowSprite = _createWindowSprite(w);
         if (windowSprite)
         {
-            if (w->name == "MainOverlay")
-                mainSprite_ = windowSprite;
-            else if (w->name == "StatusBar")
-                statusBarSprite_ = windowSprite;
-            else if (w->name == "OverlayTip")
-                overlayTipSprite_ = windowSprite;
             windowSprites_.push_back(windowSprite);
         }
     }
@@ -408,6 +391,7 @@ std::shared_ptr<D3d9WindowSprite > D3d9Graphics::_createWindowSprite(const std::
     windowSprite->name = window->name;
     windowSprite->bufferName = window->bufferName;
     windowSprite->rect = window->rect;
+    windowSprite->alwaysOnTop = window->alwaysOnTop;
 
     windowSprite->texture = _createDynamicTexture(window->rect.width, window->rect.height);
     if (!windowSprite->texture)
@@ -508,12 +492,6 @@ void D3d9Graphics::_checkAndResyncWindows()
                 {
                     if (auto windowSprite = _createWindowSprite(*it))
                     {
-                        if ((*it)->name == "MainOverlay")
-                            mainSprite_ = windowSprite;
-                        else if ((*it)->name == "StatusBar")
-                            statusBarSprite_ = windowSprite;
-                        else if ((*it)->name == "OverlayTip")
-                            overlayTipSprite_ = windowSprite;
                         windowSprites_.push_back(windowSprite);
                     }
                 }
@@ -550,12 +528,6 @@ void D3d9Graphics::_checkAndResyncWindows()
                 });
                 if (it != windowSprites_.end())
                 {
-                    if ((*it)->name == "MainOverlay")
-                        mainSprite_ = nullptr;
-                    else if ((*it)->name == "StatusBar")
-                        statusBarSprite_ = nullptr;
-                    else if ((*it)->name == "OverlayTip")
-                        overlayTipSprite_ = nullptr;
                     windowSprites_.erase(it);
                 }
             }
@@ -652,46 +624,12 @@ void D3d9Graphics::_drawBlockSprite()
 void D3d9Graphics::_drawWindowSprites()
 {
     for (auto& windowSprite : windowSprites_)
-    {
-#if 0
-        if (windowSprite->name == "MainOverlay")
+    {     
+        if (!windowSprite->alwaysOnTop && !HookApp::instance()->uiapp()->isInterceptingInput())
             continue;
-#endif
-        if (windowSprite->name == "StatusBar")
-            continue;
-        if (windowSprite->name == "PopupTip")
-            continue;
-
         _drawWindowSprite(windowSprite);
     }
 }
-
-void D3d9Graphics::_drawMainSprite()
-{
-    if (mainSprite_)
-    {
-        _drawWindowSprite(mainSprite_);
-    }
-}
-
-void D3d9Graphics::_drawStatutBarSprite()
-{
-    if (statusBarSprite_)
-    {
-        _drawWindowSprite(statusBarSprite_);
-    }
-}
-
-void D3d9Graphics::_drawPopupTipSprite()
-{
-    if (overlayTipSprite_)
-    {
-        overlayTipSprite_->rect.x = targetWidth_ - overlayTipSprite_->rect.width - 10;
-        overlayTipSprite_->rect.y = targetHeight_ - overlayTipSprite_->rect.height - 10;
-        _drawWindowSprite(overlayTipSprite_);
-    }
-}
-
 void D3d9Graphics::_drawWindowSprite(std::shared_ptr<D3d9WindowSprite>& windowSprite)
 {
     D3DXVECTOR3 pos((FLOAT)windowSprite->rect.x, (FLOAT)windowSprite->rect.y, 0);
