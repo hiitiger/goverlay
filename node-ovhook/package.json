@@ -13,7 +13,7 @@
     "author": "",
     "license": "ISC",
     "devDependencies": {
-        "electron-rebuild": "^1.10.1",
+        "electron-rebuild": "^2.3.4",
         "node-addon-api": "^2.0.0",
         "node-gyp": "^7.1.2"
     }
