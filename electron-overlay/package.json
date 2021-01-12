@@ -17,7 +17,7 @@
         "node-gyp": "^7.1.2"
     },
     "devDependencies": {
-        "@types/node": "^13.13.2",
+        "@types/node": "^14.14.20",
         "electron-rebuild": "^2.3.4"
     }
 }
