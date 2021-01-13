@@ -74,7 +74,10 @@ class Application {
     const options: Electron.BrowserWindowConstructorOptions = {
       height: 600,
       width: 800,
-      show: false
+      show: false,
+      webPreferences: {
+        nodeIntegration: true,
+      }
     }
     const mainWindow = this.createWindow(AppWindows.main, options)
     this.mainWindow = mainWindow
@@ -269,6 +272,7 @@ class Application {
       show: false,
       transparent: true,
       webPreferences: {
+        nodeIntegration: true,
         offscreen: true
       }
     }
@@ -307,6 +311,7 @@ class Application {
       resizable: false,
       backgroundColor: "#00000000",
       webPreferences: {
+        nodeIntegration: true,
         offscreen: true
       }
     }
@@ -335,6 +340,7 @@ class Application {
       show: false,
       transparent: true,
       webPreferences: {
+        nodeIntegration: true,
         offscreen: true
       }
     }
