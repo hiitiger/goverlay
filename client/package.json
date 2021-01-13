@@ -9,7 +9,7 @@
         "build": "npm run build:main && npm run build:renderer",
         "lint": "eslint src/**/*.ts",
         "start": "electron . --enable-logging",
-        "compile:electron": "electron-rebuild -v 2.0.8"
+        "compile:electron": "electron-rebuild -v 11.2.0"
     },
     "devDependencies": {
         "@types/node": "^13.13.2",
