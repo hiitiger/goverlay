@@ -45,5 +45,3 @@ In default they are precompiled under `client/dist/overlay` but if you are makin
 ## features & todos
 
 Look into the Projects/Progress board
-
--   [x] electron offscreen window overlay in game
