@@ -22,7 +22,7 @@
         "eslint-plugin-import": "^2.22.1",
         "node-gyp": "^7.1.2",
         "typescript": "^3.9.7",
-        "webpack": "^5.13.0",
+        "webpack": "^5.14.0",
         "webpack-cli": "^4.3.1"
     },
     "dependencies": {
