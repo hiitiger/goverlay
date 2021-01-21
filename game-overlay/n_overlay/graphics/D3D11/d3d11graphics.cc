@@ -138,7 +138,7 @@ void D3d11Graphics::_initSpriteDrawer()
     sprite_->init(session::loadModuleD3dCompiler47(), targetWidth_, targetHeight_, isSRGB_);
 }
 
-bool D3d11Graphics::_createSprites()
+void D3d11Graphics::_createSprites()
 {
     D3D11_TEXTURE2D_DESC textureDesc;
     textureDesc.Width = targetWidth_;
@@ -161,9 +161,7 @@ bool D3d11Graphics::_createSprites()
         int* bytePointer = (int*)ms.pData;
         memset(bytePointer, 0xff, ms.RowPitch * textureDesc.Height);
         d3dContext_->Unmap(blockSprite_, 0);
-        return true;
     }
-    return false;
 }
 
 void D3d11Graphics::_createWindowSprites()
@@ -213,10 +211,14 @@ Windows::ComPtr<ID3D11Texture2D> D3d11Graphics::_createDynamicTexture(std::uint3
     return texture;
 }
 
-std::shared_ptr<CommonWindowSprite> D3d11Graphics::_createWindowSprite(const std::shared_ptr<overlay::Window>& window)
+std::shared_ptr<D3d11WindowSprite> D3d11Graphics::_createWindowSprite(const std::shared_ptr<overlay::Window>& window)
 {
-    std::shared_ptr<CommonWindowSprite> commonWindowSprite = __super::_createWindowSprite(window);
-    std::shared_ptr<D3d11WindowSprite> windowSprite = std::dynamic_pointer_cast<D3d11WindowSprite>(commonWindowSprite);
+    std::shared_ptr<D3d11WindowSprite> windowSprite = std::make_shared<D3d11WindowSprite>();
+    windowSprite->windowId = window->windowId;
+    windowSprite->name = window->name;
+    windowSprite->bufferName = window->bufferName;
+    windowSprite->rect = window->rect;
+    windowSprite->alwaysOnTop = window->alwaysOnTop;
 
     windowSprite->texture = _createDynamicTexture(window->rect.width, window->rect.height);
     if (!windowSprite->texture)
@@ -224,6 +226,15 @@ std::shared_ptr<CommonWindowSprite> D3d11Graphics::_createWindowSprite(const std
         return nullptr;
     }
 
+    try
+    {
+        windows_shared_memory share_mem(windows_shared_memory::open_only, windowSprite->bufferName.c_str(), windows_shared_memory::read_only);
+        windowSprite->windowBitmapMem = std::make_unique<windows_shared_memory>(std::move(share_mem));
+    }
+    catch (...)
+    {
+        return nullptr;
+    }
 
     _updateSprite(windowSprite, true);
     return windowSprite;
@@ -278,50 +289,159 @@ void D3d11Graphics::_updateSprite(std::shared_ptr<D3d11WindowSprite>& windowSpri
 
     d3dContext_->Unmap(windowSprite->texture, 0);
 }
-void D3d11Graphics::_syncPendingBounds(std::map<std::uint32_t, overlay::WindowRect> pendingBounds_) {
-    for (const auto& [windowId, rect] : pendingBounds_)
+
+void D3d11Graphics::_checkAndResyncWindows()
+{
+    if (needResync_)
     {
-        auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [windowId](const auto& window) {
-            return windowId == window->windowId;
-        });
-        if (it != windowSprites_.end())
+        SyncState syncState;
         {
-            auto& windowSprite = *it;
-            windowSprite->rect = rect;
+            std::lock_guard<std::mutex> lock(synclock_);
+            syncState.pendingWindows_.swap(syncState_.pendingWindows_);
+            syncState.pendingFrameBuffers_.swap(syncState_.pendingFrameBuffers_);
+            syncState.pendingClosed_.swap(syncState_.pendingClosed_);
+            syncState.pendingBounds_.swap(syncState_.pendingBounds_);
+            syncState.pendingFrameBufferUpdates_.swap(syncState_.pendingFrameBufferUpdates_);
+            syncState.focusWindowId_ = syncState_.focusWindowId_;
+        }
 
-            D3D11_TEXTURE2D_DESC desc = { 0 };
+        if (syncState.pendingWindows_.size() > 0 || syncState.pendingFrameBufferUpdates_.size() > 0)
+        {
+            HookApp::instance()->overlayConnector()->lockWindows();
 
-            if (windowSprite->texture)
+            auto windows = HookApp::instance()->overlayConnector()->windows();
+            
+            for (auto windowId : syncState.pendingWindows_)
             {
-                windowSprite->texture->GetDesc(&desc);
+                auto it = std::find_if(windows.begin(), windows.end(), [windowId](const auto &window) {
+                    return windowId == window->windowId;
+                });
+                if (it != windows.end())
+                {
+                    if (auto windowSprite = _createWindowSprite(*it))
+                    {
+                        windowSprites_.push_back(windowSprite);
+                    }
+                }
             }
 
-            if (desc.Width == windowSprite->rect.width
-                && desc.Height == windowSprite->rect.height)
+            for (auto windowId: syncState.pendingFrameBufferUpdates_)
             {
-                continue;
+                auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [windowId](const auto &window) {
+                    return windowId == window->windowId;
+                });
+                if (it != windowSprites_.end())
+                {
+                    auto& windowSprite = *it;
+                    try
+                    {
+                        windows_shared_memory share_mem(windows_shared_memory::open_only, windowSprite->bufferName.c_str(), windows_shared_memory::read_only);
+                        windowSprite->windowBitmapMem = std::make_unique<windows_shared_memory>(std::move(share_mem));
+                    }
+                    catch (...)
+                    {
+                    }
+                }
             }
-            else if (desc.Width < (UINT)windowSprite->rect.width
-                || desc.Height < (UINT)windowSprite->rect.height)
-            {
-                //create a new larger texture
 
-                windowSprite->texture = _createDynamicTexture(windowSprite->rect.width, windowSprite->rect.height);
-                if (!windowSprite->texture)
+            HookApp::instance()->overlayConnector()->unlockWindows();
+        }
+
+        if (syncState.pendingClosed_.size() > 0)
+        {
+            for (auto windowId : syncState.pendingClosed_)
+            {
+                auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [windowId](const auto &window) {
+                    return windowId == window->windowId;
+                });
+                if (it != windowSprites_.end())
                 {
                     windowSprites_.erase(it);
-                    continue;
                 }
-
-                _updateSprite(windowSprite, true);
-            }
-            else
-            {
-                _updateSprite(windowSprite, true);
             }
         }
+
+        if (syncState.pendingBounds_.size() > 0)
+        {
+            for (const auto& [windowId, rect] : syncState.pendingBounds_)
+            {
+                auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [windowId](const auto &window) {
+                    return windowId == window->windowId;
+                });
+                if (it != windowSprites_.end())
+                {
+                    auto& windowSprite = *it;
+                    windowSprite->rect = rect;
+
+                    D3D11_TEXTURE2D_DESC desc = { 0 };
+
+                    if (windowSprite->texture)
+                    {
+                        windowSprite->texture->GetDesc(&desc);
+                    }
+
+                    if (desc.Width == windowSprite->rect.width
+                        && desc.Height == windowSprite->rect.height)
+                    {
+                        continue;
+                    }
+                    else if (desc.Width < (UINT)windowSprite->rect.width
+                        || desc.Height < (UINT)windowSprite->rect.height)
+                    {
+                        //create a new larger texture
+
+                        windowSprite->texture = _createDynamicTexture(windowSprite->rect.width, windowSprite->rect.height);
+                        if (!windowSprite->texture)
+                        {
+                            windowSprites_.erase(it);
+                            continue;
+                        }
+
+                        _updateSprite(windowSprite, true);
+                    }
+                    else
+                    {
+                        _updateSprite(windowSprite, true);
+                    }
+                }
+            }
+        }
+
+        if (syncState.pendingFrameBuffers_.size() > 0)
+        {
+            for (auto windowId : syncState.pendingFrameBuffers_)
+            {
+                auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [windowId](const auto &window) {
+                    return windowId == window->windowId;
+                });
+
+                if (it != windowSprites_.end())
+                {
+                    _updateSprite(*it);
+                }
+            }
+        }
+
+        if (syncState.focusWindowId_)
+        {
+            if (windowSprites_.at(windowSprites_.size() - 1)->windowId != syncState.focusWindowId_)
+            {
+                auto it = std::find_if(windowSprites_.begin(), windowSprites_.end(), [&](const auto& w) {
+                    return w->windowId == syncState.focusWindowId_;
+                });
+                if (it != windowSprites_.end())
+                {
+                    auto focusWindow = *it;
+                    windowSprites_.erase(it);
+                    windowSprites_.push_back(focusWindow);
+                }
+            }
+        }
+
+        needResync_ = false;
     }
 }
+
 void D3d11Graphics::_drawBlockSprite()
 {
     RECT  drawRect = { 0, 0, (LONG)targetWidth_, (LONG)targetHeight_ };

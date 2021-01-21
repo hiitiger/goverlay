@@ -1,9 +1,17 @@
 #pragma once
 
 #include "..\DXGI\dxgigraphics.h"
-#include "..\commongraphics.h"
 
-struct D3d11WindowSprite : CommonWindowSprite{
+struct D3d11WindowSprite
+{
+    int windowId;
+    std::string name;
+    overlay::WindowRect rect;
+    std::string bufferName;
+    bool alwaysOnTop;
+
+    std::unique_ptr<windows_shared_memory> windowBitmapMem;
+
     Windows::ComPtr<ID3D11Texture2D> texture;
 };
 
@@ -72,15 +80,14 @@ public:
     bool _initGraphicsState() override;
     void _initSpriteDrawer() override;
 
-    bool _createSprites() override;
+    void _createSprites() override;
     void _createWindowSprites() override;
 
     Windows::ComPtr<ID3D11Texture2D> _createDynamicTexture(std::uint32_t width, std::uint32_t height);
-    std::shared_ptr<CommonWindowSprite> _createWindowSprite(const std::shared_ptr<overlay::Window>& window) override;
+    std::shared_ptr<D3d11WindowSprite> _createWindowSprite(const std::shared_ptr<overlay::Window>& window);
     void _updateSprite(std::shared_ptr<D3d11WindowSprite>& sprite, bool clear = false);
 
-    void _syncPendingBounds(std::map<std::uint32_t, overlay::WindowRect> pendingBounds_) override;
-
+    void _checkAndResyncWindows() override;
 
     void _drawBlockSprite() override;
     void _drawWindowSprites() override;

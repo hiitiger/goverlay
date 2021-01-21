@@ -1149,7 +1149,7 @@ void OverlayConnector::_onWindow(std::shared_ptr<overlay::Window>& overlayMsg)
             translateWindowsToGameClient(overlayMsg);
         }
 
-        if (!overlayMsg->alwaysOnTop)//not always on top
+        if (overlayMsg->name != "OverlayTip")
         {
             focusWindowId_ = overlayMsg->windowId;
             focusWindow_ = overlayMsg->nativeHandle;

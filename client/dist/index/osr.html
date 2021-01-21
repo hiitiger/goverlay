@@ -44,7 +44,7 @@
 
         const button = document.getElementById('button')
         button.addEventListener('click', () => {
-            //remote.getCurrentWindow().setSize(window.innerWidth + 20, window.innerHeight + 20)
+            remote.getCurrentWindow().setSize(window.innerWidth + 20, window.innerHeight + 20)
             console.log('button click ', (new Date()).toString())
             ipcRenderer.send('osrClick')
         })
