@@ -287,6 +287,7 @@
     <ClCompile Include="graphics\D3D9\d3d9hook.cc" />
     <ClCompile Include="graphics\DXGI\dxgigraphics.cc" />
     <ClCompile Include="graphics\DXGI\dxgihook.cc" />
+    <ClCompile Include="graphics\commongraphics.cc" />
     <ClCompile Include="graphics\sprites.shader.h" />
     <ClCompile Include="overlay\hookapp.cc" />
     <ClCompile Include="hook\inputhook.cc" />
@@ -313,7 +314,7 @@
     <ClInclude Include="graphics\DXGI\dxgihook.h" />
     <ClInclude Include="hotkey\hotkeycheck.h" />
     <ClInclude Include="message\gmessage.hpp" />
-    <ClInclude Include="graphics\graphics.h" />
+    <ClInclude Include="graphics\commongraphics.h" />
     <ClInclude Include="overlay\hookapp.h" />
     <ClInclude Include="hook\inputhook.h" />
     <ClInclude Include="ipc\ipccenter.h" />

@@ -1,41 +1,18 @@
 #pragma once
 
+#include "..\commongraphics.h"
+
 struct ID3DXSprite;
 
-
-struct D3d9WindowSprite {
-    int windowId;
-    std::string name;
-    overlay::WindowRect rect;
-    std::string bufferName;
-    bool alwaysOnTop;
-
-    std::unique_ptr<windows_shared_memory> windowBitmapMem;
+struct D3d9WindowSprite : CommonWindowSprite {
     Windows::ComPtr<IDirect3DTexture9> texture;
 };
 
 
-class D3d9Graphics : public Storm::Trackable<>
+class D3d9Graphics : public CommonGraphics
 {
-    std::mutex synclock_;
-
-    struct SyncState
-    {
-        std::set<std::uint32_t> pendingWindows_;
-        std::set<std::uint32_t> pendingFrameBuffers_;
-        std::set<std::uint32_t> pendingClosed_;
-        std::map<std::uint32_t, overlay::WindowRect> pendingBounds_;
-        std::set<std::uint32_t> pendingFrameBufferUpdates_;
-        std::uint32_t focusWindowId_ = 0;
-    } syncState_;
-
-
-    std::atomic<bool> needResync_ = false;
-    FpsTimer fpsTimer_;
-
     Windows::ComPtr<IDirect3DDevice9> device_;
 
-    bool windowed_ = false;
 
     int targetWidth_ = 0;
     int targetHeight_ = 0;
@@ -44,13 +21,11 @@ class D3d9Graphics : public Storm::Trackable<>
     Windows::ComPtr<IDirect3DTexture9> blockSprite_;
     Windows::ComPtr<ID3DXSprite> spriteDrawer_;
 
-
-    std::vector<std::shared_ptr<D3d9WindowSprite>> windowSprites_;
+    FpsTimer fpsTimer_;
+    
 public:
     D3d9Graphics();
     ~D3d9Graphics();
-
-    bool isWindowed() const;
 
     bool initGraphics(IDirect3DDevice9* device, HWND hDestWindowOverride, bool isD9Ex);
     void uninitGraphics(IDirect3DDevice9* device);
@@ -63,18 +38,27 @@ public:
 
     bool _initSpriteDrawer();
 
-    bool _createSprites();
-    void _createWindowSprites();
+    bool _createSprites() override;
+    void _createWindowSprites() override;
 
     Windows::ComPtr<IDirect3DTexture9> _createDynamicTexture(std::uint32_t width, std::uint32_t height);
+    std::shared_ptr<CommonWindowSprite > _createWindowSprite(const std::shared_ptr<overlay::Window>& window) override;
+    void _updateSprite(std::shared_ptr<CommonWindowSprite>& sprite, bool clear = false) override;
 
-    std::shared_ptr<D3d9WindowSprite > _createWindowSprite(const std::shared_ptr<overlay::Window>& window);
+    void _syncPendingBounds(std::map<std::uint32_t, overlay::WindowRect> pendingBounds_) override;
 
-    void _updateSprite(std::shared_ptr<D3d9WindowSprite>& sprite, bool clear = false);
-
-    void _checkAndResyncWindows() ;
-
-    void _drawBlockSprite() ;
-    void _drawWindowSprites() ;
-    void _drawWindowSprite(std::shared_ptr<D3d9WindowSprite>&);
+    void _drawBlockSprite() override;
+    void _drawWindowSprite(std::shared_ptr<CommonWindowSprite>&) override;
 };
+typedef IDirect3D9* (WINAPI* pFnDirect3DCreate9)(UINT SDKVersion);
+typedef HRESULT(WINAPI* pFnDirect3DCreate9Ex)(UINT, void**);
+
+typedef HRESULT(WINAPI* pFnCreateDXGIFactory1)(REFIID riid, void** ppFactory);
+
+typedef HRESULT(STDMETHODCALLTYPE* PresentType)(IDirect3DDevice9* d, THIS_ CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion);
+typedef HRESULT(STDMETHODCALLTYPE* SwapChainPresentType)(IDirect3DSwapChain9* s, THIS_ CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion, DWORD dwFlags);
+typedef HRESULT(STDMETHODCALLTYPE* ResetType)(IDirect3DDevice9* d, THIS_ D3DPRESENT_PARAMETERS* pPresentationParameters);
+typedef HRESULT(STDMETHODCALLTYPE* PresentExType)(IDirect3DDevice9Ex* d, THIS_ CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion, DWORD dwFlags);
+typedef HRESULT(STDMETHODCALLTYPE* ResetExType)(IDirect3DDevice9Ex* d, THIS_ D3DPRESENT_PARAMETERS* pPresentationParameters, D3DDISPLAYMODEEX*);
+typedef HRESULT(STDMETHODCALLTYPE* EndSceneType)(IDirect3DDevice9* d);
+

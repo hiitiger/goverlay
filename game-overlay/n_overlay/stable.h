@@ -34,7 +34,7 @@ __pragma(warning(pop))
 #include "common.hpp"
 
 #include "hook/apihook.hpp"
-#include "graphics/graphics.h"
+#include "graphics/commongraphics.h"
 #include "graphics/fpstimer.h"
 
 

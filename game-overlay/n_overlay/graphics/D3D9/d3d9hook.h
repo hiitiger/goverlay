@@ -1,6 +1,7 @@
 #pragma once
-#include "..\graphics.h"
+#include "..\commongraphics.h"
 #include "hook/apihook.hpp"
+#include ".\d3d9graphics.h"
 
 
 struct  D3d9HookData

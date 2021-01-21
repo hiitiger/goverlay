@@ -1,5 +1,6 @@
 #pragma once
-#include "..\graphics.h"
+#include "..\commongraphics.h"
+#include ".\dxgigraphics.h"
 
 struct DXGIHookData
 {
