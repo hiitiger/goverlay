@@ -4,13 +4,11 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <codecvt>
 #include "utils.hpp"
 
 const WCHAR k_inject_helper[] = L"n_ovhelper.exe";
 const WCHAR k_inject_helper_x64[] = L"n_ovhelper.x64.exe";
-
-const WCHAR k_inject_dll[] = L"n_overlay.dll";
-const WCHAR k_inject_dll_x64[] = L"n_overlay.x64.dll";
 
 struct win_scope_handle
 {
@@ -201,22 +199,7 @@ static std::wstring get_inject_helper_path(bool x64)
   return helper;
 }
 
-static std::wstring get_inject_dll_path(bool x64)
-{
-  std::wstring dir = win_utils::moduleDirPath();
-  std::wstring dll;
-  if (x64)
-  {
-    dll = dir + L"\\" + k_inject_dll_x64;
-  }
-  else
-  {
-    dll = dir + L"\\" + k_inject_dll;
-  }
-  return dll;
-}
-
-static bool inject_process(DWORD processId, DWORD threadId)
+static bool inject_process(DWORD processId, DWORD threadId, std::wstring dll, std::wstring helper)
 {
   win_scope_handle process = OpenProcess(
       PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
@@ -225,22 +208,20 @@ static bool inject_process(DWORD processId, DWORD threadId)
   {
     return false;
   }
-
+  /*
   std::wstring dir = win_utils::moduleDirPath();
 
   std::wstring helper;
-  std::wstring dll;
   if (is_64bit_process(process.handle))
   {
     helper = dir + L"\\" + k_inject_helper_x64;
-    dll = dir + L"\\" + k_inject_dll_x64;
   }
   else
   {
     helper = dir + L"\\" + k_inject_helper;
-    dll = dir + L"\\" + k_inject_dll;
   }
-
+  */
+  std::wcout << helper << " with dll: " << dll;
   std::wstring args = std::to_wstring(processId) + L" " + std::to_wstring(threadId) + L" \"" + dll + L"\"";
   return win_utils::createProcess(helper, args);
 }
@@ -289,7 +270,7 @@ Napi::Value injectProcess(const Napi::CallbackInfo &info)
 {
   Napi::Env env = info.Env();
 
-  if (info.Length() != 1)
+  if (info.Length() != 2)
   {
     Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
     return env.Null();
@@ -298,13 +279,26 @@ Napi::Value injectProcess(const Napi::CallbackInfo &info)
   Napi::Object object = info[0].ToObject();
   const std::uint32_t processId = object.Get("processId").ToNumber().Uint32Value();
   const std::uint32_t threadId = object.Get("threadId").ToNumber().Uint32Value();
+  
+  Napi::Object config = info[1].ToObject();
+  std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+
+  const std::wstring overlaypath = converter.from_bytes(config.Get("dllPath").ToString().Utf8Value());
+  const std::wstring overlaypath64 = converter.from_bytes(config.Get("dllPath64").ToString().Utf8Value());
+
+  const std::wstring helperpath = converter.from_bytes(config.Get("helper").ToString().Utf8Value());
+  const std::wstring helperpath64 = converter.from_bytes(config.Get("helper64").ToString().Utf8Value());
 
   const bool x64 = is_64bit_process(processId);
-  std::wstring helper_path = get_inject_helper_path(x64);
-  std::wstring dll_path = get_inject_dll_path(x64);
+  std::wstring helper_path = x64 ? helperpath64 : helperpath;
+  std::wstring dll_path = x64 ? overlaypath64 : overlaypath; //get_inject_dll_path(x64);
   const bool inject_helper_exist = file_exists(helper_path);
+  if(!inject_helper_exist)  
+    Napi::TypeError::New(env, "helper path doesnt exist").ThrowAsJavaScriptException();
   const bool inject_dll_exist = file_exists(dll_path);
-  const bool injected = inject_process(processId, threadId);
+  if(!inject_dll_exist)  
+    Napi::TypeError::New(env, "dll path doesnt exist").ThrowAsJavaScriptException();
+  const bool injected = inject_process(processId, threadId, dll_path, helper_path);
 
   auto result = Napi::Object::New(env);
 

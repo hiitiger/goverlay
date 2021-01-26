@@ -71,7 +71,12 @@ using namespace nlohmann;
 #define FOR_EACH_14(what, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14)\
   what(x1);\
   FOR_EACH_13(what,  x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14)
-
+#define FOR_EACH_15(what, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15)\
+  what(x1);\
+  FOR_EACH_14(what,  x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15)
+#define FOR_EACH_16(what, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16)\
+  what(x1);\
+  FOR_EACH_15(what,  x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16)
 
 #define VA_ARGS(...)  , ##__VA_ARGS__
 

@@ -30,6 +30,8 @@ declare module "electron-overlay" {
         rect: IRectangle;
         nativeHandle: number;
         dragBorderWidth?: number;
+        alwaysIgnoreInput: boolean;
+        alwaysOnTop: boolean;
         caption?: {
             left: number;
             right: number;

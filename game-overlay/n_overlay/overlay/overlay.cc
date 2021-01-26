@@ -52,16 +52,6 @@ static auto _syncDragResizeBottom = [&](auto& window, std::int32_t /*xdiff*/, st
     window->rect.height = curHeight;
 };
 
-bool isAlwaysInputAwareWindow(const std::string& name)
-{
-    return name == "StatusBar";
-}
-
-bool isAlwaysInputTransparentWindow(const std::string& name)
-{
-    return name == "OverlayTip";
-}
-
 OverlayConnector::OverlayConnector()
 {
     arrowCursor_ = (HCURSOR)::LoadImageW(NULL, IDC_ARROW, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
@@ -271,14 +261,14 @@ bool OverlayConnector::processNCHITTEST(UINT /*message*/, WPARAM /*wParam*/, LPA
     {
         auto& window = *it;
 
-        if (isAlwaysInputTransparentWindow(window->name))
+        if (window->alwaysIgnoreInput)
         {
             continue;
         }
 
         if (!isBlockingAll)
         {
-            if(!isAlwaysInputAwareWindow(window->name))
+            if(!window->alwaysOnTop)
                 continue;
         }
 
@@ -499,14 +489,14 @@ bool OverlayConnector::processMouseMessage(UINT message, WPARAM wParam, LPARAM l
     {
         auto& window = *it;
 
-        if (isAlwaysInputTransparentWindow(window->name))
+        if (window->alwaysIgnoreInput)
         {
             continue;
         }
 
         if (!isBlockingAll)
         {
-            if (!isAlwaysInputAwareWindow(window->name))
+            if (!window->alwaysOnTop)
                 continue;
         }
 

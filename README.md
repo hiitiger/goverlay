@@ -1,13 +1,14 @@
 # game overlay
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/0f6b8ec919b243a7a926fcf674b2cab7)](https://www.codacy.com/app/hiitiger/gelectron?utm_source=github.com&utm_medium=referral&utm_content=hiitiger/gelectron&utm_campaign=Badge_Grade)
-[![Build status](https://ci.appveyor.com/api/projects/status/sgi7go37f72f52a5?svg=true)](https://ci.appveyor.com/project/hiitiger/gelectron)
+fork of https://github.com/hiitiger/gelectron
 
-![demo](https://raw.githubusercontent.com/hiitiger/gelectron/master/screenshot/gelectron3.gif)
+![demo](https://raw.githubusercontent.com/honzapatCZ/gelectron/master/screenshot/gelectron3.gif)
 
 Use the power of web to inject any web app to overlay in your game
 
 ## Features
+
+use the power of web to inject any web app to overlay in your game
 
 - electron offscreen window overlay in game
 - dx11 api support
@@ -57,7 +58,7 @@ Visual Studio 2017 > gameoverlay.sln > Rebuild solution
 
 ## Inject a specific game
 
-After you have the demo runs right
+In default they are precompiled under `client/dist/overlay` but if you are making changes you might want to compile on your own
 
 1. copy files [`n_overlay.dll`, `n_overlay.x64.dll`, `n_ovhelper.exe`, `n_ovhelper.x64.exe`] from directory `game-overlay\bin\Release` to directory `node-ovhook\build\Release`
 2. run demo client
