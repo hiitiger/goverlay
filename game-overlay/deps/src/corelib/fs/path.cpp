@@ -57,17 +57,17 @@ namespace Storm
 
     Path Path::parentDir() const
     {
-        return std::experimental::filesystem::path(fullPath_).parent_path();
+        return std::filesystem::path(fullPath_).parent_path();
     }
 
     Path Path::rootPath() const
     {
-        return std::experimental::filesystem::path(fullPath_).root_path();
+        return std::filesystem::path(fullPath_).root_path();
     }
 
     std::wstring Path::fileName() const
     {
-        return std::experimental::filesystem::path(fullPath_).filename();
+        return std::filesystem::path(fullPath_).filename();
         /*std::wstring filename;
         auto del = fullPath_.find_last_of(k_natvieDelimiter);
         if (del != fullPath_.npos)
@@ -93,7 +93,7 @@ namespace Storm
 
     std::wstring Path::extension() const
     {
-        return std::experimental::filesystem::path(fullPath_).extension();
+        return std::filesystem::path(fullPath_).extension();
 
       /*  auto dot = fullPath_.find_last_of('.');
         if (dot != fullPath_.npos)
@@ -110,7 +110,7 @@ namespace Storm
 
     Path Path::operator/(const std::wstring& name) const
     {
-        return std::experimental::filesystem::path(fullPath_).append(name).native();
+        return std::filesystem::path(fullPath_).append(name).native();
         /*if (!fullPath_.empty())
             return fullPath_ + k_natvieDelimiter + name;
         else
@@ -119,8 +119,8 @@ namespace Storm
 
     bool Path::isFile() const
     {
-        return std::experimental::filesystem::is_regular_file(std::experimental::filesystem::path(fullPath_))
-            || std::experimental::filesystem::is_symlink(std::experimental::filesystem::path(fullPath_));
+        return std::filesystem::is_regular_file(std::filesystem::path(fullPath_))
+            || std::filesystem::is_symlink(std::filesystem::path(fullPath_));
 
         /*WIN32_FILE_ATTRIBUTE_DATA info;
         BOOL result = GetFileAttributesExW(fullPath_.c_str(), GetFileExInfoStandard, &info);
@@ -129,7 +129,7 @@ namespace Storm
 
     bool Path::isDir() const
     {
-        return std::experimental::filesystem::is_directory(std::experimental::filesystem::path(fullPath_));
+        return std::filesystem::is_directory(std::filesystem::path(fullPath_));
 
        /* WIN32_FILE_ATTRIBUTE_DATA info;
         BOOL result = GetFileAttributesExW(fullPath_.c_str(), GetFileExInfoStandard, &info);

@@ -115,7 +115,7 @@ private:
     void _backup(const std::wstring& file)
     {
         std::wstring bak = file + L".bak";
-        std::experimental::filesystem::rename(file, bak);
+        std::filesystem::rename(file, bak);
     }
 
     void _logThread()
@@ -161,7 +161,7 @@ private:
 
         running = false;
 
-        if (std::experimental::filesystem::file_size(fullPath_) > k_MAXLOGFILESIZE)
+        if (std::filesystem::file_size(fullPath_) > k_MAXLOGFILESIZE)
             _backup(fullPath_);
     }
 };
