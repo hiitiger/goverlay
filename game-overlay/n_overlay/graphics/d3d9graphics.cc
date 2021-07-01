@@ -272,6 +272,10 @@ void D3d9Graphics::beforePresent(IDirect3DDevice9* device)
 
     _checkAndResyncWindows();
 
+    D3DVIEWPORT9 originalViewport;
+    device_->GetViewport(&originalViewport);
+    D3DVIEWPORT9 viewport = { 0, 0, targetWidth_, targetHeight_, 0.0f, 1.0f };
+    device_->SetViewport(&viewport);
     device_->BeginScene();
     D3DXMATRIX mat;
     D3DX9Api::D3DXMatrixTransformation2D(session::loadD3dx9(), &mat, nullptr, 0, nullptr, nullptr, 0, nullptr);
@@ -295,6 +299,7 @@ void D3d9Graphics::beforePresent(IDirect3DDevice9* device)
 
     spriteDrawer_->End();
     device_->EndScene();
+    device_->SetViewport(&originalViewport);
 }
 
 void D3d9Graphics::afterPresent(IDirect3DDevice9* device)
