@@ -469,7 +469,7 @@ class OverlayMain : public IIpcHost
         }
         else if (command == "input.intercept")
         {
-            std::cout << __FUNCTIONW__ << "input.intercept";
+            std::cout << __FUNCTION__ << "input.intercept";
             overlay::InputInterceptCommand message;
             message.intercept = commandInfo.Get("intercept").ToBoolean();
 
