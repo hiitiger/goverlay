@@ -80,7 +80,7 @@ namespace Windows
             return &p_;
         }
 
-        HRESULT CoCreateInstance(REFCLSID classUUID, DWORD dwClsContext = CLSCTX_INPROC_SERVER)
+        HRESULT CoCreateInstance(REFCLSID classUUID, DWORD dwClsContext = 1 /*CLSCTX_INPROC_SERVER*/)
         {
             HRESULT hr = ::CoCreateInstance(classUUID, 0, dwClsContext, __uuidof (T), (void**)resetAndGetPointerAddress());
             DAssert(hr != CO_E_NOTINITIALIZED);

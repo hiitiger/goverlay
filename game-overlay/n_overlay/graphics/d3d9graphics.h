@@ -36,8 +36,8 @@ class D3d9Graphics : public Storm::Trackable<>
 
     bool windowed_ = false;
 
-    int targetWidth_ = 0;
-    int targetHeight_ = 0;
+    std::uint32_t targetWidth_ = 0;
+    std::uint32_t targetHeight_ = 0;
     D3DFORMAT d3dformat_ = D3DFMT_UNKNOWN;
 
     Windows::ComPtr<IDirect3DTexture9> blockSprite_;

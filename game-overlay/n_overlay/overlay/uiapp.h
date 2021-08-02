@@ -8,7 +8,7 @@ class UiApp : public Storm::Trackable<>
     HHOOK msgHook_ = nullptr;
     HHOOK wndProcHook_ = nullptr;
     HHOOK wndRetProcHook_ = nullptr;
-    std::atomic<HWND> graphicsWindow_ = false;
+    std::atomic<HWND> graphicsWindow_ = nullptr;
     std::atomic<bool> windowFocus_ = false;
     RECT windowClientRect_ = {};
 

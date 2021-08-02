@@ -9,9 +9,9 @@ namespace Ex
     public:
         virtual void stop() = 0;
 
-        virtual void schedule_waitable(WaitableRef& w) = 0;
+        virtual void schedule_waitable(const WaitableRef& w) = 0;
 
-        virtual void remove_waitable(WaitableRef& w) = 0;
+        virtual void remove_waitable(const WaitableRef& w) = 0;
 
         virtual void schedule_callback(Callback0&& func) = 0;
 

@@ -83,7 +83,7 @@ namespace Ex
             }
         }
 
-        void schedule_waitable(WaitableRef& w)
+        void schedule_waitable(const WaitableRef& w)
         {
             std::lock_guard<std::mutex> lock(lock_);
             runloop_->post([this, w]() mutable {
@@ -92,7 +92,7 @@ namespace Ex
             });
         }
 
-        void remove_waitable(WaitableRef& w)
+        void remove_waitable(const WaitableRef& w)
         {
             std::lock_guard<std::mutex> lock(lock_);
             runloop_->post([this, w]() mutable {

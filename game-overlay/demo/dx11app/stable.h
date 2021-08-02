@@ -20,7 +20,9 @@
 #include <vector>
 #include <math.h>
 
+#pragma warning(push)
 #pragma warning(disable:4005)
+#pragma warning(disable:4838)
 
 #include <d3d11.h>
 #include <D3DCompiler.h>
@@ -29,6 +31,7 @@
 #include "dxsdk/Include/d3dx10.h"
 #include <dxsdk/Include/DxErr.h>
 #include <dxsdk/Include/xnamath.h>
+#pragma warning(pop)
 
 
 #pragma comment(lib, "dxgi.lib")

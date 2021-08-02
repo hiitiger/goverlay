@@ -34,8 +34,19 @@
 #include <optional>
 
 #include <assert.h>
+#if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201705L) || __cplusplus >= 201705L)
+#include <filesystem>
+#else
 #include <experimental/filesystem>
+#endif
+
+#include <assert.h>
+#if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201705L) || __cplusplus >= 201705L)
+#include <coroutine>
+#else
 #include <experimental/coroutine>
+#endif
+
 
 namespace Storm
 {

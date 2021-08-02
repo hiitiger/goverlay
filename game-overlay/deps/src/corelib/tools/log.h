@@ -33,6 +33,8 @@ public:
     LogStream& operator<<(const wchar_t* d) { textstream_ << d; return *this; }
     LogStream& operator<<(const std::wstring& d) { textstream_ << d; return *this; }
     LogStream& operator<<(const void* d) { textstream_ << d; return *this; }
+    LogStream& operator<<(char(&d)[]) { textstream_ << (const char*)d; return *this; }
+    LogStream& operator<<(wchar_t(&d)[]) { textstream_ << (const wchar_t*)d; return *this; }
 
     template<class T, typename = std::enable_if_t<!std::is_pointer<T>::value, T&>>
     LogStream& operator << (const T& t) {

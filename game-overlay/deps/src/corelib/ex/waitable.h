@@ -220,7 +220,7 @@ public:
     EventWaitableImpl(Storm::Event<R(A...)>& event, bool once = false)
         : WaitableImpl(once)
     {
-        event.add(&EventWaitableInternal::event_trigger, this);
+        event.add(&EventWaitableImpl::event_trigger, this);
     }
 
     void nolock_dispose() override

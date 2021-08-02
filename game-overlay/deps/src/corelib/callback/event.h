@@ -230,7 +230,7 @@ namespace Storm
         void compactConnections()
         {
             //make sure operation on connections is safe
-            if (!connections_.unique())
+            if (connections_.use_count() > 1)
             {
                 connections_.reset(new std::vector<std::shared_ptr<ConnectionContext>>(*connections_));
             }

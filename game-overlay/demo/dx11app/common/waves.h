@@ -10,7 +10,12 @@
 #define WAVES_H
 
 #include <Windows.h>
+
+#pragma warning(push)
+#pragma warning(disable:4838)
+
 #include <dxsdk/Include/xnamath.h>
+#pragma warning(pop)
 
 class Waves
 {

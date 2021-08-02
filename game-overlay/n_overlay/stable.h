@@ -4,10 +4,10 @@
 
 #include "minhook/MinHook.h"
 
-#include <dxgitype.h>
 
 __pragma(warning(push))
 __pragma(warning(disable:4005))
+#include <dxgitype.h>
 
 #include <d3d9.h>
 

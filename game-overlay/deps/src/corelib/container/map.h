@@ -92,7 +92,8 @@ namespace Storm {
 
         class iterator : public std::iterator<std::bidirectional_iterator_tag, V>
         {
-            friend class const_iterator;
+            friend class Skiplist<K, V>::const_iterator;
+            using const_iterator = Skiplist<K, V>::const_iterator;
             using Node = typename Skiplist::Node;
             Node* node = nullptr;
         public:

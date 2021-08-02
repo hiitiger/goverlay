@@ -58,11 +58,10 @@ public:
     template<class Owner, class S, class ...A >
     void emitAsync(Owner* object, Event<S>* event,  A&&... args)
     {
-        typename priv::InvokerThisHolder<Owner>::Holder object_ = object;
         Callback0 eventCallback = Storm::bind(&Event<S>::operator(), event, std::forward<A>(args)...);
 
         Callback0 callback = [=]() {
-            if (object_)
+            if (object)
             {
                 eventCallback();
             }

@@ -15,7 +15,7 @@ virtual bool fromJson(const json &obj)\
     return true;\
 }\
 \
-virtual json toJson(bool *ok = false) const\
+virtual json toJson(bool *ok = nullptr) const\
 {\
     json result = *this;\
     if (ok)\
