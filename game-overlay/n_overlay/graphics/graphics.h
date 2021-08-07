@@ -45,8 +45,7 @@ typedef HRESULT(STDMETHODCALLTYPE *DXGISwapChainPresentType)(IDXGISwapChain *, U
 typedef HRESULT(STDMETHODCALLTYPE *DXGISwapChainResizeBuffersType)(IDXGISwapChain *, UINT, UINT, UINT, DXGI_FORMAT, UINT);
 typedef HRESULT(STDMETHODCALLTYPE *DXGISwapChainResizeTargetType)(IDXGISwapChain *, const DXGI_MODE_DESC *);
 typedef HRESULT(STDMETHODCALLTYPE *DXGISwapChainPresent1Type)(IDXGISwapChain1 *swapChain, UINT SyncInterval, UINT PresentFlags, _In_ const DXGI_PRESENT_PARAMETERS *pPresentParameters);
-
-
+typedef HRESULT(STDMETHODCALLTYPE* D3D12ExecuteCommandListsType)(ID3D12CommandQueue*, UINT, ID3D12CommandList* const*);
 
 inline DXGI_FORMAT fixCopyTextureFormat(DXGI_FORMAT format)
 {

@@ -111,7 +111,7 @@
       <ExceptionHandling>Sync</ExceptionHandling>
       <ForcedIncludeFiles>stable.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <ObjectFileName>$(SolutionDir)Objdir\$(ProjectName)\$(Configuration)\</ObjectFileName>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>stable.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)\dx11app.pch</PrecompiledHeaderOutputFile>

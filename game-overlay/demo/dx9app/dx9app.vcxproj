@@ -79,7 +79,7 @@
   <PropertyGroup>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\bin\$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Objdir\$(ProjectName)\$(Configuration)\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">dx9app</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">League of Legends</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">dx9app</TargetName>
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</IgnoreImportLibrary>
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</IgnoreImportLibrary>
@@ -130,7 +130,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreImportLibrary>true</IgnoreImportLibrary>
       <LinkIncremental>false</LinkIncremental>
-      <OutputFile>$(OutDir)\dx9app.exe</OutputFile>
+      <OutputFile>$(OutDir)\League of Legends.exe</OutputFile>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <SubSystem>Windows</SubSystem>
       <SuppressStartupBanner>true</SuppressStartupBanner>

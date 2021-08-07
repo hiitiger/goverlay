@@ -26,6 +26,7 @@ void D3d11Graphics::freeGraphics()
 
     ZeroMemory(&savedStatus_, sizeof(savedStatus_));
 
+    overlayTipSprite_ = nullptr;
     statusBarSprite_ = nullptr;
     mainSprite_ = nullptr;
     windowSprites_.clear();
@@ -37,9 +38,10 @@ void D3d11Graphics::freeGraphics()
     depthStencilState_ = nullptr;
 
     renderTargetView_ = nullptr;
-    d3dContext_ = nullptr;
-    d3dDevice_ = nullptr;
+    d3d11Context_ = nullptr;
+    d3d11Device_ = nullptr;
     swap_ = nullptr;
+    sprite_ = nullptr;
 }
 
 bool D3d11Graphics::_initGraphicsContext(IDXGISwapChain* swap)
@@ -48,14 +50,14 @@ bool D3d11Graphics::_initGraphicsContext(IDXGISwapChain* swap)
 
     HRESULT hr;
 
-    hr = swap->GetDevice(__uuidof(ID3D11Device), (LPVOID*)d3dDevice_.resetAndGetPointerAddress());
+    hr = swap->GetDevice(__uuidof(ID3D11Device), (LPVOID*)d3d11Device_.resetAndGetPointerAddress());
 
-    if (!d3dDevice_)
+    if (!d3d11Device_)
     {
         return false;
     }
 
-    d3dDevice_->GetImmediateContext(d3dContext_.resetAndGetPointerAddress());
+    d3d11Device_->GetImmediateContext(d3d11Context_.resetAndGetPointerAddress());
 
     Windows::ComPtr<ID3D11Texture2D> backBufferTexture;
     swap->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)backBufferTexture.resetAndGetPointerAddress());
@@ -76,7 +78,7 @@ bool D3d11Graphics::_initGraphicsContext(IDXGISwapChain* swap)
     isSRGB_ = isSRGBFormat(swapChainDesc.BufferDesc.Format);
     windowed_ = !!swapChainDesc.Windowed;
 
-    hr = d3dDevice_->CreateRenderTargetView(backBufferTexture, nullptr, renderTargetView_.resetAndGetPointerAddress());
+    hr = d3d11Device_->CreateRenderTargetView(backBufferTexture, nullptr, renderTargetView_.resetAndGetPointerAddress());
     if (!renderTargetView_)
     {
         return false;
@@ -97,7 +99,7 @@ bool D3d11Graphics::_initGraphicsState()
     desc.StencilReadMask = 0xff;
     desc.StencilWriteMask = 0xff;
 
-    hr = d3dDevice_->CreateDepthStencilState(&desc, depthStencilState_.resetAndGetPointerAddress());
+    hr = d3d11Device_->CreateDepthStencilState(&desc, depthStencilState_.resetAndGetPointerAddress());
     if (!depthStencilState_)
     {
         return false;
@@ -116,7 +118,7 @@ bool D3d11Graphics::_initGraphicsState()
     transDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
     transDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
-    hr = d3dDevice_->CreateBlendState(&transDesc, transparentBlendState_.resetAndGetPointerAddress());
+    hr = d3d11Device_->CreateBlendState(&transDesc, transparentBlendState_.resetAndGetPointerAddress());
     if (!transparentBlendState_)
     {
         return false;
@@ -127,7 +129,7 @@ bool D3d11Graphics::_initGraphicsState()
     rDesc.FillMode = D3D11_FILL_SOLID;
     rDesc.FrontCounterClockwise = false;
     rDesc.DepthClipEnable = true;
-    d3dDevice_->CreateRasterizerState(&rDesc, rasterizeState_.resetAndGetPointerAddress());
+    d3d11Device_->CreateRasterizerState(&rDesc, rasterizeState_.resetAndGetPointerAddress());
 
     if (!rasterizeState_)
     {
@@ -139,7 +141,7 @@ bool D3d11Graphics::_initGraphicsState()
 
 void D3d11Graphics::_initSpriteDrawer()
 {
-    sprite_.reset(new D3d11SpriteDrawer(d3dDevice_, d3dContext_));
+    sprite_.reset(new D3d11SpriteDrawer(d3d11Device_, d3d11Context_));
     sprite_->init(session::loadModuleD3dCompiler47(), targetWidth_, targetHeight_, isSRGB_);
 }
 
@@ -159,13 +161,13 @@ void D3d11Graphics::_createSprites()
     textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     textureDesc.MiscFlags = 0;
 
-    if (SUCCEEDED(d3dDevice_->CreateTexture2D(&textureDesc, nullptr, blockSprite_.resetAndGetPointerAddress())))
+    if (SUCCEEDED(d3d11Device_->CreateTexture2D(&textureDesc, nullptr, blockSprite_.resetAndGetPointerAddress())))
     {
         D3D11_MAPPED_SUBRESOURCE ms = {};
-        d3dContext_->Map(blockSprite_, 0, D3D11_MAP_WRITE_DISCARD, NULL, &ms);
+        d3d11Context_->Map(blockSprite_, 0, D3D11_MAP_WRITE_DISCARD, NULL, &ms);
         int* bytePointer = (int*)ms.pData;
         memset(bytePointer, 0xff, ms.RowPitch * textureDesc.Height);
-        d3dContext_->Unmap(blockSprite_, 0);
+        d3d11Context_->Unmap(blockSprite_, 0);
     }
 }
 
@@ -210,7 +212,7 @@ Windows::ComPtr<ID3D11Texture2D> D3d11Graphics::_createDynamicTexture(std::uint3
     textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     textureDesc.MiscFlags = 0;
 
-    HRESULT hr = d3dDevice_->CreateTexture2D(&textureDesc, nullptr, texture.resetAndGetPointerAddress());
+    HRESULT hr = d3d11Device_->CreateTexture2D(&textureDesc, nullptr, texture.resetAndGetPointerAddress());
     if (FAILED(hr))
     {
         LOGGER("n_overlay") << L"CreateTexture2D, failed:" << hr;
@@ -257,7 +259,7 @@ void D3d11Graphics::_updateSprite(std::shared_ptr<D3d11WindowSprite>& windowSpri
     }
 
     D3D11_MAPPED_SUBRESOURCE ms = {};
-    HRESULT hr = d3dContext_->Map(windowSprite->texture, 0, D3D11_MAP_WRITE_DISCARD, NULL, &ms);
+    HRESULT hr = d3d11Context_->Map(windowSprite->texture, 0, D3D11_MAP_WRITE_DISCARD, NULL, &ms);
     if (FAILED(hr))
     {
         LOGGER("n_overlay") << L"update sprite failed:" << hr;
@@ -296,7 +298,7 @@ void D3d11Graphics::_updateSprite(std::shared_ptr<D3d11WindowSprite>& windowSpri
 
     HookApp::instance()->overlayConnector()->unlockShareMem();
 
-    d3dContext_->Unmap(windowSprite->texture, 0);
+    d3d11Context_->Unmap(windowSprite->texture, 0);
 }
 
 void D3d11Graphics::_checkAndResyncWindows()
@@ -521,40 +523,40 @@ void D3d11Graphics::_drawWindowSprite(std::shared_ptr<D3d11WindowSprite>& window
 
 void D3d11Graphics::_saveStatus()
 {
-    d3dContext_->IAGetInputLayout(&savedStatus_.input_layout);
-    d3dContext_->IAGetVertexBuffers(0, 1, &savedStatus_.vertex, &savedStatus_.vertex_stride, &savedStatus_.vertex_offset);
-    d3dContext_->IAGetPrimitiveTopology((D3D11_PRIMITIVE_TOPOLOGY *)&savedStatus_.draw_style);
+    d3d11Context_->IAGetInputLayout(&savedStatus_.input_layout);
+    d3d11Context_->IAGetVertexBuffers(0, 1, &savedStatus_.vertex, &savedStatus_.vertex_stride, &savedStatus_.vertex_offset);
+    d3d11Context_->IAGetPrimitiveTopology((D3D11_PRIMITIVE_TOPOLOGY *)&savedStatus_.draw_style);
 
-    d3dContext_->VSGetShader(&savedStatus_.vertex_shader, 0, 0);
-    d3dContext_->PSGetShader(&savedStatus_.pixel_shader, 0, 0);
-    d3dContext_->VSGetConstantBuffers(0, 1, &savedStatus_.const_buffer);
-    d3dContext_->PSGetShaderResources(0, 1, &savedStatus_.shader_view);
-    d3dContext_->OMGetDepthStencilState(&savedStatus_.depth_stencil_state,
+    d3d11Context_->VSGetShader(&savedStatus_.vertex_shader, 0, 0);
+    d3d11Context_->PSGetShader(&savedStatus_.pixel_shader, 0, 0);
+    d3d11Context_->VSGetConstantBuffers(0, 1, &savedStatus_.const_buffer);
+    d3d11Context_->PSGetShaderResources(0, 1, &savedStatus_.shader_view);
+    d3d11Context_->OMGetDepthStencilState(&savedStatus_.depth_stencil_state,
         &savedStatus_.stencil_ref);
-    d3dContext_->OMGetBlendState(&savedStatus_.blend_state, savedStatus_.blen_factor,
+    d3d11Context_->OMGetBlendState(&savedStatus_.blend_state, savedStatus_.blen_factor,
         &savedStatus_.blen_mask);
-    d3dContext_->OMGetRenderTargets(1, &savedStatus_.render_target,
+    d3d11Context_->OMGetRenderTargets(1, &savedStatus_.render_target,
         &savedStatus_.depth_stencil);
 
     UINT number = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
-    d3dContext_->RSGetViewports(&number, savedStatus_.view_port);
+    d3d11Context_->RSGetViewports(&number, savedStatus_.view_port);
     savedStatus_.view_port_nums = number;
 
-    d3dContext_->RSGetState(&savedStatus_.rasterizer);
+    d3d11Context_->RSGetState(&savedStatus_.rasterizer);
 
-    d3dContext_->PSGetSamplers(0, 1, &savedStatus_.sampler_states);
+    d3d11Context_->PSGetSamplers(0, 1, &savedStatus_.sampler_states);
 }
 
 void D3d11Graphics::_prepareStatus()
 {
-    d3dContext_->OMSetDepthStencilState(depthStencilState_, 0);
+    d3d11Context_->OMSetDepthStencilState(depthStencilState_, 0);
 
     float factor[4] = { 0.f, 0.f, 0.f, 0.f };
-    d3dContext_->OMSetBlendState(transparentBlendState_, factor, 0xffffffff);
+    d3d11Context_->OMSetBlendState(transparentBlendState_, factor, 0xffffffff);
 
-    d3dContext_->OMSetRenderTargets(1, renderTargetView_.getPointerAdress(), nullptr);
+    d3d11Context_->OMSetRenderTargets(1, renderTargetView_.getPointerAdress(), nullptr);
 
-    d3dContext_->RSSetState(rasterizeState_);
+    d3d11Context_->RSSetState(rasterizeState_);
 
     D3D11_VIEWPORT viewport;
     ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
@@ -566,31 +568,31 @@ void D3d11Graphics::_prepareStatus()
     viewport.TopLeftX = 0.0f;
     viewport.TopLeftY = 0.0f;
 
-    d3dContext_->RSSetViewports(1, &viewport);
+    d3d11Context_->RSSetViewports(1, &viewport);
 }
 
 void D3d11Graphics::_restoreStatus()
 {
 
-    d3dContext_->IASetInputLayout(savedStatus_.input_layout);
-    d3dContext_->IASetVertexBuffers(0, 1, &savedStatus_.vertex, &savedStatus_.vertex_stride, &savedStatus_.vertex_offset);
-    d3dContext_->IASetPrimitiveTopology((D3D11_PRIMITIVE_TOPOLOGY)savedStatus_.draw_style);
-    d3dContext_->VSSetShader(savedStatus_.vertex_shader, 0, 0);
-    d3dContext_->PSSetShader(savedStatus_.pixel_shader, 0, 0);
+    d3d11Context_->IASetInputLayout(savedStatus_.input_layout);
+    d3d11Context_->IASetVertexBuffers(0, 1, &savedStatus_.vertex, &savedStatus_.vertex_stride, &savedStatus_.vertex_offset);
+    d3d11Context_->IASetPrimitiveTopology((D3D11_PRIMITIVE_TOPOLOGY)savedStatus_.draw_style);
+    d3d11Context_->VSSetShader(savedStatus_.vertex_shader, 0, 0);
+    d3d11Context_->PSSetShader(savedStatus_.pixel_shader, 0, 0);
 
-    d3dContext_->PSSetSamplers(0, 1, &savedStatus_.sampler_states);
-    d3dContext_->VSSetConstantBuffers(0, 1, &savedStatus_.const_buffer);
-    d3dContext_->PSSetShaderResources(0, 1, &savedStatus_.shader_view);
-    d3dContext_->OMSetDepthStencilState(savedStatus_.depth_stencil_state,
+    d3d11Context_->PSSetSamplers(0, 1, &savedStatus_.sampler_states);
+    d3d11Context_->VSSetConstantBuffers(0, 1, &savedStatus_.const_buffer);
+    d3d11Context_->PSSetShaderResources(0, 1, &savedStatus_.shader_view);
+    d3d11Context_->OMSetDepthStencilState(savedStatus_.depth_stencil_state,
         savedStatus_.stencil_ref);
-    d3dContext_->OMSetBlendState(savedStatus_.blend_state,
+    d3d11Context_->OMSetBlendState(savedStatus_.blend_state,
         savedStatus_.blen_factor, savedStatus_.blen_mask);
-    d3dContext_->OMSetRenderTargets(1, &savedStatus_.render_target,
+    d3d11Context_->OMSetRenderTargets(1, &savedStatus_.render_target,
         savedStatus_.depth_stencil);
 
-    d3dContext_->RSSetViewports(savedStatus_.view_port_nums, savedStatus_.view_port);
+    d3d11Context_->RSSetViewports(savedStatus_.view_port_nums, savedStatus_.view_port);
 
-    d3dContext_->RSSetState(savedStatus_.rasterizer);
+    d3d11Context_->RSSetState(savedStatus_.rasterizer);
 
     ReleaseCOM(savedStatus_.rasterizer);
     ReleaseCOM(savedStatus_.input_layout);

@@ -20,6 +20,9 @@ protected:
 
     bool windowed_ = false;
 
+    std::uint32_t targetWidth_ = 0;
+    std::uint32_t targetHeight_ = 0;
+
 public:
     virtual ~DxgiGraphics() {}
 

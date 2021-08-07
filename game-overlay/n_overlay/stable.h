@@ -17,6 +17,9 @@ __pragma(warning(disable:4005))
 #include <D3DCompiler.h>
 
 #include "dxgi1_2.h"
+
+#include <d3d11on12.h>
+#include <d3d12.h>
 __pragma(warning(pop))
 
 

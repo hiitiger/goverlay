@@ -4,6 +4,7 @@
 #include "overlay/session.h"
 #include "d3d11graphics.h"
 #include "d3d10graphics.h"
+#include "d3d12graphics.h"
 
 HRESULT STDMETHODCALLTYPE H_DXGISwapChainPresent(IDXGISwapChain *swapChain, UINT a, UINT b)
 {
@@ -25,6 +26,12 @@ HRESULT STDMETHODCALLTYPE H_DXGISwapChainPresent1(IDXGISwapChain1 *swapChain, UI
     return session::dxgiHook()->Present1_hook(swapChain, SyncInterval, PresentFlags, pPresentParameters);
 }
 
+HRESULT STDMETHODCALLTYPE H_D3D12ExecuteCommandLists(ID3D12CommandQueue* queue, UINT NumCommandLists, ID3D12CommandList* const* ppCommandLists)
+{
+    return session::dxgiHook()->ExecuteCommandLists_hook(queue, NumCommandLists, ppCommandLists);
+}
+
+
 DXGIHook::DXGIHook()
 {
 }
@@ -40,6 +47,8 @@ bool DXGIHook::hook()
     {
         return false;
     }
+
+    tryHookD3D12();
 
     return tryHookDXGI();
 }
@@ -72,13 +81,23 @@ HRESULT STDMETHODCALLTYPE DXGIHook::Present_hook(IDXGISwapChain *pSwapChain, UIN
 
     if (FAILED(hr))
     {
-        LOGGER("n_overlay") << "DXGIHook Present_hook:" << hr;
+        LOGGER("n_overlay") << "DXGIHook Present_hook:" << (unsigned long)hr;
         if (hr == DXGI_ERROR_DEVICE_REMOVED)
         {
-            Windows::ComPtr<ID3D11Device> device11;
+            Windows::ComPtr<ID3D11Device> device11 = NULL;
+            Windows::ComPtr<ID3D12Device> device12 = NULL;
             pSwapChain->GetDevice(__uuidof(ID3D11Device), (void**)device11.resetAndGetPointerAddress());
-            hr = device11->GetDeviceRemovedReason();
-            LOGGER("n_overlay") << "DXGIHook Present_hook GetDeviceRemovedReason:" << hr;
+            pSwapChain->GetDevice(__uuidof(ID3D12Device), (void**)device12.resetAndGetPointerAddress());
+            if (device12)
+            {
+                hr = device12->GetDeviceRemovedReason();
+                LOGGER("n_overlay") << "DXGIHook dx12 Present_hook GetDeviceRemovedReason:" << (unsigned long)hr;
+            }
+            else if (device11)
+            {
+                hr = device11->GetDeviceRemovedReason();
+                LOGGER("n_overlay") << "DXGIHook dx11 Present_hook GetDeviceRemovedReason:" << (unsigned long)hr;
+            }
         }
     }
 
@@ -96,13 +115,23 @@ HRESULT STDMETHODCALLTYPE DXGIHook::Present1_hook(IDXGISwapChain1 *pSwapChain, U
 
     if (FAILED(hr))
     {
-        LOGGER("n_overlay") << "DXGIHook Present_hook:" << hr;
+        LOGGER("n_overlay") << "DXGIHook Present_hook:" << (unsigned long)hr;
         if (hr == DXGI_ERROR_DEVICE_REMOVED)
         {
-            Windows::ComPtr<ID3D11Device> device11;
+            Windows::ComPtr<ID3D11Device> device11 = NULL;
+            Windows::ComPtr<ID3D12Device> device12 = NULL;
             pSwapChain->GetDevice(__uuidof(ID3D11Device), (void**)device11.resetAndGetPointerAddress());
-            hr = device11->GetDeviceRemovedReason();
-            LOGGER("n_overlay") << "DXGIHook Present_hook GetDeviceRemovedReason:" << hr;
+            pSwapChain->GetDevice(__uuidof(ID3D12Device), (void**)device12.resetAndGetPointerAddress());
+            if (device12)
+            {
+                hr = device12->GetDeviceRemovedReason();
+                LOGGER("n_overlay") << "DXGIHook dx12 Present1_hook GetDeviceRemovedReason:" << (unsigned long)hr;
+            }
+            else if (device11)
+            {
+                hr = device11->GetDeviceRemovedReason();
+                LOGGER("n_overlay") << "DXGIHook dx11 Present1_hook GetDeviceRemovedReason:" << (unsigned long)hr;
+            }
         }
     }
 
@@ -127,6 +156,19 @@ HRESULT STDMETHODCALLTYPE DXGIHook::ResizeTarget_hook(IDXGISwapChain *pSwapChain
     return this->dxgiSwapChainResizeTargetHook_->callOrginal<HRESULT>(pSwapChain, pNewTargetParameters);
 }
 
+HRESULT STDMETHODCALLTYPE DXGIHook::ExecuteCommandLists_hook(ID3D12CommandQueue* queue, UINT NumCommandLists, ID3D12CommandList* const* ppCommandLists)
+{
+    if (!d3d12CommandQueue_)
+    {
+        if (queue->GetDesc().Type == D3D12_COMMAND_LIST_TYPE_DIRECT) {
+           
+            d3d12CommandQueue_ = queue;
+        }
+    }
+
+    return this->d3d12ExecuteCommandListsHook_->callOrginal<HRESULT>(queue, NumCommandLists, ppCommandLists);
+}
+
 bool DXGIHook::loadLibInProc()
 {
     if (dxgiLibraryLinked_)
@@ -137,6 +179,7 @@ bool DXGIHook::loadLibInProc()
     dxgiModule_ = GetModuleHandleW(L"dxgi.dll");
     session::dxgiHookInfo().dxgiDll = dxgiModule_;
 
+    linkDX12Library();
     dxgiLibraryLinked_ = linkDX11Library() || linkDX10Library();
 
     return dxgiLibraryLinked_ && !!dxgiModule_;
@@ -166,7 +209,7 @@ bool DXGIHook::linkDX11Library()
         return true;
     }
 
-    d3d11Module_ = GetModuleHandleW(L"d3d11.dll");
+    d3d11Module_ = LoadLibraryW(L"d3d11.dll");
     if (d3d11Module_)
     {
         session::dxgiHookInfo().d3d11Dll = d3d11Module_;
@@ -174,6 +217,74 @@ bool DXGIHook::linkDX11Library()
     }
 
     return !!d3d11Module_;
+}
+
+bool DXGIHook::linkDX12Library()
+{
+    LOGGER("n_overlay") << "linkDX12Library";
+    if (d3d12Module_)
+    {
+        return true;
+    }
+
+    d3d12Module_ = GetModuleHandleW(L"d3d12.dll");
+    if (d3d12Module_)
+    {
+        session::dxgiHookInfo().d3d12Dll = d3d12Module_;
+        d3d12Create_ = (PFN_D3D12_CREATE_DEVICE)GetProcAddress(d3d12Module_, "D3D12CreateDevice");
+    }
+
+    return !!d3d12Module_;
+}
+
+bool DXGIHook::tryHookD3D12()
+{
+    LOGGER("n_overlay") << "tryHookD3D12";
+    if (!d3d12Module_)
+    {
+        LOGGER("n_overlay") << "tryHookD3D12 d3d12Module_ fail";
+        return false;
+    }
+
+    DWORD_PTR* executeCommandListsAddr = nullptr;
+    if (d3d12Create_)
+    {
+        Windows::ComPtr<ID3D12Device> device;
+        HRESULT hr = d3d12Create_(NULL, D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), (void**)device.resetAndGetPointerAddress());
+        if (SUCCEEDED(hr))
+        {
+            D3D12_COMMAND_QUEUE_DESC desc{};
+            Windows::ComPtr<ID3D12CommandQueue> queue;
+            device->CreateCommandQueue(&desc, IID_PPV_ARGS(queue.resetAndGetPointerAddress()));
+            if (SUCCEEDED(hr))
+            {
+                executeCommandListsAddr = getVFunctionAddr((DWORD_PTR*)queue.get(), 10);
+            }
+            else
+            {
+                LOGGER("n_overlay") << "Failed to create D3D12 command queue hr:" << hr;
+            }
+        }
+        else
+        {
+            LOGGER("n_overlay") << "Failed to create D3D12 device hr:" << hr;
+        }
+    }
+
+    if (!executeCommandListsAddr)
+    {
+        LOGGER("n_overlay") << "tryHookD3D12 execute_command_lists_addr fail";
+        return false;
+    }
+
+    DWORD_PTR* hookExecuteCommandListsAddr = (DWORD_PTR*)H_D3D12ExecuteCommandLists;
+
+    d3d12ExecuteCommandListsHook_.reset(new ApiHook<D3D12ExecuteCommandListsType>(L"D3D12ExecuteCommandListsType", executeCommandListsAddr, hookExecuteCommandListsAddr));
+    d3d12ExecuteCommandListsHook_->activeHook();
+
+    LOGGER("n_overlay") << "Hook D3D12ExecuteCommandLists:" << d3d12ExecuteCommandListsHook_->succeed();
+
+    return true;
 }
 
 bool DXGIHook::tryHookDXGI()
@@ -356,19 +467,27 @@ bool DXGIHook::initGraphics(IDXGISwapChain *swap)
 
     Windows::ComPtr<ID3D10Device> device10 = NULL;
     Windows::ComPtr<ID3D11Device> device11 = NULL;
+    Windows::ComPtr<ID3D12Device> device12 = NULL;
+
+    hr = swap->GetDevice(
+        __uuidof(ID3D12Device), (void**)device12.resetAndGetPointerAddress()); 
     hr = swap->GetDevice(
         __uuidof(ID3D10Device), (void **)device10.resetAndGetPointerAddress());
     hr = swap->GetDevice(
         __uuidof(ID3D11Device), (void **)device11.resetAndGetPointerAddress());
-
-    if (!device10 && !device11)
+    
+    if (device12 && d3d12CommandQueue_)
     {
-        return false;
+        std::unique_ptr<D3d12Graphics> graphics = std::make_unique<D3d12Graphics>();
+        graphics->setCommandQueue(d3d12CommandQueue_);
+        if (graphics->initGraphics(swap))
+        {
+            this->dxgiGraphics_ = std::move(graphics);
+            graphicsInit_ = true;
+        }
     }
 
-    bool isDX11 = (device11 && !device10);
-
-    if (isDX11)
+    else if (device11 && !device10)
     {
         std::unique_ptr<D3d11Graphics> graphics = std::make_unique<D3d11Graphics>();
         if (graphics->initGraphics(swap))
@@ -377,7 +496,7 @@ bool DXGIHook::initGraphics(IDXGISwapChain *swap)
             graphicsInit_ = true;
         }
     }
-    else
+    else if (device10)
     {
         std::unique_ptr<D3d10Graphics> graphics = std::make_unique<D3d10Graphics>();
         if (graphics->initGraphics(swap))

@@ -177,7 +177,7 @@ inline void HotkeyCheck::_onHotkeyDown(const std::string& name)
 
     if (session::overlayEnabled())
     {
-        if (name == "overlay.toggle")
+        if (name == "overlay.hotkey.toggleInputIntercept")
         {
             HookApp::instance()->uiapp()->toggleInputIntercept();
         }

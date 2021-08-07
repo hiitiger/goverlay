@@ -26,8 +26,6 @@ class D3d10Graphics : public DxgiGraphics
     Windows::ComPtr<ID3D10Device> d3dDevice_;
     Windows::ComPtr<ID3D10RenderTargetView> renderTargetView_;
 
-    std::uint32_t targetWidth_ = 0;
-    std::uint32_t targetHeight_ = 0;
     DXGI_FORMAT dxgiformat_ = DXGI_FORMAT_UNKNOWN;
     bool isSRGB_ = false;
 

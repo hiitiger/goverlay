@@ -1,5 +1,4 @@
 #pragma once
-#include "dxsdk/Include/d3dx9math.h"
 #include "sprites.shader.h"
 
 class D3d11SpriteDrawer

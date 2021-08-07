@@ -283,6 +283,7 @@
     <ClCompile Include="graphics\d3d11sprite.cc" />
     <ClCompile Include="graphics\d3d10graphics.cc" />
     <ClCompile Include="graphics\d3d11graphics.cc" />
+    <ClCompile Include="graphics\d3d12graphics.cc" />
     <ClCompile Include="graphics\d3d9graphics.cc" />
     <ClCompile Include="graphics\d3d9hook.cc" />
     <ClCompile Include="graphics\dxgigraphics.cc" />
@@ -301,6 +302,7 @@
     <ClInclude Include="graphics\d3d10sprite.h" />
     <ClInclude Include="graphics\d3d11sprite.h" />
     <ClInclude Include="geometry.h" />
+    <ClInclude Include="graphics\d3d12graphics.h" />
     <ClInclude Include="graphics\fpstimer.h" />
     <ClInclude Include="hook\apihook.hpp" />
     <ClInclude Include="common.hpp" />

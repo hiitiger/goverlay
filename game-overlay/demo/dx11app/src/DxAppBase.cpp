@@ -83,6 +83,8 @@ bool DxAppBase::InitWindow()
         CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top,
         NULL, NULL, mInstance, NULL);
 
+    SetWindowText(mWindow, L"dx11app");
+
     return mWindow != nullptr;
 }
 
@@ -305,7 +307,7 @@ void DxAppBase::CalcFPS()
 
         std::wstring fpsStr = std::to_wstring((long long)m_fps) + L", GPU:" + m_gpudescription;
 
-        SetWindowText(mWindow, fpsStr.c_str());
+        //SetWindowText(mWindow, fpsStr.c_str());
 
         // Reset for next average.
         frameCnt = 0;

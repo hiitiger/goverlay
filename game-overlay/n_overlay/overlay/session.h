@@ -42,6 +42,7 @@ struct DxgiHookInfo
     HMODULE dxgiDll = nullptr;
     HMODULE d3d10Dll = nullptr;
     HMODULE d3d11Dll = nullptr;
+    HMODULE d3d12Dll = nullptr;
 
     bool presentHooked = false;
     bool present1Hooked = false;
@@ -55,6 +56,7 @@ struct DxgiHookInfo
             {"dxgiDll", std::to_string((std::uint64_t)dxgiDll)},
             {"d3d10Dll", std::to_string((std::uint64_t)d3d10Dll)},
             {"d3d11Dll", std::to_string((std::uint64_t)d3d11Dll)},
+            {"d3d12Dll", std::to_string((std::uint64_t)d3d12Dll)},
         };
     }
 };

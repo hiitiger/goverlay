@@ -24,12 +24,10 @@ class D3d11Graphics : public DxgiGraphics
 
     Windows::ComPtr<IDXGISwapChain> swap_;
 
-    Windows::ComPtr<ID3D11Device> d3dDevice_;
-    Windows::ComPtr<ID3D11DeviceContext> d3dContext_;
+    Windows::ComPtr<ID3D11Device> d3d11Device_;
+    Windows::ComPtr<ID3D11DeviceContext> d3d11Context_;
     Windows::ComPtr<ID3D11RenderTargetView> renderTargetView_;
 
-    std::uint32_t targetWidth_ = 0;
-    std::uint32_t targetHeight_ = 0;
     DXGI_FORMAT dxgiformat_ = DXGI_FORMAT_UNKNOWN;
     bool isSRGB_ = false;
 
