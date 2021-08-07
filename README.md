@@ -57,7 +57,7 @@ After you have the demo runs right
 ## feature
 
 -   [x] electron offscreen window overlay in game
--   [ ] dx12 api support
+-   [x] dx12 api support
 -   [x] dx11 api support
 -   [x] dx10 api support
 -   [x] dx9 api support
