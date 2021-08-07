@@ -73,6 +73,6 @@ After you have the demo runs right
 
 ## todo
 
--   [ ] brwoser window state manage
+-   [ ] browser window state manage
 -   [x] better hotkey
 -   [x] session reconnect
