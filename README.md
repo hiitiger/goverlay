@@ -1,6 +1,6 @@
 # game overlay solution for any desktop GUI like Electron, Qt, CEF and WPF⚡
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/0f6b8ec919b243a7a926fcf674b2cab7)](https://www.codacy.com/app/hiitiger/gelectron?utm_source=github.com&utm_medium=referral&utm_content=hiitiger/gelectron&utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/4fe290657a91448caecaa5583c84b9d1)](https://www.codacy.com/gh/hiitiger/goverlay/dashboard?utm_source=github.com&utm_medium=referral&utm_content=hiitiger/goverlay&utm_campaign=Badge_Grade)
 
 [![Build status](https://ci.appveyor.com/api/projects/status/sgi7go37f72f52a5?svg=true)](https://ci.appveyor.com/project/hiitiger/gelectron)
 
