@@ -4,9 +4,11 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/sgi7go37f72f52a5?svg=true)](https://ci.appveyor.com/project/hiitiger/goverlay)
 
-## game overlay solution
-
-use the power of web/WPF/Qt to inject any app to overlay in your game
+## game overlay solution 
+* based on DirectX hook, draw in game
+* support any GUI framework, use the power of web/WPF/Qt to inject any app to overlay in your game
+* easy window management
+* input intercept
 
 ## screenshot
 
@@ -58,6 +60,9 @@ After you have the demo runs right
 - [x] dx11 api support
 - [x] dx10 api support
 - [x] dx9 api support
+- [ ] OpenGL api support
+- [ ] native draw overlay
+- [ ] hardware acc osr bitmap transport
 - [x] multi windows support
 - [x] window z-index and focus
 - [x] in game sync drag and resize
