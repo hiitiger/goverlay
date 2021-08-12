@@ -1,4 +1,4 @@
-# game overlay solution for any desktop GUI like Electron, Qt, CEF and WPF⚡
+# DirectX hook and game overlay solution for any desktop GUI like Electron, Qt, CEF and WPF⚡
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/4fe290657a91448caecaa5583c84b9d1)](https://www.codacy.com/gh/hiitiger/goverlay/dashboard?utm_source=github.com&utm_medium=referral&utm_content=hiitiger/goverlay&utm_campaign=Badge_Grade)
 
