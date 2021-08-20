@@ -216,21 +216,13 @@ static std::wstring get_inject_dll_path(bool x64)
   return dll;
 }
 
-static bool inject_process(DWORD processId, DWORD threadId)
+static bool inject_process( HWND window, bool x64)
 {
-  win_scope_handle process = OpenProcess(
-      PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
-      false, processId);
-  if (!process)
-  {
-    return false;
-  }
-
   std::wstring dir = win_utils::moduleDirPath();
 
   std::wstring helper;
   std::wstring dll;
-  if (is_64bit_process(process.handle))
+  if (x64)
   {
     helper = dir + L"\\" + k_inject_helper_x64;
     dll = dir + L"\\" + k_inject_dll_x64;
@@ -241,7 +233,7 @@ static bool inject_process(DWORD processId, DWORD threadId)
     dll = dir + L"\\" + k_inject_dll;
   }
 
-  std::wstring args = std::to_wstring(processId) + L" " + std::to_wstring(threadId) + L" \"" + dll + L"\"";
+  std::wstring args = std::to_wstring((std::uint32_t)window) + L" \"" + dll + L"\"";
   return win_utils::createProcess(helper, args);
 }
 
@@ -296,15 +288,16 @@ Napi::Value injectProcess(const Napi::CallbackInfo &info)
   }
 
   Napi::Object object = info[0].ToObject();
+  const std::uint32_t windowId = object.Get("windowId").ToNumber().Uint32Value();
   const std::uint32_t processId = object.Get("processId").ToNumber().Uint32Value();
-  const std::uint32_t threadId = object.Get("threadId").ToNumber().Uint32Value();
+  // const std::uint32_t threadId = object.Get("threadId").ToNumber().Uint32Value();
 
   const bool x64 = is_64bit_process(processId);
   std::wstring helper_path = get_inject_helper_path(x64);
   std::wstring dll_path = get_inject_dll_path(x64);
   const bool inject_helper_exist = file_exists(helper_path);
   const bool inject_dll_exist = file_exists(dll_path);
-  const bool injected = inject_process(processId, threadId);
+  const bool injected = inject_process((HWND)windowId, x64);
 
   auto result = Napi::Object::New(env);
 

@@ -216,7 +216,6 @@ int main()
 
     if (numArgs == 4)
     {
-
         std::wstring pidStr = cmdLine[1];
         std::wstring injectThreadStr = cmdLine[2];
         std::wstring dll = cmdLine[3];
@@ -228,6 +227,22 @@ int main()
 
         return succeed ? 0 : 1;
     }
+    else if (numArgs == 3)
+    {
+
+        std::wstring windowHandle = cmdLine[1];
+        std::wstring dll = cmdLine[2];
+        const HWND hwnd = (HWND)std::stoul(windowHandle);
+
+        if (hwnd)
+        {
+            DWORD pId = NULL;
+            DWORD threadId = GetWindowThreadProcessId(hwnd, &pId);
+            bool succeed = startInject(pId, threadId, dll);
+            return succeed ? 0 : 1;
+        }
+    }
+
     else
     {
         return -1;
