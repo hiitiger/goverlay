@@ -14,6 +14,8 @@
 #define  OVERLAY_MAGIC 0x908988
 #define  OVERLAY_TASK 0x908987
 
+const bool g_use_wndproc_hook = true;
+
 UiApp::UiApp()
 {
     overlayMagicMsg_ = RegisterWindowMessageW(L"n_overlay_0x010101");
@@ -267,31 +269,50 @@ bool UiApp::isInterceptingMouseAuto()
 
 bool UiApp::hookWindow(HWND window)
 {
-    DWORD threadId = ::GetWindowThreadProcessId(window, nullptr);
+    if (g_use_wndproc_hook)
+    {
+        oldWndProc_ = (WNDPROC)GetWindowLongPtr(window, GWLP_WNDPROC);
+        SetWindowLongPtr(window, GWLP_WNDPROC, (LONG_PTR)WindowProc);
+        return oldWndProc_ != nullptr;
+    }
+    else
+    {
+        DWORD threadId = ::GetWindowThreadProcessId(window, nullptr);
 
-    msgHook_ = SetWindowsHookExW(WH_GETMESSAGE, GetMsgProc, NULL, threadId);
-    wndProcHook_ = SetWindowsHookExW(WH_CALLWNDPROC, CallWndProc, NULL, threadId);
-    wndRetProcHook_ = SetWindowsHookExW(WH_CALLWNDPROCRET, CallWndRetProc, NULL, threadId);
+        msgHook_ = SetWindowsHookExW(WH_GETMESSAGE, GetMsgProc, NULL, threadId);
+        wndProcHook_ = SetWindowsHookExW(WH_CALLWNDPROC, CallWndProc, NULL, threadId);
+        wndRetProcHook_ = SetWindowsHookExW(WH_CALLWNDPROCRET, CallWndRetProc, NULL, threadId);
 
-    return msgHook_ != nullptr && wndProcHook_ != nullptr && wndRetProcHook_ != nullptr;
+        return msgHook_ != nullptr && wndProcHook_ != nullptr && wndRetProcHook_ != nullptr;
+    }
 }
 
 void UiApp::unhookWindow()
 {
-    if (msgHook_)
+    if (g_use_wndproc_hook)
     {
-        UnhookWindowsHookEx(msgHook_);
-        msgHook_ = nullptr;
+        if (oldWndProc_)
+        {
+            SetWindowLongPtr(graphicsWindow_, GWLP_WNDPROC, (LONG_PTR)oldWndProc_);
+        }
     }
-    if (wndProcHook_)
+    else
     {
-        UnhookWindowsHookEx(wndProcHook_);
-        wndProcHook_ = nullptr;
-    }
-    if (wndRetProcHook_)
-    {
-        UnhookWindowsHookEx(wndRetProcHook_);
-        wndRetProcHook_ = nullptr;
+        if (msgHook_)
+        {
+            UnhookWindowsHookEx(msgHook_);
+            msgHook_ = nullptr;
+        }
+        if (wndProcHook_)
+        {
+            UnhookWindowsHookEx(wndProcHook_);
+            wndProcHook_ = nullptr;
+        }
+        if (wndRetProcHook_)
+        {
+            UnhookWindowsHookEx(wndRetProcHook_);
+            wndRetProcHook_ = nullptr;
+        }
     }
 }
 
@@ -332,6 +353,153 @@ LRESULT CALLBACK UiApp::CallWndRetProc(_In_ int nCode, _In_ WPARAM wParam, _In_ 
 {
     return HookApp::instance()->uiapp()->hookCallWndRetProc(nCode, wParam, lParam);
 }
+
+LRESULT WINAPI UiApp::WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
+{
+    return HookApp::instance()->uiapp()->hookWindowProc(hWnd, Msg, wParam, lParam);
+}
+
+
+LRESULT UiApp::hookWindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
+{
+    if (!session::overlayEnabled())
+    {
+        stopInputIntercept();
+    }
+    if (session::graphicsActive())
+    {
+        if (Msg == WM_KEYDOWN || Msg == WM_SYSKEYDOWN
+            || Msg == WM_KEYUP || Msg == WM_SYSKEYUP)
+        {
+            if (checkHotkey())
+            {
+                return 0;
+            }
+        }
+
+        if (Msg == overlayMagicMsg_ && wParam == OVERLAY_MAGIC)
+        {
+            if (lParam == OVERLAY_TASK)
+            {
+                _runTask();
+            }
+        }
+    }
+
+    if (Msg == WM_DESTROY)
+    {
+        LOGGER("n_overlay") << L"WM_DESTROY, " << graphicsWindow_;
+
+        HookApp::instance()->overlayConnector()->sendGraphicsWindowDestroy(graphicsWindow_);
+
+        unhookWindow();
+        graphicsWindow_ = nullptr;
+
+        HookApp::instance()->quit();
+    }
+    else if (Msg == WM_SIZE)
+    {
+        GetClientRect(graphicsWindow_, &windowClientRect_);
+        HookApp::instance()->overlayConnector()->sendGraphicsWindowResizeEvent(graphicsWindow_, windowClientRect_.right - windowClientRect_.left, windowClientRect_.bottom - windowClientRect_.top);
+    }
+
+    else if (Msg == WM_KILLFOCUS)
+    {
+        windowFocus_ = false;
+        HookApp::instance()->overlayConnector()->sendGraphicsWindowFocusEvent(graphicsWindow_, windowFocus_);
+#if AUTO_INPUT_INTERCEPT
+        stopAutoIntercept();
+#endif
+        stopInputIntercept();
+
+    }
+    else if (Msg == WM_SETFOCUS)
+    {
+        windowFocus_ = true;
+        HookApp::instance()->overlayConnector()->sendGraphicsWindowFocusEvent(graphicsWindow_, windowFocus_);
+    }
+    else if (Msg == WM_SETCURSOR && LOWORD(lParam) == HTCLIENT)
+    {
+        if (_setCusror())
+        {
+            return 0;
+        }
+    }
+    else if (Msg == WM_NCHITTEST)
+    {
+        if (isIntercepting_)
+        {
+            HookApp::instance()->overlayConnector()->processNCHITTEST(Msg, wParam, lParam);
+        }
+#if AUTO_INPUT_INTERCEPT
+        else
+        {
+            HookApp::instance()->overlayConnector()->processNCHITTEST(Msg, wParam, lParam, false) ? startAutoIntercept() : stopAutoIntercept();
+        }
+#endif
+    }
+
+    if (session::graphicsActive())
+    {
+        if (!isIntercepting_)
+        {
+
+#if AUTO_INPUT_INTERCEPT
+            if (!isInterceptingMouseAuto_ && !HookApp::instance()->overlayConnector()->isMousePressingOnOverlayWindow())
+            {
+                return CallWindowProc(oldWndProc_, hWnd, Msg, wParam, lParam);
+            }
+
+#else
+            return CallWindowProc(oldWndProc_, hWnd, Msg, wParam, lParam);
+#endif
+        }
+
+        if (Msg >= WM_MOUSEFIRST && Msg <= WM_MOUSELAST)
+        {
+            POINTS pt = MAKEPOINTS(lParam);
+#if AUTO_INPUT_INTERCEPT
+            if (!HookApp::instance()->overlayConnector()->processMouseMessage(Msg, wParam, lParam, isIntercepting_))
+#else
+            if (!HookApp::instance()->overlayConnector()->processMouseMessage(Msg, wParam, lParam))
+#endif // AUTO_INPUT_INTERCEPT
+
+            {
+                if (Msg == WM_LBUTTONUP
+                    || Msg == WM_MBUTTONUP)
+                {
+                    async([this]() { this->stopInputIntercept(); });
+                }
+            }
+            return 0;
+        }
+
+        if (Msg == WM_INPUT)
+        {
+            return 0;
+        }
+
+        if ((Msg >= WM_KEYFIRST && Msg <= WM_KEYLAST)
+            || (Msg >= WM_SYSKEYDOWN && Msg <= WM_SYSDEADCHAR))
+        {
+            bool inputHandled = HookApp::instance()->overlayConnector()->processkeyboardMessage(Msg, wParam, lParam);
+            if (inputHandled)
+            {
+                /*if (Msg == WM_KEYDOWN)
+                {
+                    if (!HookApp::instance()->overlayConnector()->directMessageInput())
+                    {
+                        TranslateMessage(pMsg);
+                    }
+                }*/
+            }
+            return 0;
+        }
+    }
+
+    return CallWindowProc(oldWndProc_, hWnd, Msg, wParam, lParam);
+}
+
 
 LRESULT UiApp::hookGetMsgProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
