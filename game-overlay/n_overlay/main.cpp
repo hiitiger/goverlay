@@ -33,12 +33,13 @@ INT WINAPI DllMain(HINSTANCE hModule, DWORD dwReason, LPVOID)
     {
          trace::DebugConsole::allocDebugConsole();
 
+        DisableThreadLibraryCalls((HMODULE)hModule);
+
         wchar_t name[MAX_PATH];
         GetModuleFileNameW(hModule, name, MAX_PATH);
         ::LoadLibraryW(name);
 
         g_moduleHandle = hModule;
-        DisableThreadLibraryCalls((HMODULE)hModule);
 
         HookApp::initialize();
     }

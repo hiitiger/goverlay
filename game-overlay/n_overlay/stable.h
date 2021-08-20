@@ -50,7 +50,7 @@ __pragma(warning(pop))
 #ifdef _DEBUG
 #define __trace__ std::cout << std::endl << __FUNCTION__ 
 #else
-#define __trace__ LOGGER("n_overlay") 
+#define __trace__ LOGGER("n_overlay") << "[tid:" << GetCurrentProcessId() << "] "
 #endif
 
 #define AUTO_INPUT_INTERCEPT 1

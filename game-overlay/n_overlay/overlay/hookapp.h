@@ -43,7 +43,7 @@ class HookApp
 
     std::shared_ptr<UiApp> uiapp() const { return uiapp_;}
 
-    HANDLE start();
+    static HANDLE start();
 
     void quit();
 

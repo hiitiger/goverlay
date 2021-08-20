@@ -120,6 +120,9 @@ bool overlayConnected();
 void setOverlayEnabled(bool v);
 bool overlayEnabled();
 
+void setOverlayVisible(bool v);
+bool overlayVisible();
+
 bool hasIGO();
 void checkIGO();
 

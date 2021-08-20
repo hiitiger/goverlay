@@ -1101,6 +1101,7 @@ break;
             OVERLAY_DISPATCH("command.cursor", CursorCommand);
             OVERLAY_DISPATCH("overlay.hotkey", HotkeyInfo);
             OVERLAY_DISPATCH("command.input.intercept", InputInterceptCommand);
+            OVERLAY_DISPATCH("command.showhide", ShowHideCommand);
         default:
             break;
         }
@@ -1321,4 +1322,10 @@ void OverlayConnector::_onInputInterceptCommand(std::shared_ptr<overlay::InputIn
     HookApp::instance()->uiapp()->async([intercept = overlayMsg->intercept]() {
         intercept ? HookApp::instance()->uiapp()->startInputIntercept() : HookApp::instance()->uiapp()->stopInputIntercept();
     });
+}
+
+void OverlayConnector::_onShowHideCommand(std::shared_ptr<overlay::ShowHideCommand>& overlayMsg)
+{
+    __trace__ << overlayMsg->show;
+
 }

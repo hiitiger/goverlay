@@ -206,6 +206,14 @@ struct InputInterceptCommand: public GMessage
 
 JSON_AUTO(InputInterceptCommand, type, intercept)
 
+struct ShowHideCommand : public GMessage
+{
+    GMESSAGE_AUTO("command.showhide");
+    bool show = false;
+};
+
+JSON_AUTO(ShowHideCommand, type, show)
+
 struct OverlayInit : public GMessage
 {
     GMESSAGE_AUTO("overlay.init");

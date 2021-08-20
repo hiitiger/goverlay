@@ -484,6 +484,8 @@ bool DXGIHook::initGraphics(IDXGISwapChain *swap)
         {
             this->dxgiGraphics_ = std::move(graphics);
             graphicsInit_ = true;
+
+            __trace__ << "graphicsInit_ d3d12";
         }
     }
 
@@ -494,6 +496,7 @@ bool DXGIHook::initGraphics(IDXGISwapChain *swap)
         {
             this->dxgiGraphics_ = std::move(graphics);
             graphicsInit_ = true;
+            __trace__ << "graphicsInit_ d3d11";
         }
     }
     else if (device10)
@@ -503,6 +506,7 @@ bool DXGIHook::initGraphics(IDXGISwapChain *swap)
         {
             this->dxgiGraphics_ = std::move(graphics);
             graphicsInit_ = true;
+            __trace__ << "graphicsInit_ d3d10";
         }
     }
 

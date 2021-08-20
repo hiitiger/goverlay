@@ -377,3 +377,36 @@ namespace stdxx
     }
 }
 
+
+
+class trace_timer
+{
+public:
+    trace_timer(const char* name)
+        : name_(name)
+    {
+        start_time = std::chrono::high_resolution_clock::now();
+    }
+
+    ~trace_timer()
+    {
+        stop();
+    }
+
+    void stop()
+    {
+        auto end_time = std::chrono::high_resolution_clock::now();
+
+        auto start = std::chrono::time_point_cast<std::chrono::microseconds>(start_time).time_since_epoch();
+        auto end = std::chrono::time_point_cast<std::chrono::microseconds>(end_time).time_since_epoch();
+        auto ms = (end - start).count() / 1000.f;
+
+        LOGGER("n_overlay") << name_ << ", " << ms;
+    }
+private:
+    const char* name_;
+    std::chrono::time_point<std::chrono::high_resolution_clock> start_time;
+};
+
+#define TRACE_SCOPE(name) trace_timer timer##__LINE__(name);
+#define TRACE_FUNC() TRACE_SCOPE(__FUNCSIG__)

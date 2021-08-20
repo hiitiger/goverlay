@@ -185,4 +185,5 @@ private:
     void _onHotkeyInfo(std::shared_ptr<overlay::HotkeyInfo>& overlayMsg);
 
     void _onInputInterceptCommand(std::shared_ptr<overlay::InputInterceptCommand>& overlayMsg);
+    void _onShowHideCommand(std::shared_ptr<overlay::ShowHideCommand>& overlayMsg);
 };

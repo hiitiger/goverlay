@@ -102,6 +102,8 @@ void DxgiGraphics::freeGraphics()
 
 void DxgiGraphics::beforePresent(IDXGISwapChain *swap)
 {
+    TRACE_FUNC();
+
     if (swapChain().get() != swap)
     {
         return;
@@ -114,26 +116,30 @@ void DxgiGraphics::beforePresent(IDXGISwapChain *swap)
         HookApp::instance()->overlayConnector()->sendGraphicsFps(fpsTimer_.fps());
     }
 
-    _saveStatus();
-    _prepareStatus();
-
-    _checkAndResyncWindows();
-
-    if (HookApp::instance()->uiapp()->isInterceptingInput())
+    if (session::overlayVisible())
     {
-        _drawBlockSprite();
+        _saveStatus();
+        _prepareStatus();
 
-        _drawWindowSprites();
-    }
+        _checkAndResyncWindows();
+
+        if (HookApp::instance()->uiapp()->isInterceptingInput())
+        {
+            _drawBlockSprite();
+
+            _drawWindowSprites();
+        }
 
 #if 0
-    _drawMainSprite();
+        _drawMainSprite();
 #endif
 
-    _drawPopupTipSprite();
-    _drawStatutBarSprite();
+        _drawPopupTipSprite();
+        _drawStatutBarSprite();
 
-    _restoreStatus();
+        _restoreStatus();
+
+    }
 }
 
 void DxgiGraphics::afterPresent(IDXGISwapChain *swap)

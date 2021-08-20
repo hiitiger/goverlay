@@ -258,6 +258,8 @@ void D3d9Graphics::freeGraphics()
 
 void D3d9Graphics::beforePresent(IDirect3DDevice9* device)
 {
+    TRACE_FUNC();
+
     if (device_ != device)
     {
         return;
@@ -270,36 +272,39 @@ void D3d9Graphics::beforePresent(IDirect3DDevice9* device)
         HookApp::instance()->overlayConnector()->sendGraphicsFps(fpsTimer_.fps());
     }
 
-    _checkAndResyncWindows();
-
-    D3DVIEWPORT9 originalViewport;
-    device_->GetViewport(&originalViewport);
-    D3DVIEWPORT9 viewport = { 0, 0, targetWidth_, targetHeight_, 0.0f, 1.0f };
-    device_->SetViewport(&viewport);
-    device_->BeginScene();
-    D3DXMATRIX mat;
-    D3DX9Api::D3DXMatrixTransformation2D(session::loadD3dx9(), &mat, nullptr, 0, nullptr, nullptr, 0, nullptr);
-
-    spriteDrawer_->Begin(D3DXSPRITE_ALPHABLEND);
-    spriteDrawer_->SetTransform(&mat);
-
-    if (HookApp::instance()->uiapp()->isInterceptingInput())
+    if (session::overlayVisible())
     {
-        _drawBlockSprite();
+        _checkAndResyncWindows();
 
-        _drawWindowSprites();
-    }
+        D3DVIEWPORT9 originalViewport;
+        device_->GetViewport(&originalViewport);
+        D3DVIEWPORT9 viewport = { 0, 0, targetWidth_, targetHeight_, 0.0f, 1.0f };
+        device_->SetViewport(&viewport);
+        device_->BeginScene();
+        D3DXMATRIX mat;
+        D3DX9Api::D3DXMatrixTransformation2D(session::loadD3dx9(), &mat, nullptr, 0, nullptr, nullptr, 0, nullptr);
+
+        spriteDrawer_->Begin(D3DXSPRITE_ALPHABLEND);
+        spriteDrawer_->SetTransform(&mat);
+
+        if (HookApp::instance()->uiapp()->isInterceptingInput())
+        {
+            _drawBlockSprite();
+
+            _drawWindowSprites();
+        }
 
 #if 0
-    _drawMainSprite();
+        _drawMainSprite();
 #endif
 
-    _drawPopupTipSprite();
-    _drawStatutBarSprite();
+        _drawPopupTipSprite();
+        _drawStatutBarSprite();
 
-    spriteDrawer_->End();
-    device_->EndScene();
-    device_->SetViewport(&originalViewport);
+        spriteDrawer_->End();
+        device_->EndScene();
+        device_->SetViewport(&originalViewport);
+    }
 }
 
 void D3d9Graphics::afterPresent(IDirect3DDevice9* device)

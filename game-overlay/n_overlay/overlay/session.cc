@@ -32,6 +32,8 @@ std::atomic<bool> windowed_ = false;
 
 std::atomic<bool> overlayConnected_ = false;
 std::atomic<bool> overlayEnabled_ = true;
+// did not really need this to be atomic
+bool overlayVisible_ = true;
 
 HMODULE hModuleD3dCompiler47_ = nullptr;
 HMODULE hModuleD3dx9_ = nullptr;
@@ -266,6 +268,16 @@ void setOverlayEnabled(bool value)
 bool overlayEnabled()
 {
     return overlayEnabled_;
+}
+
+void setOverlayVisible(bool v)
+{
+    overlayVisible_ = v;
+}
+
+bool overlayVisible()
+{
+    return overlayVisible_;
 }
 
 bool hasIGO()

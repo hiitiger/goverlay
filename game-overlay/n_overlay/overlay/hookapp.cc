@@ -66,8 +66,7 @@ HookApp::~HookApp()
 void HookApp::initialize()
 {
     MH_Initialize();
-
-    g_hookAppThread = HookApp::instance()->start();
+    g_hookAppThread = HookApp::start();
 }
 
 void HookApp::uninitialize()
@@ -144,6 +143,7 @@ void HookApp::deferHook()
 void HookApp::hookThread()
 {
     LOGGER("n_overlay") << "@trace hook thread start ... ";
+    OutputDebugStringA("n HookAppThread hook thread start");
 
     session::setHookAppThreadId(::GetCurrentThreadId());
 
