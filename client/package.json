@@ -7,21 +7,19 @@
         "build:renderer": "webpack --config webpack.config.renderer.js",
         "build:main": "tsc",
         "build": "npm run build:main && npm run build:renderer",
-        "lint": "tslint -c tslint.json -p tsconfig.json",
         "start": "electron . --enable-logging",
-        "compile:electron": "electron-rebuild -v 2.0.8"
+        "compile:electron": "electron-rebuild -v 15.0.0"
     },
     "devDependencies": {
-        "@types/node": "^10.9.2",
+        "node-addon-api": "^4.1.0",
         "awesome-typescript-loader": "^5.2.0",
-        "electron-rebuild": "^1.8.2",
-        "tslint": "^5.10.0",
+        "electron-rebuild": "^3.2.7",
         "typescript": "^3.1.0",
         "webpack": "^4.16.5",
         "webpack-cli": "^3.1.0"
     },
     "dependencies": {
-        "electron": "2.0.8",
+        "electron": "15.0.0",
         "electron-overlay": "file:../electron-overlay",
         "node-ovhook": "file:../node-ovhook"
     }

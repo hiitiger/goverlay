@@ -75,6 +75,10 @@ class Application {
       height: 600,
       width: 800,
       show: false,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+      },
     };
     const mainWindow = this.createWindow(AppWindows.main, options);
     this.mainWindow = mainWindow;
@@ -501,6 +505,7 @@ class Application {
       y: 0,
       webPreferences: {
         offscreen: true,
+        nodeIntegration: true
       },
     });
 

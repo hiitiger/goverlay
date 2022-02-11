@@ -7,14 +7,14 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "build": "node-gyp build",
         "compile": "node-gyp rebuild",
-        "compile:electron": "electron-rebuild -v 2.0.8"
+        "compile:electron": "electron-rebuild -v 16.0.0"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "devDependencies": {
-        "electron-rebuild": "^1.8.2",
-        "node-addon-api": "^1.4.0",
+        "electron-rebuild": "^3.2.7",
+        "node-addon-api": "^4.1.0",
         "node-gyp": "^3.8.0"
     }
 }

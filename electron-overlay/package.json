@@ -12,11 +12,10 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "node-addon-api": "^1.4.0",
+        "node-addon-api": "^4.1.0",
         "node-gyp": "^3.8.0"
     },
     "devDependencies": {
-        "@types/node": "^10.10.1",
-        "electron-rebuild": "^1.8.2"
+        "electron-rebuild": "^3.2.7"
     }
 }
