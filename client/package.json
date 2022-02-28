@@ -8,7 +8,8 @@
         "build:main": "tsc",
         "build": "npm run build:main && npm run build:renderer",
         "start": "electron . --enable-logging",
-        "compile:electron": "electron-rebuild -v 15.0.0"
+        "compile:electron": "electron-rebuild -v 15.0.0 && npm run copy_to_ovhook",
+        "copy_to_ovhook": "cd .. && copy_to_ovhook.bat"
     },
     "devDependencies": {
         "node-addon-api": "^4.1.0",
