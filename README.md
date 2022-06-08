@@ -79,7 +79,3 @@ After you have the demo runs right
 
 ## support
 contact me for other GUI frameworks support or need any special feature.
-
-## sponsor 
-Ethereum (ETH)
-0x40c44FEFc531676cc2144F212AC074BE246f5B3c
