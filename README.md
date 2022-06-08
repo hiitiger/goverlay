@@ -35,15 +35,13 @@
        npm run start
    ```
 3. click the start button to start overlay
-4. open gameoverlay.sln and build all (Release/Win32 + Release/x64) or just run `build.bat` in game-overlay directory
-5. start dx11app and press ESC to do load inject dll for test
-6. press F1 to swtich input intercepting
+4. start a d3d game, type its window name and inject
 
 ## inject a specific game
 
 After you have the demo runs right
 
-1.  copy files [`n_overlay.dll`, `n_overlay.x64.dll`, `n_ovhelper.exe`, `n_ovhelper.x64.exe`] from directory `game-overlay\bin\Release` to directory `node-ovhook\build\Release`
+1.  copy files [`n_overlay.dll`, `n_overlay.x64.dll`, `injector_helper.exe`, `injector_helper.x64.exe`] from directory `game-overlay\prebuilt` to directory `node-ovhook\build\Release`
 2.  run demo client
 3.  click start button to start overlay
 4.  start the game you want to inject to and wait for it game window to show

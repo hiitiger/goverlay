@@ -6,8 +6,8 @@
 #include <iostream>
 #include "utils.hpp"
 
-const WCHAR k_inject_helper[] = L"n_ovhelper.exe";
-const WCHAR k_inject_helper_x64[] = L"n_ovhelper.x64.exe";
+const WCHAR k_inject_helper[] = L"injector_helper.exe";
+const WCHAR k_inject_helper_x64[] = L"injector_helper.x64.exe";
 
 const WCHAR k_inject_dll[] = L"n_overlay.dll";
 const WCHAR k_inject_dll_x64[] = L"n_overlay.x64.dll";
