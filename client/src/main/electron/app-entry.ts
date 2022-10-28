@@ -22,6 +22,7 @@ class Application {
 
   private Overlay: typeof IOverlay;
   private OvHook: typeof IOVhook;
+  private scaleFactor = 1.0;
 
   constructor() {
     this.windows = new Map();
@@ -105,7 +106,11 @@ class Application {
     this.Overlay = require("electron-overlay");
     this.Overlay!.start();
     this.Overlay!.setHotkeys([
-      { name: "overlay.toggleInputIntercept", keyCode: 113, modifiers: { ctrl: true } },
+      {
+        name: "overlay.toggleInputIntercept",
+        keyCode: 113,
+        modifiers: { ctrl: true },
+      },
       { name: "app.doit", keyCode: 114, modifiers: { ctrl: true } },
     ]);
 
@@ -120,6 +125,10 @@ class Application {
           // }
 
           if (intpuEvent) {
+            if ("x" in intpuEvent)
+              intpuEvent["x"] = Math.round(intpuEvent["x"] / this.scaleFactor);
+            if ("y" in intpuEvent)
+              intpuEvent["y"] = Math.round(intpuEvent["y"] / this.scaleFactor);
             window.webContents.sendInputEvent(intpuEvent);
           }
         }
@@ -154,19 +163,28 @@ class Application {
     captionHeight: number = 0,
     transparent: boolean = false
   ) {
-    const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
+    const display = screen.getDisplayNearestPoint(
+      screen.getCursorScreenPoint()
+    );
 
     this.Overlay!.addWindow(window.id, {
       name,
       transparent,
       resizable: window.isResizable(),
-      maxWidth: window.isResizable ? display.bounds.width : window.getBounds().width,
-      maxHeight: window.isResizable ? display.bounds.height : window.getBounds().height,
+      maxWidth: window.isResizable
+        ? display.bounds.width
+        : window.getBounds().width,
+      maxHeight: window.isResizable
+        ? display.bounds.height
+        : window.getBounds().height,
       minWidth: window.isResizable ? 100 : window.getBounds().width,
       minHeight: window.isResizable ? 100 : window.getBounds().height,
       nativeHandle: window.getNativeWindowHandle().readUInt32LE(0),
       rect: {
-        ...window.getBounds(),
+        x: window.getBounds().x,
+        y: window.getBounds().y,
+        width: Math.floor(window.getBounds().width * this.scaleFactor),
+        height: Math.floor(window.getBounds().height * this.scaleFactor),
       },
       caption: {
         left: dragborder,
@@ -177,23 +195,45 @@ class Application {
       dragBorderWidth: dragborder,
     });
 
-    window.webContents.on("paint", (event, dirty, image: Electron.NativeImage) => {
-      if (this.markQuit) {
-        return;
+    window.webContents.on(
+      "paint",
+      (event, dirty, image: Electron.NativeImage) => {
+        if (this.markQuit) {
+          return;
+        }
+        this.Overlay!.sendFrameBuffer(
+          window.id,
+          image.getBitmap(),
+          image.getSize().width,
+          image.getSize().height
+        );
       }
-      this.Overlay!.sendFrameBuffer(window.id, image.getBitmap(), image.getSize().width, image.getSize().height);
-    });
+    );
 
     window.on("ready-to-show", () => {
       window.focusOnWebView();
     });
 
     window.on("resize", () => {
-      this.Overlay!.sendWindowBounds(window.id, { rect: window.getBounds() });
+      this.Overlay!.sendWindowBounds(window.id, {
+        rect: {
+          x: window.getBounds().x,
+          y: window.getBounds().y,
+          width: Math.floor(window.getBounds().width * this.scaleFactor),
+          height: Math.floor(window.getBounds().height * this.scaleFactor),
+        },
+      });
     });
 
     window.on("move", () => {
-      this.Overlay!.sendWindowBounds(window.id, { rect: window.getBounds() });
+      this.Overlay!.sendWindowBounds(window.id, {
+        rect: {
+          x: window.getBounds().x,
+          y: window.getBounds().y,
+          width: Math.floor(window.getBounds().width * this.scaleFactor),
+          height: Math.floor(window.getBounds().height * this.scaleFactor),
+        },
+      });
     });
 
     const windowId = window.id;
@@ -267,14 +307,17 @@ class Application {
     // })
     window.loadURL(fileUrl(path.join(global.CONFIG.distDir, "index/osr.html")));
 
-    window.webContents.on("paint", (event, dirty, image: Electron.NativeImage) => {
-      if (this.markQuit) {
-        return;
+    window.webContents.on(
+      "paint",
+      (event, dirty, image: Electron.NativeImage) => {
+        if (this.markQuit) {
+          return;
+        }
+        this.mainWindow!.webContents.send("osrImage", {
+          image: image.toDataURL(),
+        });
       }
-      this.mainWindow!.webContents.send("osrImage", {
-        image: image.toDataURL(),
-      });
-    });
+    );
 
     this.addOverlayWindow("MainOverlay", window, 10, 40);
     return window;
@@ -301,7 +344,9 @@ class Application {
     // window.webContents.openDevTools({
     //   mode: "detach"
     // })
-    window.loadURL(fileUrl(path.join(global.CONFIG.distDir, "index/statusbar.html")));
+    window.loadURL(
+      fileUrl(path.join(global.CONFIG.distDir, "index/statusbar.html"))
+    );
 
     this.addOverlayWindow(name, window, 0, 0);
     return window;
@@ -330,7 +375,9 @@ class Application {
     // window.webContents.openDevTools({
     //   mode: "detach"
     // })
-    window.loadURL(fileUrl(path.join(global.CONFIG.distDir, "index/osrtip.html")));
+    window.loadURL(
+      fileUrl(path.join(global.CONFIG.distDir, "index/osrtip.html"))
+    );
 
     this.addOverlayWindow(name, window, 30, 40, true);
     return window;
@@ -367,7 +414,9 @@ class Application {
 
   public setupSystemTray() {
     if (!this.tray) {
-      this.tray = new Tray(path.join(global.CONFIG.distDir, "assets/icon-16.png"));
+      this.tray = new Tray(
+        path.join(global.CONFIG.distDir, "assets/icon-16.png")
+      );
       const contextMenu = Menu.buildFromTemplate([
         {
           label: "OpenMainWindow",
@@ -420,7 +469,10 @@ class Application {
     shell.openExternal(url);
   }
 
-  private createWindow(name: string, option: Electron.BrowserWindowConstructorOptions) {
+  private createWindow(
+    name: string,
+    option: Electron.BrowserWindowConstructorOptions
+  ) {
     const window = new BrowserWindow(option);
     this.windows.set(name, window);
     window.on("closed", () => {
@@ -432,11 +484,14 @@ class Application {
     });
 
     if (global.DEBUG) {
-      window.webContents.on("before-input-event", (event: Electron.Event, input: Electron.Input) => {
-        if (input.key === "F12" && input.type === "keyDown") {
-          window.webContents.openDevTools();
+      window.webContents.on(
+        "before-input-event",
+        (event: Electron.Event, input: Electron.Input) => {
+          if (input.key === "F12" && input.type === "keyDown") {
+            window.webContents.openDevTools();
+          }
         }
-      });
+      );
     }
 
     return window;
@@ -444,6 +499,11 @@ class Application {
 
   private setupIpc() {
     ipcMain.once("start", () => {
+      this.scaleFactor = screen.getDisplayNearestPoint({
+        x: 0,
+        y: 0,
+      }).scaleFactor;
+
       if (!this.Overlay) {
         this.startOverlay();
 
@@ -492,7 +552,9 @@ class Application {
     const name = "OverlayTip";
     this.closeWindow(name);
 
-    const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
+    const display = screen.getDisplayNearestPoint(
+      screen.getCursorScreenPoint()
+    );
 
     const window = this.createWindow(name, {
       width: 480,
@@ -505,7 +567,7 @@ class Application {
       y: 0,
       webPreferences: {
         offscreen: true,
-        nodeIntegration: true
+        nodeIntegration: true,
       },
     });
 
@@ -513,7 +575,9 @@ class Application {
 
     // window.webContents.openDevTools({mode: "detach"})
 
-    window.loadURL(fileUrl(path.join(global.CONFIG.distDir, "doit/index.html")));
+    window.loadURL(
+      fileUrl(path.join(global.CONFIG.distDir, "doit/index.html"))
+    );
   }
 }
 
