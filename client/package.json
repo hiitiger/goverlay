@@ -20,7 +20,7 @@
         "webpack-cli": "^3.1.0"
     },
     "dependencies": {
-        "electron": "16.0.10",
+        "electron": "16.2.6",
         "electron-overlay": "file:../electron-overlay",
         "node-ovhook": "file:../node-ovhook"
     }
