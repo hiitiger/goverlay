@@ -7,8 +7,6 @@ import { fileUrl } from "../utils/utils";
 
 import * as IOverlay from "electron-overlay";
 
-import * as IOVhook from "node-ovhook";
-
 enum AppWindows {
   main = "main",
   osr = "osr",
@@ -21,7 +19,6 @@ class Application {
   private markQuit = false;
 
   private Overlay: typeof IOverlay;
-  private OvHook: typeof IOVhook;
   private scaleFactor = 1.0;
 
   constructor() {
@@ -103,7 +100,6 @@ class Application {
   }
 
   public startOverlay() {
-    this.Overlay = require("electron-overlay");
     this.Overlay!.start();
     this.Overlay!.setHotkeys([
       {
@@ -505,22 +501,20 @@ class Application {
       }).scaleFactor;
 
       if (!this.Overlay) {
+        this.Overlay = require("electron-overlay");
         this.startOverlay();
 
         this.createOsrWindow();
         this.createOsrStatusbarWindow();
       }
-
-      if (!this.OvHook) {
-        this.OvHook = require("node-ovhook");
-      }
     });
 
     ipcMain.on("inject", (event, arg) => {
       console.log(`--------------------\n try inject ${arg}`);
-      for (const window of this.OvHook.getTopWindows()) {
+      for (const window of this.Overlay.getTopWindows()) {
         if (window.title.indexOf(arg) !== -1) {
-          this.OvHook.injectProcess(window);
+          console.log(`--------------------\n injecting ${JSON.stringify(window)}`);
+          this.Overlay.injectProcess(window);
         }
       }
     });

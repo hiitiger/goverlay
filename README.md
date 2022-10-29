@@ -24,11 +24,10 @@
 
 1. git clone https://github.com/hiitiger/goverlay.git
 2. run demo client
-   - this includes the steps to build node native-addons `electron-overlay` and `node-ovhook`
+   - this includes the steps to build node native-addons `electron-overlay`
    ```
        cd client
        npm link ../electron-overlay
-       npm link ../node-ovhook
        npm i
        npm run compile:electron
        npm run build
@@ -41,7 +40,7 @@
 
 After you have the demo runs right
 
-1.  copy files [`n_overlay.dll`, `n_overlay.x64.dll`, `injector_helper.exe`, `injector_helper.x64.exe`] from directory `game-overlay\prebuilt` to directory `node-ovhook\build\Release`
+1.  copy files [`n_overlay.dll`, `n_overlay.x64.dll`, `injector_helper.exe`, `injector_helper.x64.exe`] from directory `game-overlay\prebuilt` to directory `electron-overlay\build\Release`
 2.  run demo client
 3.  click start button to start overlay
 4.  start the game you want to inject to and wait for it game window to show
