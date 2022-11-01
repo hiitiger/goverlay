@@ -103,7 +103,7 @@ class Application {
     this.Overlay!.start();
     this.Overlay!.setHotkeys([
       {
-        name: "overlay.toggleInputIntercept",
+        name: "overlay.hotkey.toggleInputIntercept",
         keyCode: 113,
         modifiers: { ctrl: true },
       },

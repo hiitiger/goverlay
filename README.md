@@ -35,6 +35,7 @@
    ```
 3. click the start button to start overlay
 4. start a d3d game, type its window name and inject
+4. `CTRL+F2` to toggle full input intercept, `CTRL+F3` to show demo popup(doit ^^)
 
 ## inject a specific game
 
