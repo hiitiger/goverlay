@@ -16,7 +16,7 @@
 
 ## NOTE
 
-1. need Visual Sudio 2019 to build native C++ project.
+1. need Visual Studio 2019 to build native C++ project.
 2. we can assocciate a new IME conext if game disabled it, but in fullscreen it will cause window to lose focus.
 3. **node-gyp** need **python2** installed on system and make sure it's added to PATH
 
