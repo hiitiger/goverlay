@@ -68,14 +68,25 @@ After you have the demo runs right
 - [x] window draw policy
 - [x] input intercepting by manually control
 - [x] custom shaped window (alpha test for mouse handling)
-- [ ] detailed injecting configuration
 - [x] input intercepting by auto mouse check
-
-## todo
-
-- [ ] brwoser window state manage
+- [x] brwoser window state manage
 - [x] better hotkey
 - [x] session reconnect
 
 ## support
+
+contact me if had issues with specific features or in-game performance.
+
 contact me for other GUI frameworks support or need any special feature.
+
+## note
+
+Many games block dll injection, please sign dll files with your certificate.
+
+## products using goverlay
+
+- FACEIT: https://www.faceit.com/, competitive gaming platform
+- Guilded: https://www.guilded.gg/, game chat
+- OP.GG: https://www.op.gg/, game statistic platform
+- senpai.gg: https://senpai.gg/, game statistic and assistant
+- Medal.tv: https://medal.tv/, game recording software
