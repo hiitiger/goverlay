@@ -10,7 +10,6 @@
     },
     "keywords": [],
     "author": "",
-    "license": "ISC",
     "dependencies": {
         "node-addon-api": "^4.1.0",
         "node-gyp": "^3.8.0"
