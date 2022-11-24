@@ -14,23 +14,25 @@
 
 ![demo](https://raw.githubusercontent.com/hiitiger/goverlay/master/screenshot/gelectron3.gif)
 
-## NOTE
+## Prerequisites
 
-1. need Visual Sudio 2019 to build native C++ project.
-2. we can assocciate a new IME conext if game disabled it, but in fullscreen it will cause window to lose focus.
-3. **node-gyp** need **python2** installed on system and make sure it's added to PATH
+1. Visual Sudio 2019 with latest sdk to build native C++ project.
+2. CMake
+3. node 32bit/64bit
 
 ## run demo
 
 1. git clone https://github.com/hiitiger/goverlay.git
 2. run demo client
    - this includes the steps to build node native-addons `electron-overlay`
-   ```
-       cd client
-       npm link ../electron-overlay
+   ```CMD
        npm i
-       npm run compile:electron
        npm run build
+       @REM  for 32bit electron
+       npm run build:addon:x86
+       @REM  for 64bit electron
+       npm run build:addon:x64
+
        npm run start
    ```
 3. click the start button to start overlay
@@ -41,7 +43,7 @@
 
 After you have the demo runs right
 
-1.  copy files [`n_overlay.dll`, `n_overlay.x64.dll`, `injector_helper.exe`, `injector_helper.x64.exe`] from directory `game-overlay\prebuilt` to directory `electron-overlay\build\Release`
+1.  copy files [`n_overlay.dll`, `n_overlay.x64.dll`, `injector_helper.exe`, `injector_helper.x64.exe`] from directory `game-overlay\prebuilt` to directory `electron-overlay`
 2.  run demo client
 3.  click start button to start overlay
 4.  start the game you want to inject to and wait for it game window to show

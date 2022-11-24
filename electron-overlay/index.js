@@ -1,3 +1,3 @@
-const Overlay = require('./build/Release/electron_overlay');
+const Overlay = require('./electron-overlay.node');
 
 module.exports = Overlay;

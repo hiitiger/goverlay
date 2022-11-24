@@ -1,2 +1,6 @@
 .vs
 .vscode
+node_modules
+build
+build_Win32
+build_x64

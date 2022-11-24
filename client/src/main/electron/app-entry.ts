@@ -3,9 +3,8 @@ import { Menu, Tray } from "electron";
 import { screen, shell } from "electron";
 import * as fs from "fs";
 import * as path from "path";
+import { loadNativeLib } from "../utils/loadoverlay";
 import { fileUrl } from "../utils/utils";
-
-import * as IOverlay from "electron-overlay";
 
 enum AppWindows {
   main = "main",
@@ -18,12 +17,14 @@ class Application {
   private tray: Electron.Tray | null;
   private markQuit = false;
 
-  private Overlay: typeof IOverlay;
+  private Overlay;
   private scaleFactor = 1.0;
 
   constructor() {
     this.windows = new Map();
     this.tray = null;
+
+    this.Overlay = loadNativeLib()
   }
 
   get mainWindow() {
@@ -211,6 +212,7 @@ class Application {
     });
 
     window.on("resize", () => {
+      console.log(`${name} resizing`)
       this.Overlay!.sendWindowBounds(window.id, {
         rect: {
           x: window.getBounds().x,
@@ -221,16 +223,16 @@ class Application {
       });
     });
 
-    window.on("move", () => {
-      this.Overlay!.sendWindowBounds(window.id, {
-        rect: {
-          x: window.getBounds().x,
-          y: window.getBounds().y,
-          width: Math.floor(window.getBounds().width * this.scaleFactor),
-          height: Math.floor(window.getBounds().height * this.scaleFactor),
-        },
-      });
-    });
+    // window.on("move", () => {
+    //   this.Overlay!.sendWindowBounds(window.id, {
+    //     rect: {
+    //       x: window.getBounds().x,
+    //       y: window.getBounds().y,
+    //       width: Math.floor(window.getBounds().width * this.scaleFactor),
+    //       height: Math.floor(window.getBounds().height * this.scaleFactor),
+    //     },
+    //   });
+    // });
 
     const windowId = window.id;
     window.on("closed", () => {
@@ -285,6 +287,8 @@ class Application {
 
   public createOsrWindow() {
     const options: Electron.BrowserWindowConstructorOptions = {
+      x: 1,
+      y: 1,
       height: 360,
       width: 640,
       frame: false,
@@ -297,7 +301,6 @@ class Application {
 
     const window = this.createWindow(AppWindows.osr, options);
 
-    window.setPosition(0, 0);
     // window.webContents.openDevTools({
     //   mode: "detach"
     // })
@@ -321,6 +324,8 @@ class Application {
 
   public createOsrStatusbarWindow() {
     const options: Electron.BrowserWindowConstructorOptions = {
+      x: 100, 
+      y: 0,
       height: 50,
       width: 200,
       frame: false,
@@ -336,7 +341,6 @@ class Application {
     const name = "StatusBar";
     const window = this.createWindow(name, options);
 
-    window.setPosition(100, 0);
     // window.webContents.openDevTools({
     //   mode: "detach"
     // })
@@ -350,6 +354,8 @@ class Application {
 
   public createOsrTipWindow() {
     const options: Electron.BrowserWindowConstructorOptions = {
+      x: 0, 
+      y: 0,
       height: 220,
       width: 320,
       resizable: false,
@@ -367,7 +373,6 @@ class Application {
     const name = `osrtip ${getRandomInt(1, 10000)}`;
     const window = this.createWindow(name, options);
 
-    window.setPosition(0, 0);
     // window.webContents.openDevTools({
     //   mode: "detach"
     // })
@@ -500,13 +505,11 @@ class Application {
         y: 0,
       }).scaleFactor;
 
-      if (!this.Overlay) {
-        this.Overlay = require("electron-overlay");
-        this.startOverlay();
+      console.log(`starting overlay...`)
+      this.startOverlay();
 
-        this.createOsrWindow();
-        this.createOsrStatusbarWindow();
-      }
+      this.createOsrWindow();
+      this.createOsrStatusbarWindow();
     });
 
     ipcMain.on("inject", (event, arg) => {

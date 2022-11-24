@@ -1,21 +1,19 @@
 {
-    "compilerOptions": {
-        "target": "es2015",
-        "module": "commonjs",
-        "lib": ["es2015", "es2016", "es2017", "dom", "es2018"],
-        /* Specify library files to be included in the compilation. */
-        // "jsx": "preserve",
-        "sourceMap": true,
-        "outDir": "./dist/main",
-        "moduleResolution": "node",
-        "esModuleInterop": true,
-        "experimentalDecorators": true,
-        "downlevelIteration": true
-    },
-    "include": [
-        "src/main/**/*"
-    ],
-    "exclude": [
-        "node_modules"
-    ]
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "commonjs",
+    "lib": ["es2015", "es2016", "es2017", "dom", "es2018"],
+    /* Specify library files to be included in the compilation. */
+    // "jsx": "preserve",
+    "allowJs": true,
+
+    "sourceMap": true,
+    "outDir": "./dist/main",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "downlevelIteration": true
+  },
+  "include": ["./src/main/**/*"],
+  "exclude": ["node_modules"]
 }
