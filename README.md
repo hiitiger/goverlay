@@ -92,3 +92,4 @@ Many games block dll injection, please sign dll files with your certificate.
 - OP.GG: https://www.op.gg/, game statistic platform
 - senpai.gg: https://senpai.gg/, game statistic and assistant
 - Medal.tv: https://medal.tv/, game recording software
+- GG Recorder: https://game-recorder.com/, game recording software
