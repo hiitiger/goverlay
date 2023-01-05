@@ -756,7 +756,7 @@ class OverlayMain : public IIpcHost
             {
                 object.Set("type", "mouseWheel");
 
-                int delta = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
+                int delta = GET_WHEEL_DELTA_WPARAM(wparam);
                 object.Set("deltaY", delta);
                 object.Set("canScroll ", true);
             }
