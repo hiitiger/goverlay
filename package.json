@@ -21,7 +21,7 @@
         "webpack-cli": "^4.10.0"
     },
     "dependencies": {
-        "electron": "16.0.10",
+        "electron": "24.1.3",
         "node-addon-api": "^4.1.0"
     },
     "cmake-js": {
