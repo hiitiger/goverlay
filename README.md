@@ -5,10 +5,10 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/sgi7go37f72f52a5?svg=true)](https://ci.appveyor.com/project/hiitiger/goverlay)
 
 ## game overlay solution 
-* based on DirectX hook, draw in game
-* support any GUI framework, use the power of web/WPF/Qt to inject any app to overlay in your game
+* DirectX hook, draw in game
+* support any GUI framework, use the power of web/Electron/WPF/Qt to inject any app to overlay in your game
 * easy window management
-* input intercept
+* input intercept in game
 
 ## screenshot
 
