@@ -279,9 +279,7 @@ class Application {
           cursor = "";
           break;
       }
-      if (cursor) {
-        this.Overlay!.sendCommand({ command: "cursor", cursor });
-      }
+      this.Overlay!.sendCommand({ command: "cursor", cursor });
     });
   }
 
