@@ -46,13 +46,13 @@ declare module "electron-overlay" {
     }
 
     export interface IProcessThread {
-        processId: number, 
-        threadId: number;
+        processId: number,
+        threadId?: number;
     }
 
     export interface IWindow extends IProcessThread {
         windowId: number;
-        title: string;
+        title?: string;
     }
 
     export interface IInjectResult {
@@ -62,7 +62,7 @@ declare module "electron-overlay" {
     }
 
     export function getTopWindows(includeMinimized?: boolean): IWindow[];
-    export function injectProcess(process: IProcessThread): IInjectResult;
+    export function injectProcess(process: IWindow): IInjectResult;
  
     export function start(): void;
     export function stop(): void;
