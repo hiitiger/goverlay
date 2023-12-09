@@ -7,8 +7,8 @@
         "build:renderer": "webpack --config ./client/webpack.config.renderer.js",
         "build:main": "tsc --project ./client/tsconfig.json",
         "build": "npm run build:main && npm run build:renderer",
-        "build:addon:x86": "(cmake-js -G \"Visual Studio 16 2019\" -A Win32 -O build_Win32)",
-        "build:addon:x64": "(cmake-js -G \"Visual Studio 16 2019\" -A x64 -O build_x64)",
+        "build:addon:x86": "(cmake-js -G \"Visual Studio 17 2022\" -A Win32 -O build_Win32)",
+        "build:addon:x64": "(cmake-js -G \"Visual Studio 17 2022\" -A x64 -O build_x64)",
         "start": "electron . --enable-logging",
         "copy_binary": "copy_binary.bat"
     },
