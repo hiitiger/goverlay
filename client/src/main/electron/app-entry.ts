@@ -294,6 +294,8 @@ class Application {
       transparent: true,
       webPreferences: {
         offscreen: true,
+        nodeIntegration: true,
+        contextIsolation: false
       },
     };
 
@@ -333,6 +335,8 @@ class Application {
       backgroundColor: "#00000000",
       webPreferences: {
         offscreen: true,
+        nodeIntegration: true,
+        contextIsolation: false
       },
     };
 
@@ -362,6 +366,8 @@ class Application {
       transparent: true,
       webPreferences: {
         offscreen: true,
+        nodeIntegration: true,
+        contextIsolation: false
       },
     };
 
