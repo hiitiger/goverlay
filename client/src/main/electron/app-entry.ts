@@ -184,12 +184,12 @@ class Application {
         height: Math.floor(window.getBounds().height * this.scaleFactor),
       },
       caption: {
-        left: dragborder,
-        right: dragborder,
-        top: dragborder,
-        height: captionHeight,
+        left: Math.floor(dragborder * this.scaleFactor),
+        right: Math.floor(dragborder* this.scaleFactor),
+        top: Math.floor(dragborder * this.scaleFactor),
+        height: Math.floor(captionHeight * this.scaleFactor),
       },
-      dragBorderWidth: dragborder,
+      dragBorderWidth: Math.floor(dragborder),
     });
 
     window.webContents.on(
