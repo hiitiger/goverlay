@@ -442,7 +442,9 @@ class OverlayMain : public IIpcHost
         Napi::Function callback = info[0].As<Napi::Function>();
 
         eventCallback_ = std::make_shared<NodeEventCallback>(env, Napi::Persistent(callback), Napi::Persistent(info.This().ToObject()));
-
+        eventCallback_->callback.SuppressDestruct();
+        eventCallback_->receiver.SuppressDestruct();
+        
         return env.Undefined();
     }
 
