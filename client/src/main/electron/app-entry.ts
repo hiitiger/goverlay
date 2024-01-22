@@ -325,7 +325,7 @@ class Application {
   public createOsrStatusbarWindow() {
     const options: Electron.BrowserWindowConstructorOptions = {
       x: 100, 
-      y: 0,
+      y: 200,
       height: 50,
       width: 200,
       frame: false,
@@ -357,7 +357,7 @@ class Application {
   public createOsrTipWindow() {
     const options: Electron.BrowserWindowConstructorOptions = {
       x: 0, 
-      y: 0,
+      y: 200,
       height: 220,
       width: 320,
       resizable: false,

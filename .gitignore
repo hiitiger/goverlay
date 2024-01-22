@@ -4,3 +4,6 @@ node_modules
 build
 build_Win32
 build_x64
+/electron-overlay/*.exe
+/electron-overlay/*.dll
+/electron-overlay/*.node
