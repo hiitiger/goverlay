@@ -1,6 +1,6 @@
 import { BrowserWindow, ipcMain, screen, shell } from "electron";
-import { loadNativeLib } from "../main/utils/loadoverlay";
-import { fileUrl } from "../main/utils/utils";
+import { loadNativeLib } from "../utils/loadoverlay";
+import { fileUrl } from "../utils/utils";
 import * as path from "path";
 
 enum AppWindows {

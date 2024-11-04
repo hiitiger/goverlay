@@ -1,6 +1,6 @@
 import { app as ElectronApp } from "electron";
 
-import "./utils/config";
+import "../utils/config";
 
 // import { Application } from "./electron/app-entry"
 import { IngameOverlay } from "../overlay";
