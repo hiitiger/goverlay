@@ -46,7 +46,7 @@ so with the modules, basicly what we need to do is
 
 #### hotkeys
 
-check out hot the demo (client/src/main/electron/app-entry.ts) uses hotkeys by `this.Overlay!.setHotkeys`
+check out hot the demo (src/main/electron/app-entry.ts) uses hotkeys by `this.Overlay!.setHotkeys`
 
 #### cusomize window show/hide
 

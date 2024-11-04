@@ -7,3 +7,6 @@ build_x64
 /electron-overlay/*.exe
 /electron-overlay/*.dll
 /electron-overlay/*.node
+dist/main/
+dist/renderer/
+release

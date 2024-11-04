@@ -1,11 +1,11 @@
 {
     "name": "gelectron",
     "version": "1.0.1",
-    "main": "./client/dist/main/main.js",
+    "main": "./dist/main/main.js",
     "license": "MIT",
     "scripts": {
-        "build:renderer": "webpack --config ./client/webpack.config.renderer.js",
-        "build:main": "tsc --project ./client/tsconfig.json",
+        "build:renderer": "webpack --config ./webpack.config.renderer.js",
+        "build:main": "tsc --project ./tsconfig.json",
         "build": "npm run build:main && npm run build:renderer",
         "build:addon:x86": "(cmake-js -G \"Visual Studio 17 2022\" -A Win32 -O build_Win32)",
         "build:addon:x64": "(cmake-js -G \"Visual Studio 17 2022\" -A x64 -O build_x64)",

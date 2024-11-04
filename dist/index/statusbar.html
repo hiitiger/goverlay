@@ -1,0 +1,45 @@
+<html>
+
+<head>
+    <style>
+        body {
+            overflow: hidden;
+            background-color: rgba(67, 138, 138, 0.25);
+            margin: 0px;
+            height: 50px;
+            width: 200px;
+        }
+        .caption {
+            height: 50px;
+            width: 200px;
+            background-color: rgba(255, 138, 138, 0.25);
+        }
+    </style>
+    <title>OsrWindow</title>
+</head>
+
+<body>
+    <div>
+        <div class="caption">
+            <button id='button'>intercept</button>  
+            <label id="label">hello</label><br>
+            <input type="text"/>
+        </div>
+    </div>
+    <script>
+        const label = document.getElementById('label')
+        const {
+            ipcRenderer, remote
+        } = window.require('electron')
+        ipcRenderer.on("fps", (event, fps) => {
+            label.innerText = `fps: ${fps}`
+        })
+
+        const button = document.getElementById('button')
+        button.addEventListener('click', () => {
+            ipcRenderer.send('startIntercept')
+        })
+    </script>
+</body>
+
+</html>

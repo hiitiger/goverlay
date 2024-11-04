@@ -1,0 +1,66 @@
+<html>
+
+<head>
+    <style>
+        body {
+            background-color: rgba(67, 138, 138, 0.25);
+            margin: 10px;
+        }
+
+        h1 {
+            color: maroon;
+            margin-left: 40px;
+        }
+
+        .caption {
+            height: 40px;
+            background-color: brown
+        }
+    </style>
+    <title>OsrWindow</title>
+</head>
+
+<body>
+    <div>
+        <div class="caption"></div>
+        <button id="button">Button</button>
+        <button id="doit">doit</button>
+        <br /> Hello Electron!
+
+        <label id="label">Label</label>
+        <input type="text"><input>
+    </div>
+    <script>
+        const label = document.getElementById('label')
+        setInterval(() => {
+            label.innerText = (new Date()).toString()
+            // console.log(label.innerText)
+        }, 1000)
+
+        const {
+            ipcRenderer,
+            remote
+        } = window.require('electron')
+
+        const button = document.getElementById('button')
+        button.addEventListener('click', () => {
+            remote.getCurrentWindow().setSize(window.innerWidth + 20, window.innerHeight + 20)
+            console.log('button click ', (new Date()).toString())
+            ipcRenderer.send('osrClick')
+        })
+
+        const doit = document.getElementById("doit")
+        doit.addEventListener("click", () => {
+            ipcRenderer.send("doit")
+        })
+
+        window.onfocus = function () {
+            console.log("focus")
+        }
+        window.onblur = function () {
+            console.log("blur")
+        }
+    </script>
+</body>
+
+</html>

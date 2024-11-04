@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Do it!</title>
+</head>
+
+<body style="background:transparent; overflow:hidden">
+    <video width="480" height="270" id='video'>
+    </video>
+    <script>
+        const video = document.getElementById('video')
+
+        video.onended = function () {
+            window.close();
+        };
+
+        video.addEventListener('loadeddata', function () {
+            video.play();
+        });
+
+
+        video.onerror = function () {
+            alert('ooops... Shia had a problem. try on another tab');
+            window.close();
+        };
+
+        video.load();
+
+        var videoNum = 1;
+        var filename = 'assets/' + videoNum + '.webm';
+        video.src = filename;
+    </script>
+</body>
+
+</html>
