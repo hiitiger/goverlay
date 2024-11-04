@@ -1,44 +1,46 @@
-import { ipcRenderer, IpcRendererEvent } from "electron"
+import { ipcRenderer, IpcRendererEvent } from "electron";
 
-const startButton = document.getElementById("start") as HTMLButtonElement
+const startButton = document.getElementById("start") as HTMLButtonElement;
 startButton.addEventListener("click", () => {
-  ipcRenderer.send("start")
-})
+    ipcRenderer.send("start");
+});
 
-const injectButton = document.getElementById("inject") as HTMLButtonElement
-const titleInput = document.getElementById("title") as HTMLInputElement
+const injectButton = document.getElementById("inject") as HTMLButtonElement;
+const titleInput = document.getElementById("title") as HTMLInputElement;
 injectButton.addEventListener("click", () => {
-  const title = titleInput.value
-  ipcRenderer.send("inject", title)
-})
+    // const title = titleInput.value
+    const defaultTitle = "League of Legends (TM) Client";
+    // ipcRenderer.send("inject", title)
+    ipcRenderer.send("inject", defaultTitle);
+});
 
 // const canvas = document.getElementById("canvas") as HTMLCanvasElement
 // const context = canvas.getContext("2d")!
 
-const imageElem = document.getElementById("image") as HTMLImageElement
+const imageElem = document.getElementById("image") as HTMLImageElement;
 
 ipcRenderer.on("osrImage", (event: IpcRendererEvent, arg: { image: string }) => {
-  const { image } = arg
-  // imageElem.onload = function() {
-  //   context.clearRect(0, 0, canvas.width, canvas.height)
-  //   context.drawImage(
-  //     imageElem,
-  //     0,
-  //     0,
-  //     imageElem.width,
-  //     imageElem.height,
-  //     0,
-  //     0,
-  //     canvas.width,
-  //     canvas.height
-  //   )
-  // }
-  imageElem.src = image
-})
+    const { image } = arg;
+    // imageElem.onload = function() {
+    //   context.clearRect(0, 0, canvas.width, canvas.height)
+    //   context.drawImage(
+    //     imageElem,
+    //     0,
+    //     0,
+    //     imageElem.width,
+    //     imageElem.height,
+    //     0,
+    //     0,
+    //     canvas.width,
+    //     canvas.height
+    //   )
+    // }
+    imageElem.src = image;
+});
 
-window.onfocus = function() {
-  console.log("focus")
-}
-window.onblur = function() {
-  console.log("blur")
-}
+window.onfocus = function () {
+    console.log("focus");
+};
+window.onblur = function () {
+    console.log("blur");
+};

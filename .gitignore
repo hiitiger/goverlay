@@ -9,4 +9,6 @@ build_x64
 /electron-overlay/*.node
 dist/main/
 dist/renderer/
+dist/index.js
+dist/index.js.map
 release
