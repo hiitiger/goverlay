@@ -14,6 +14,6 @@
         "experimentalDecorators": true,
         "downlevelIteration": true
     },
-    "include": ["./src/main/**/*", "src/global.d.ts", "src/index.ts"],
-    "exclude": ["node_modules"]
+    "include": ["./src/**/*"],
+    "exclude": ["node_modules", "./src/renderer/**/*"]
 }

@@ -7,8 +7,6 @@ build_x64
 /electron-overlay/*.exe
 /electron-overlay/*.dll
 /electron-overlay/*.node
-dist/main/
-dist/renderer/
-dist/index.js
-dist/index.js.map
+dist/**/*.js
+dist/**/*.js.map
 release
