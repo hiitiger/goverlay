@@ -27,5 +27,5 @@
     "cmake-js": {
         "runtime": "electron",
         "runtimeVersion": "16.0.10"
-      }
+    }
 }
